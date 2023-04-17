@@ -53,14 +53,11 @@ Rscript ${scripts_dir}trimTrees.R concatenated_${SLURM_ARRAY_TASK_ID}.fasta ${tr
 #${iqtree_exe} -nt 10 -s concatenated_${SLURM_ARRAY_TASK_ID}.fasta -spp partitions_${SLURM_ARRAY_TASK_ID}.txt -z ./trees_${SLURM_ARRAY_TASK_ID}.tre -pre calcLnL_${SLURM_ARRAY_TASK_ID} -n 0 -m GTR+G -wsl
 #${iqtree_exe} -nt 10 -s concatenated_${SLURM_ARRAY_TASK_ID}.fasta -spp partitions_${SLURM_ARRAY_TASK_ID}.txt -pre inference_${SLURM_ARRAY_TASK_ID} -m GTR+G -bb 1000 -alrt 1000 -wsr
 
-sed -n 1p ./trees_${SLURM_ARRAY_TASK_ID}.tre > ./tree1_${SLURM_ARRAY_TASK_ID}.tre
-${iqtree_exe} -nt 10 -s concatenated_${SLURM_ARRAY_TASK_ID}.fasta -spp partitions_${SLURM_ARRAY_TASK_ID}.txt -pre calcLnL1_${SLURM_ARRAY_TASK_ID} -g ./tree1_${SLURM_ARRAY_TASK_ID}.tre -m GTR+G -redo -wsl
-
-sed -n 2p ./trees_${SLURM_ARRAY_TASK_ID}.tre > ./tree2_${SLURM_ARRAY_TASK_ID}.tre
-${iqtree_exe} -nt 10 -s concatenated_${SLURM_ARRAY_TASK_ID}.fasta -spp partitions_${SLURM_ARRAY_TASK_ID}.txt -pre calcLnL2_${SLURM_ARRAY_TASK_ID} -g ./tree2_${SLURM_ARRAY_TASK_ID}.tre -m GTR+G -redo -wsl
-
-sed -n 3p ./trees_${SLURM_ARRAY_TASK_ID}.tre > ./tree3_${SLURM_ARRAY_TASK_ID}.tre
-${iqtree_exe} -nt 10 -s concatenated_${SLURM_ARRAY_TASK_ID}.fasta -spp partitions_${SLURM_ARRAY_TASK_ID}.txt -pre calcLnL3_${SLURM_ARRAY_TASK_ID} -g ./tree3_${SLURM_ARRAY_TASK_ID}.tre -m GTR+G -redo -wsl
+for i in $(seq 3) #step through 3 hypothesis trees
+do
+  sed -n ${i}p ./trees_${SLURM_ARRAY_TASK_ID}.tre > ./tree${i}_${SLURM_ARRAY_TASK_ID}.tre
+  ${iqtree_exe} -nt 10 -s concatenated_${SLURM_ARRAY_TASK_ID}.fasta -spp partitions_${SLURM_ARRAY_TASK_ID}.txt -pre calcLnL${i}_${SLURM_ARRAY_TASK_ID} -g ./tree${i}_${SLURM_ARRAY_TASK_ID}.tre -m GTR+G -redo -wsl
+done
 
 ${iqtree_exe} -nt 10 -s concatenated_${SLURM_ARRAY_TASK_ID}.fasta -spp partitions_${SLURM_ARRAY_TASK_ID}.txt -pre inference_${SLURM_ARRAY_TASK_ID} -m GTR+G -bb 1000 -alrt 1000 -redo -wsr
 
