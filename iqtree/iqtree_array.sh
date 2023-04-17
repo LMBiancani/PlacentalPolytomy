@@ -76,4 +76,6 @@ do
 	
 	rm ./trees_${line}.tre calcLnL_${line}.ckp.gz calcLnL_${line}.iqtree calcLnL_${line}.log calcLnL_${line}.treefile calcLnL_${line}.trees
 	rm calcLnL_${line}.uniqueseq.phy
+	# I think this script should also be removing calcLnL_${line}.parstree (but want to test this before adding to script)
+	#rm calcLnL_${line}.parstree
 done
