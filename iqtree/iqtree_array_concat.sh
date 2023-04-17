@@ -25,12 +25,12 @@ trees_to_eval=/data/schwartzlab/Biancani/PlacentalPolytomy/iqtree/hypothesis_tre
 # location of amas executable:
 path_to_amas="/data/schwartzlab/Biancani/AMAS/amas/AMAS.py"
 
+cd ${array_work_folder}/concat_trees
 
-cd $array_work_folder
-mkdir -p concat_trees
-cd concat_trees
-cp --update $array_work_folder/array_list.txt .
-cp --update $array_work_folder/aligned_loci_list_* .
+#mkdir -p concat_trees
+#cd concat_trees
+#cp --update $array_work_folder/array_list.txt .
+#cp --update $array_work_folder/aligned_loci_list_* .
 
 date
 

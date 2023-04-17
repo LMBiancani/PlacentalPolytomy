@@ -33,4 +33,11 @@ if [ $arrayN -lt $array_tasks ]
       array_tasks=$arrayN
 fi
 
+#prep for iqtree_array_concat.sh:
+cd $array_work_folder
+mkdir -p concat_trees
+cd concat_trees
+cp $array_work_folder/array_list.txt .
+cp $array_work_folder/aligned_loci_list_* .
+
 echo "#SBATCH --array=[1-${arrayN}]%${array_tasks}"
