@@ -1220,6 +1220,13 @@ if [ $arrayN -lt $array_tasks ]
       array_tasks=$arrayN
 fi
 
+#prep for iqtree_array_concat.sh:
+cd $array_work_folder
+mkdir -p concat_trees
+cd concat_trees
+cp $array_work_folder/array_list.txt .
+cp $array_work_folder/aligned_loci_list_* .
+
 echo &quot;#SBATCH --array=[1-${arrayN}]%${array_tasks}&quot;</code></pre>
 </div>
 <div id="slurm-submission-script-iqtree_array.sh" class="section level3">
@@ -1314,8 +1321,15 @@ do
     rm concord3_${line}.log concord3_${line}.cf.branch concord3_${line}.cf.stat concord3_${line}.cf.tree concord3_${line}.cf.tree.nex
     rm ./tree3_${line}.tre
     
-    rm ./trees_${line}.tre calcLnL_${line}.ckp.gz calcLnL_${line}.iqtree calcLnL_${line}.log calcLnL_${line}.treefile calcLnL_${line}.trees
-    rm calcLnL_${line}.uniqueseq.phy
+    # I think this script should also be removing calcLnL_${line}.parstree (but want to test this before adding to script)
+    # rm lines re-written to prevent returning an error exit status if file does not exist
+    for file in ./trees_${line}.tre calcLnL_${line}.ckp.gz calcLnL_${line}.iqtree calcLnL_${line}.log calcLnL_${line}.treefile calcLnL_${line}.trees calcLnL_${line}.uniqueseq.phy
+    do
+      if [ -f $file ] # test to see if file exists
+      then rm $file
+      else echo &quot;rm: cannot remove $file: No such file or directory&quot;
+      fi
+    done
 done</code></pre>
 </div>
 <div id="topology-constraints" class="section level3">
@@ -1351,9 +1365,9 @@ format)</li>
 <li>Boreoeutheria out (Afrotheria and Xenarthra are sisters)</li>
 <li>Xenarthra out (Afrotheria and Boreoeutheria are sisters)</li>
 </ol>
-<pre class="bg_text"><code>((((Mylodon_darwinii,Choloepus_didactylus,Myrmecophaga_tridactyla,Tamandua_tetradactyla,Dasypus_novemcinctus,Tolypeutes_matacus,Chaetophractus_vellerosus),(Condylura_cristata,Ceratotherium_simum,Manis_javanica,Odobenus_rosmarus_divergens,Hippopotamus_amphibius,Pteropus_vampyrus,Galeopterus_variegatus,Pan_troglodytes,Rattus_norvegicus,Tupaia_tana)),(Procavia_capensis,Loxodonta_africana,Hydrodamalis_gigas,Trichechus_manatus_latirostris,Orycteropus_afer,Elephantulus_edwardii,Amblysomus_hottentotus_longiceps,Chrysochloris_asiatica,Microgale_talazaci,Echinops_telfairi)),(Didelphis_virginiana,Thylacinus_cynocephalus,Sarcophilus_harrisii,Vombatus_ursinus,Phascolarctos_cinereus,Phalanger_gymnotis,Gymnobelideus_leadbeateri,Pseudochirops_corinnae,Wallabia_bicolor,Potorous_gilbertii));
-((((Procavia_capensis,Loxodonta_africana,Hydrodamalis_gigas,Trichechus_manatus_latirostris,Orycteropus_afer,Elephantulus_edwardii,Amblysomus_hottentotus_longiceps,Chrysochloris_asiatica,Microgale_talazaci,Echinops_telfairi),(Mylodon_darwinii,Choloellerosus)),(Condylura_cristata,Ceratotherium_simum,Manis_javanica,Odobenus_rosmarus_divergens,Hippopotamus_amphibius,Pteropus_vampyrus,Galeopterus_variegatus,Pan_troglodytes,Rattus_norvegicus,Tupaia_tana)),(Didelphis_virginiana,Thylacinus_cynocephalus,Sarcophilus_harrisii,Vombatus_ursinus,Phascolarctos_cinereus,Phalanger_gymnotis,Gymnobelideus_leadbeateri,Pseudochirops_corinnae,Wallabia_bicolor,Potorous_gilbertii));
-((((Procavia_capensis,Loxodonta_africana,Hydrodamalis_gigas,Trichechus_manatus_latirostris,Orycteropus_afer,Elephantulus_edwardii,Amblysomus_hottentotus_longiceps,Chrysochloris_asiatica,Microgale_talazaci,Echinops_telfairi),(Condylura_cristata,Ceratotherium_simum,Manis_javanica,Odobenus_rosmarus_divergens,Hippopotamus_amphibius,Pteropus_vampyrus,Galeopterus_variegatus,Pan_troglodytes,Rattus_norvegicus,Tupaia_tana)),(Mylodon_darwinii,Choloepus_didactylus,Myrmecophaga_tridactyla,Tamandua_tetradactyla,Dasypus_novemcinctus,Tolypeutes_matacus,Chaetophractus_vellerosus)),(Didelphis_virginiana,Thylacinus_cynocephalus,Sarcophilus_harrisii,Vombatus_ursiirops_corinnae,Wallabia_bicolor,Potorous_gilbertii));</code></pre>
+<pre class="bg_text"><code>((((Chaetophractus_vellerosus,Tolypeutes_matacus,Dasypus_novemcinctus,Tamandua_tetradactyla,Myrmecophaga_tridactyla,Choloepus_didactylus,Mylodon_darwinii),(Tupaia_tana,Rattus_norvegicus,Pan_troglodytes,Galeopterus_variegatus,Pteropus_vampyrus,Hippopotamus_amphibius,Odobenus_rosmarus_divergens,Manis_javanica,Ceratotherium_simum,Condylura_cristata)),(Echinops_telfairi,Microgale_talazaci,Chrysochloris_asiatica,Amblysomus_hottentotus_longiceps,Elephantulus_edwardii,Orycteropus_afer,Trichechus_manatus_latirostris,Hydrodamalis_gigas,Loxodonta_africana,Procavia_capensis)),(Potorous_gilbertii,Wallabia_bicolor,Pseudochirops_corinnae,Gymnobelideus_leadbeateri,Phalanger_gymnotis,Phascolarctos_cinereus,Vombatus_ursinus,Sarcophilus_harrisii,Thylacinus_cynocephalus,Didelphis_virginiana));
+((((Echinops_telfairi,Microgale_talazaci,Chrysochloris_asiatica,Amblysomus_hottentotus_longiceps,Elephantulus_edwardii,Orycteropus_afer,Trichechus_manatus_latirostris,Hydrodamalis_gigas,Loxodonta_africana,Procavia_capensis),(Chaetophractus_vellerosus,Tolypeutes_matacus,Dasypus_novemcinctus,Tamandua_tetradactyla,Myrmecophaga_tridactyla,Choloepus_didactylus,Mylodon_darwinii)),(Tupaia_tana,Rattus_norvegicus,Pan_troglodytes,Galeopterus_variegatus,Pteropus_vampyrus,Hippopotamus_amphibius,Odobenus_rosmarus_divergens,Manis_javanica,Ceratotherium_simum,Condylura_cristata)),(Potorous_gilbertii,Wallabia_bicolor,Pseudochirops_corinnae,Gymnobelideus_leadbeateri,Phalanger_gymnotis,Phascolarctos_cinereus,Vombatus_ursinus,Sarcophilus_harrisii,Thylacinus_cynocephalus,Didelphis_virginiana));
+((((Echinops_telfairi,Microgale_talazaci,Chrysochloris_asiatica,Amblysomus_hottentotus_longiceps,Elephantulus_edwardii,Orycteropus_afer,Trichechus_manatus_latirostris,Hydrodamalis_gigas,Loxodonta_africana,Procavia_capensis),(Tupaia_tana,Rattus_norvegicus,Pan_troglodytes,Galeopterus_variegatus,Pteropus_vampyrus,Hippopotamus_amphibius,Odobenus_rosmarus_divergens,Manis_javanica,Ceratotherium_simum,Condylura_cristata)),(Chaetophractus_vellerosus,Tolypeutes_matacus,Dasypus_novemcinctus,Tamandua_tetradactyla,Myrmecophaga_tridactyla,Choloepus_didactylus,Mylodon_darwinii)),(Potorous_gilbertii,Wallabia_bicolor,Pseudochirops_corinnae,Gymnobelideus_leadbeateri,Phalanger_gymnotis,Phascolarctos_cinereus,Vombatus_ursinus,Sarcophilus_harrisii,Thylacinus_cynocephalus,Didelphis_virginiana));</code></pre>
 </div>
 <div id="specify-a-list-of-focal-taxa-for-each-hypothesis-tree" class="section level2">
 <h2>Specify a list of focal taxa for each hypothesis tree:</h2>
@@ -1433,7 +1447,8 @@ Potorous_gilbertii</code></pre>
 <div id="r-script-trimtrees.r" class="section level3">
 <h3>R script: <code>trimTrees.R</code></h3>
 <ul>
-<li>run by previous shell script: <code>iqtree_array.sh</code></li>
+<li>run by the following shell scripts: <code>iqtree_array.sh</code>
+<code>iqtree_array_concat.sh</code></li>
 <li>trim taxa off of the main tree(s) if not included in taxon
 composition of a particular alignment</li>
 </ul>
@@ -1511,9 +1526,78 @@ if (length(presentTestTaxa) == 1) {
 SCFofInterest &lt;- stattable[stattable$ID == nodeToRetrieve,1:8]
 #writes to standard out which is redirected (by iqtree_array.sh) to an scf_contigID file
 write(paste(c(SCFofInterest,debug_opt),collapse=&quot;,&quot;),file=&quot;&quot;)</code></pre>
+</div>
+<div id="slurm-submission-script-iqtree_array_concat.sh" class="section level3">
+<h3>Slurm submission script: <code>iqtree_array_concat.sh</code></h3>
 <ul>
-<li>iqtree_array_concat.sh - slurm script to submit: infer concatenation
-trees</li>
+<li>runs AMAS to infer concatenated trees and iqtree to calculate
+likelihoods</li>
+<li>runs the following R scripts: <code>trimTrees.R</code></li>
+<li>Note: update paths to specified input files</li>
+<li>Note: update the header with the array details generated by
+<code>iqtree_prep.sh</code></li>
+</ul>
+<pre class="bg_slurm"><code>#!/bin/bash
+#SBATCH --job-name=&quot;IQcat&quot;
+#SBATCH --time=24:00:00  # walltime limit (HH:MM:SS)
+#SBATCH --nodes=1   # number of nodes
+#SBATCH --ntasks-per-node=1   # processor core(s) per node
+#SBATCH -c 10
+#SBATCH --mem-per-cpu=6G
+#SBATCH --array=[1-28]%28
+#SBATCH --mail-user=&quot;biancani@uri.edu&quot;
+#SBATCH --mail-type=ALL
+
+## update array line above based on output of iqtree prep script
+
+# UPDATE:
+# path to output folder for iqtree (must be location of array_list.txt and aligned_loci_list_* created by iqtree prep script)
+array_work_folder=/data/schwartzlab/Biancani/PlacentalPolytomy/output/iqtree_assessment
+# path to FILTERED SISRS loci (aligned contigs) folder:
+aligned_loci_path=/data/schwartzlab/Biancani/PlacentalPolytomy/output/SISRS_out_filtered
+#location of iqtree executable:
+iqtree_exe=&quot;/data/schwartzlab/alex/andromeda_tools/iqtree-2.1.2-Linux/bin/iqtree2&quot;
+# location of iqtree scripts:
+scripts_dir=/data/schwartzlab/Biancani/PlacentalPolytomy/iqtree
+# path to file containing alternative hypotheses trees:
+trees_to_eval=/data/schwartzlab/Biancani/PlacentalPolytomy/iqtree/hypothesis_trees/Polytomy_Placental_Hypotheses.tree
+# location of amas executable:
+path_to_amas=&quot;/data/schwartzlab/Biancani/AMAS/amas/AMAS.py&quot;
+
+# concat_trees folder and the input files it contains were created by iqtree_prep.sh
+cd ${array_work_folder}/concat_trees
+
+date
+
+module purge
+module load Python/3.7.4-GCCcore-8.3.0
+
+fileline=$(sed -n ${SLURM_ARRAY_TASK_ID}p array_list.txt)
+
+# generates list of paths to infiles
+infiles=$(cat ${fileline} | while read line; do echo ${aligned_loci_path}/${line}; done | paste -sd&quot; &quot;)
+
+#amas concatenated
+python3 ${path_to_amas} concat -f fasta -d dna --out-format fasta --part-format raxml -i $infiles -t concatenated_${SLURM_ARRAY_TASK_ID}.fasta -p partitions_${SLURM_ARRAY_TASK_ID}.txt
+
+module purge
+module load R/4.0.3-foss-2020b
+
+Rscript ${scripts_dir}trimTrees.R concatenated_${SLURM_ARRAY_TASK_ID}.fasta ${trees_to_eval} ./trees_${SLURM_ARRAY_TASK_ID}.tre
+
+#${iqtree_exe} -nt 10 -s concatenated_${SLURM_ARRAY_TASK_ID}.fasta -spp partitions_${SLURM_ARRAY_TASK_ID}.txt -z ./trees_${SLURM_ARRAY_TASK_ID}.tre -pre calcLnL_${SLURM_ARRAY_TASK_ID} -n 0 -m GTR+G -wsl
+#${iqtree_exe} -nt 10 -s concatenated_${SLURM_ARRAY_TASK_ID}.fasta -spp partitions_${SLURM_ARRAY_TASK_ID}.txt -pre inference_${SLURM_ARRAY_TASK_ID} -m GTR+G -bb 1000 -alrt 1000 -wsr
+
+for i in $(seq 3) #step through 3 hypothesis trees
+do
+  sed -n ${i}p ./trees_${SLURM_ARRAY_TASK_ID}.tre &gt; ./tree${i}_${SLURM_ARRAY_TASK_ID}.tre
+  ${iqtree_exe} -nt 10 -s concatenated_${SLURM_ARRAY_TASK_ID}.fasta -spp partitions_${SLURM_ARRAY_TASK_ID}.txt -pre calcLnL${i}_${SLURM_ARRAY_TASK_ID} -g ./tree${i}_${SLURM_ARRAY_TASK_ID}.tre -m GTR+G -redo -wsl
+done
+
+${iqtree_exe} -nt 10 -s concatenated_${SLURM_ARRAY_TASK_ID}.fasta -spp partitions_${SLURM_ARRAY_TASK_ID}.txt -pre inference_${SLURM_ARRAY_TASK_ID} -m GTR+G -bb 1000 -alrt 1000 -redo -wsr
+
+date</code></pre>
+<ul>
 <li>iqtree_array_gtree.sh - slurm script to submit: infer gene
 trees</li>
 <li>iqtree_collect_gtrees.sh - slurm script to submit: collect gene tree
