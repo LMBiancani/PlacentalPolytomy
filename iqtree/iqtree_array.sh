@@ -74,8 +74,13 @@ do
 	rm concord3_${line}.log concord3_${line}.cf.branch concord3_${line}.cf.stat concord3_${line}.cf.tree concord3_${line}.cf.tree.nex
 	rm ./tree3_${line}.tre
 	
-	rm ./trees_${line}.tre calcLnL_${line}.ckp.gz calcLnL_${line}.iqtree calcLnL_${line}.log calcLnL_${line}.treefile calcLnL_${line}.trees
-	rm calcLnL_${line}.uniqueseq.phy
 	# I think this script should also be removing calcLnL_${line}.parstree (but want to test this before adding to script)
-	#rm calcLnL_${line}.parstree
+	# rm lines re-written to prevent returning an error exit status if file does not exist
+	for file in ./trees_${line}.tre calcLnL_${line}.ckp.gz calcLnL_${line}.iqtree calcLnL_${line}.log calcLnL_${line}.treefile calcLnL_${line}.trees calcLnL_${line}.uniqueseq.phy
+	do
+	  if [ -f $file ] # test to see if file exists
+	  then rm $file
+	  else echo "rm: cannot remove $file: No such file or directory"
+	  fi
+	done
 done
