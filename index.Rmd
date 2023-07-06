@@ -1,9 +1,10 @@
 ---
-title: "Notes"
+title: "Analysis Notes"
 author: "Leann M. Biancani"
 output: html_document
 ---
-[GitHub Repository: PlacentalPolytomy](https://github.com/LMBiancani/PlacentalPolytomy)
+Scripts and analyses associated with the Placental Mammal Polytomy Project. \
+GitHub Repository: [PlacentalPolytomy](https://github.com/LMBiancani/PlacentalPolytomy)
 
 ```{css backgrounds, echo=FALSE}
 /* Define a background class for displaying content of slurm submission text files */
