@@ -386,8 +386,21 @@ background-color: lightsteelblue;
 border: 1px solid black;
 }
 </style>
-<div id="filter-by-taxa" class="section level1">
-<h1>1. Filter By Taxa</h1>
+<hr />
+<div id="data-selection" class="section level1">
+<h1>Data Selection</h1>
+<hr />
+</div>
+<div id="orthology-assessment-using-sisrs-v2.0" class="section level1">
+<h1>Orthology assessment using SISRS v2.0</h1>
+<p>Scripts are located in the SISRS folder. Scripts adapted from <a href="https://github.com/SchwartzLabURI/SISRS">SchwartzLabURI/SISRS</a></p>
+<hr />
+</div>
+<div id="annotation-locus-properties-and-phylogenetic-signal" class="section level1">
+<h1>Annotation, Locus Properties, and Phylogenetic Signal</h1>
+<p>Scripts adapted from <a href="https://github.com/AlexKnyshov/TreeshrewProject">AlexKnyshov/TreeshrewProject</a>.</p>
+<div id="filter-by-taxa" class="section level2">
+<h2>1. Filter By Taxa</h2>
 <p>Scripts are located in the <a href="https://github.com/LMBiancani/PlacentalPolytomy/tree/main/filterByTaxa">filterByTaxa</a>
 folder.</p>
 <ul>
@@ -406,8 +419,8 @@ group1,taxonName1
 group1,taxonName2
 group2,taxonName3
 group2,taxonName4</code></pre>
-<div id="slurm-submission-script-filter_sisrs_output.sh" class="section level3">
-<h3>Slurm submission script: <code>filter_SISRS_output.sh</code></h3>
+<div id="slurm-submission-script-filter_sisrs_output.sh" class="section level4">
+<h4>Slurm submission script: <code>filter_SISRS_output.sh</code></h4>
 <ul>
 <li>runs the following python script:
 <code>filter_SISRS_output.py</code></li>
@@ -444,8 +457,8 @@ module load Biopython/1.78-foss-2020b
 mkdir -p $OUTPUT
 python $SCRIPTS/filter_SISRS_output.py $TXNGROUPS $LOCI $OUTPUT $SEQCOMPLETE $MINTAXA $MINGROUPS</code></pre>
 </div>
-<div id="python-script-filter_sisrs_output.py" class="section level3">
-<h3>Python script: <code>filter_SISRS_output.py</code></h3>
+<div id="python-script-filter_sisrs_output.py" class="section level4">
+<h4>Python script: <code>filter_SISRS_output.py</code></h4>
 <ul>
 <li>run by previous shell script:
 <code>filter_SISRS_output.sh</code></li>
@@ -501,8 +514,8 @@ for f in glob.glob(fastafolder+&quot;/*.fasta&quot;):
         counter2 = counter1
 print (&quot;done&quot;)</code></pre>
 </div>
-<div id="taxon-to-group-table-groups.csv" class="section level3">
-<h3>Taxon-to-group table: <code>groups.csv</code></h3>
+<div id="taxon-to-group-table-groups.csv" class="section level4">
+<h4>Taxon-to-group table: <code>groups.csv</code></h4>
 <ul>
 <li>specify path to this input file in previous shell script:
 <code>filter_SISRS_output.sh</code></li>
@@ -547,8 +560,8 @@ Xenarthra,Tamandua_tetradactyla
 Xenarthra,Tolypeutes_matacus</code></pre>
 </div>
 </div>
-<div id="annotate-loci" class="section level1">
-<h1>2. Annotate Loci</h1>
+<div id="annotate-loci" class="section level2">
+<h2>2. Annotate Loci</h2>
 <p>Scripts are located in the <a href="https://github.com/LMBiancani/PlacentalPolytomy/tree/main/annotation">annotation</a>
 folder.</p>
 <ul>
@@ -567,8 +580,8 @@ or length proportion of each annotations type. The following types of
 annotations are recorded: pseudogene, CDS, UTR, intron, lnc_RNA, other
 (any other type), unannotated (or intergenic).</li>
 </ul>
-<div id="slurm-submission-script-download_reference.sh" class="section level3">
-<h3>Slurm submission script: <code>download_reference.sh</code></h3>
+<div id="slurm-submission-script-download_reference.sh" class="section level4">
+<h4>Slurm submission script: <code>download_reference.sh</code></h4>
 <ul>
 <li>downloads reference genome (FASTA) and annotation (GFF) for Pan
 troglodytes (chimpanzee) <a href="https://www.ncbi.nlm.nih.gov/data-hub/genome/GCF_002880755.1/">GCF_002880755.1</a></li>
@@ -604,8 +617,8 @@ do
   gunzip $name
 done</code></pre>
 </div>
-<div id="slurm-submission-script-annotation_job.sh" class="section level3">
-<h3>Slurm submission script: <code>annotation_job.sh</code></h3>
+<div id="slurm-submission-script-annotation_job.sh" class="section level4">
+<h4>Slurm submission script: <code>annotation_job.sh</code></h4>
 <ul>
 <li>runs the following python scripts:
 <code>annotation_getTaxContigs.py</code>,
@@ -674,8 +687,8 @@ python3 ${SCRIPTS}/annotation_bed2table.py full_table_annotated.bed ${outputMode
 
 date</code></pre>
 </div>
-<div id="python-script-annotation_gettaxcontigs.py" class="section level3">
-<h3>Python script: <code>annotation_getTaxContigs.py</code></h3>
+<div id="python-script-annotation_gettaxcontigs.py" class="section level4">
+<h4>Python script: <code>annotation_getTaxContigs.py</code></h4>
 <ul>
 <li>run by previous shell script: <code>annotation_job.sh</code></li>
 <li>extracts SISRS loci of a particular taxon into a single file for use
@@ -700,8 +713,8 @@ for f in files:
 
 taxonFile.close()</code></pre>
 </div>
-<div id="python-script-annotation_blast_parser.py" class="section level3">
-<h3>Python script: <code>annotation_blast_parser.py</code></h3>
+<div id="python-script-annotation_blast_parser.py" class="section level4">
+<h4>Python script: <code>annotation_blast_parser.py</code></h4>
 <ul>
 <li>BLAST to BED python script run by the previous shell script:
 <code>annotation_job.sh</code></li>
@@ -908,8 +921,8 @@ with open(infile) as inhandle:
     if final_output != None:
         print (final_output)</code></pre>
 </div>
-<div id="python-script-annotation_bed2table.py" class="section level3">
-<h3>Python script: <code>annotation_bed2table.py</code></h3>
+<div id="python-script-annotation_bed2table.py" class="section level4">
+<h4>Python script: <code>annotation_bed2table.py</code></h4>
 <ul>
 <li>BED to table python script run by the previous shell script:
 <code>annotation_job.sh</code></li>
@@ -1073,10 +1086,10 @@ for locus in d:
             print (locus+&quot;,&quot;+&quot;,&quot;.join([str(round(x/total_annotation_bases,3)) for x in output_feature_dict.values()]))</code></pre>
 </div>
 </div>
-<div id="assess-locus-properties" class="section level1">
-<h1>3. Assess Locus Properties</h1>
-<div id="amas" class="section level2">
-<h2>3.1. AMAS</h2>
+<div id="assess-locus-properties" class="section level2">
+<h2>3. Assess Locus Properties</h2>
+<div id="amas" class="section level3">
+<h3>3.1. AMAS</h3>
 <p>Scripts are located in the <a href="https://github.com/LMBiancani/PlacentalPolytomy/tree/main/amas">amas</a>
 folder.</p>
 <ul>
@@ -1086,16 +1099,16 @@ arguments with a limit on how long the line can be. In order to analyze
 several hundred thousand files, AMAS is run in batches by the driver
 script (<code>run_amas.py</code>).</li>
 </ul>
-<div id="download-amas" class="section level3">
-<h3>Download AMAS</h3>
+<div id="download-amas" class="section level4">
+<h4>Download AMAS</h4>
 <ul>
 <li>note path to <code>AMAS.py</code> and add path to slurm script
 <code>run_amas.sh</code></li>
 </ul>
 <pre><code>git clone https://github.com/marekborowiec/AMAS/</code></pre>
 </div>
-<div id="slurm-submission-script-run_amas.sh" class="section level3">
-<h3>Slurm submission script: <code>run_amas.sh</code></h3>
+<div id="slurm-submission-script-run_amas.sh" class="section level4">
+<h4>Slurm submission script: <code>run_amas.sh</code></h4>
 <ul>
 <li>runs the following python script: <code>run_amas.py</code></li>
 </ul>
@@ -1135,8 +1148,8 @@ rm amas_output_temp.txt
 
 date</code></pre>
 </div>
-<div id="python-script-run_amas.py" class="section level3">
-<h3>Python script: <code>run_amas.py</code></h3>
+<div id="python-script-run_amas.py" class="section level4">
+<h4>Python script: <code>run_amas.py</code></h4>
 <ul>
 <li>python script run by shell script: <code>run_amas.sh</code></li>
 </ul>
@@ -1172,12 +1185,12 @@ if len(fileList) &gt; 0:
 </div>
 </div>
 </div>
-<div id="asses-phylogenetic-signal-iq-tree" class="section level1">
-<h1>4. Asses Phylogenetic Signal: IQ-TREE</h1>
+<div id="asses-phylogenetic-signal-iq-tree" class="section level2">
+<h2>4. Asses Phylogenetic Signal: IQ-TREE</h2>
 <p>Scripts are located in the <a href="https://github.com/LMBiancani/PlacentalPolytomy/tree/main/iqtree">iqtree</a>
 folder.</p>
-<div id="slurm-submission-script-iqtree_prep.sh" class="section level3">
-<h3>Slurm submission script: <code>iqtree_prep.sh</code></h3>
+<div id="slurm-submission-script-iqtree_prep.sh" class="section level4">
+<h4>Slurm submission script: <code>iqtree_prep.sh</code></h4>
 <ul>
 <li>sets up the folders and lists of files to process</li>
 <li>generates batch fasta files for aligned loci</li>
@@ -1230,8 +1243,8 @@ cp $array_work_folder/aligned_loci_list_* .
 
 echo &quot;#SBATCH --array=[1-${arrayN}]%${array_tasks}&quot;</code></pre>
 </div>
-<div id="slurm-submission-script-iqtree_array.sh" class="section level3">
-<h3>Slurm submission script: <code>iqtree_array.sh</code></h3>
+<div id="slurm-submission-script-iqtree_array.sh" class="section level4">
+<h4>Slurm submission script: <code>iqtree_array.sh</code></h4>
 <ul>
 <li>runs the following R scripts: <code>trimTrees.R</code>,
 <code>getSCF.R</code></li>
@@ -1333,8 +1346,8 @@ do
     done
 done</code></pre>
 </div>
-<div id="topology-constraints" class="section level3">
-<h3>Topology Constraints</h3>
+<div id="topology-constraints" class="section level4">
+<h4>Topology Constraints</h4>
 <p>Collapsed trees were created for each alternative hypothesis and used
 as constraint trees in IQtree</p>
 <p>Scaffold hypotheis trees:</p>
@@ -1351,9 +1364,9 @@ as constraint trees in IQtree</p>
 <p>XENARTHRA:</p>
 <pre><code>(Mylodon_darwinii,Choloepus_didactylus,Myrmecophaga_tridactyla,Tamandua_tetradactyla,Dasypus_novemcinctus,Tolypeutes_matacus,Chaetophractus_vellerosus)</code></pre>
 </div>
-<div id="alternative-hypothesis-trees-polytomy_placental_hypotheses.tree" class="section level3">
-<h3>Alternative Hypothesis Trees:
-<code>Polytomy_Placental_Hypotheses.tree</code></h3>
+<div id="alternative-hypothesis-trees-polytomy_placental_hypotheses.tree" class="section level4">
+<h4>Alternative Hypothesis Trees:
+<code>Polytomy_Placental_Hypotheses.tree</code></h4>
 <ul>
 <li>text file containing alternative hypotheses trees (in Newick
 format)</li>
@@ -1370,15 +1383,15 @@ format)</li>
 ((((Echinops_telfairi,Microgale_talazaci,Chrysochloris_asiatica,Amblysomus_hottentotus_longiceps,Elephantulus_edwardii,Orycteropus_afer,Trichechus_manatus_latirostris,Hydrodamalis_gigas,Loxodonta_africana,Procavia_capensis),(Chaetophractus_vellerosus,Tolypeutes_matacus,Dasypus_novemcinctus,Tamandua_tetradactyla,Myrmecophaga_tridactyla,Choloepus_didactylus,Mylodon_darwinii)),(Tupaia_tana,Rattus_norvegicus,Pan_troglodytes,Galeopterus_variegatus,Pteropus_vampyrus,Hippopotamus_amphibius,Odobenus_rosmarus_divergens,Manis_javanica,Ceratotherium_simum,Condylura_cristata)),(Potorous_gilbertii,Wallabia_bicolor,Pseudochirops_corinnae,Gymnobelideus_leadbeateri,Phalanger_gymnotis,Phascolarctos_cinereus,Vombatus_ursinus,Sarcophilus_harrisii,Thylacinus_cynocephalus,Didelphis_virginiana));
 ((((Echinops_telfairi,Microgale_talazaci,Chrysochloris_asiatica,Amblysomus_hottentotus_longiceps,Elephantulus_edwardii,Orycteropus_afer,Trichechus_manatus_latirostris,Hydrodamalis_gigas,Loxodonta_africana,Procavia_capensis),(Tupaia_tana,Rattus_norvegicus,Pan_troglodytes,Galeopterus_variegatus,Pteropus_vampyrus,Hippopotamus_amphibius,Odobenus_rosmarus_divergens,Manis_javanica,Ceratotherium_simum,Condylura_cristata)),(Chaetophractus_vellerosus,Tolypeutes_matacus,Dasypus_novemcinctus,Tamandua_tetradactyla,Myrmecophaga_tridactyla,Choloepus_didactylus,Mylodon_darwinii)),(Potorous_gilbertii,Wallabia_bicolor,Pseudochirops_corinnae,Gymnobelideus_leadbeateri,Phalanger_gymnotis,Phascolarctos_cinereus,Vombatus_ursinus,Sarcophilus_harrisii,Thylacinus_cynocephalus,Didelphis_virginiana));</code></pre>
 </div>
-<div id="specify-a-list-of-focal-taxa-for-each-hypothesis-tree" class="section level2">
-<h2>Specify a list of focal taxa for each hypothesis tree:</h2>
+<div id="specify-a-list-of-focal-taxa-for-each-hypothesis-tree" class="section level3">
+<h3>Specify a list of focal taxa for each hypothesis tree:</h3>
 <ul>
 <li>For placental root topology question: determine which 2 out of 3
 groups are sisters for each hypothesis and select one of these 2 sister
 groups.</li>
 </ul>
-<div id="focal-taxa-for-tree-1-tips_xenarthra.txt" class="section level3">
-<h3>Focal taxa for tree 1: <code>tips_Xenarthra.txt</code></h3>
+<div id="focal-taxa-for-tree-1-tips_xenarthra.txt" class="section level4">
+<h4>Focal taxa for tree 1: <code>tips_Xenarthra.txt</code></h4>
 <ul>
 <li>Tree 1 = Afrotheria Out, focal taxa = Xenarthra</li>
 <li>specify path to this input file in previous shell script:
@@ -1392,8 +1405,8 @@ Dasypus_novemcinctus
 Tolypeutes_matacus
 Chaetophractus_vellerosus</code></pre>
 </div>
-<div id="focal-taxa-for-tree-2-tips_afrotheria.txt" class="section level3">
-<h3>Focal taxa for tree 2: <code>tips_Afrotheria.txt</code></h3>
+<div id="focal-taxa-for-tree-2-tips_afrotheria.txt" class="section level4">
+<h4>Focal taxa for tree 2: <code>tips_Afrotheria.txt</code></h4>
 <ul>
 <li>Tree 2 = Boreoeutheria Out, focal taxa = Afrotheria</li>
 <li>specify path to this input file in previous shell script:
@@ -1410,8 +1423,8 @@ Chrysochloris_asiatica
 Microgale_talazaci
 Echinops_telfairi</code></pre>
 </div>
-<div id="focal-taxa-for-tree-3-tips_boreoeutheria.txt" class="section level3">
-<h3>Focal taxa for tree 3: <code>tips_Boreoeutheria.txt</code></h3>
+<div id="focal-taxa-for-tree-3-tips_boreoeutheria.txt" class="section level4">
+<h4>Focal taxa for tree 3: <code>tips_Boreoeutheria.txt</code></h4>
 <ul>
 <li>Tree 3 = Xenarthra Out, focal taxa = Boreoeutheria</li>
 <li>specify path to this input file in previous shell script:
@@ -1428,8 +1441,8 @@ Pan_troglodytes
 Rattus_norvegicus
 Tupaia_tana</code></pre>
 </div>
-<div id="outgroup-taxa-list-tips_outgroup.txt" class="section level3">
-<h3>Outgroup taxa list: <code>tips_Outgroup.txt</code></h3>
+<div id="outgroup-taxa-list-tips_outgroup.txt" class="section level4">
+<h4>Outgroup taxa list: <code>tips_Outgroup.txt</code></h4>
 <ul>
 <li>specify path to this input file in previous shell script:
 <code>iqtree_array.sh</code></li>
@@ -1445,8 +1458,8 @@ Pseudochirops_corinnae
 Wallabia_bicolor
 Potorous_gilbertii</code></pre>
 </div>
-<div id="r-script-trimtrees.r" class="section level3">
-<h3>R script: <code>trimTrees.R</code></h3>
+<div id="r-script-trimtrees.r" class="section level4">
+<h4>R script: <code>trimTrees.R</code></h4>
 <ul>
 <li>run by the following shell scripts: <code>iqtree_array.sh</code>
 <code>iqtree_array_concat.sh</code></li>
@@ -1476,8 +1489,8 @@ for (t in trees){
 class(outtrees) &lt;- &quot;multiPhylo&quot;
 write.tree(outtrees, outtreesname)</code></pre>
 </div>
-<div id="r-script-getscf.r" class="section level3">
-<h3>R script: <code>getSCF.R</code></h3>
+<div id="r-script-getscf.r" class="section level4">
+<h4>R script: <code>getSCF.R</code></h4>
 <ul>
 <li>run by previous shell script: <code>iqtree_array.sh</code></li>
 <li>extract sCF values for the branch of interest from IQ-TREE
@@ -1528,8 +1541,8 @@ SCFofInterest &lt;- stattable[stattable$ID == nodeToRetrieve,1:8]
 #writes to standard out which is redirected (by iqtree_array.sh) to an scf_contigID file
 write(paste(c(SCFofInterest,debug_opt),collapse=&quot;,&quot;),file=&quot;&quot;)</code></pre>
 </div>
-<div id="slurm-submission-script-iqtree_array_concat.sh" class="section level3">
-<h3>Slurm submission script: <code>iqtree_array_concat.sh</code></h3>
+<div id="slurm-submission-script-iqtree_array_concat.sh" class="section level4">
+<h4>Slurm submission script: <code>iqtree_array_concat.sh</code></h4>
 <ul>
 <li>runs AMAS to infer concatenated trees and iqtree to calculate
 likelihoods</li>
@@ -1613,6 +1626,8 @@ shell script.</li>
 <li>getSCF.R - script to extract sCF values for the branch of interest
 from IQ-TREE output, run by the previous shell script.</li>
 </ul>
+<hr />
+</div>
 </div>
 </div>
 </div>

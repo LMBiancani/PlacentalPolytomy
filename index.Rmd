@@ -28,8 +28,21 @@ GitHub Repository: [PlacentalPolytomy](https://github.com/LMBiancani/PlacentalPo
   border: 1px solid black;
 }
 ```
+***
+# Data Selection
 
-# 1. Filter By Taxa
+
+***
+# Orthology assessment using SISRS v2.0
+Scripts are located in the SISRS folder.
+Scripts adapted from [SchwartzLabURI/SISRS](https://github.com/SchwartzLabURI/SISRS)
+
+
+***
+# Annotation, Locus Properties, and Phylogenetic Signal
+Scripts adapted from [AlexKnyshov/TreeshrewProject](https://github.com/AlexKnyshov/TreeshrewProject).
+
+## 1. Filter By Taxa
 Scripts are located in the [filterByTaxa](https://github.com/LMBiancani/PlacentalPolytomy/tree/main/filterByTaxa) folder.
 
 * Removes excessively incomplete sequences (ex. sequence must be less than 33% Ns)
@@ -43,23 +56,23 @@ group1,taxonName2
 group2,taxonName3
 group2,taxonName4
 ```
-### Slurm submission script: `filter_SISRS_output.sh`
+#### Slurm submission script: `filter_SISRS_output.sh`
 * runs the following python script: `filter_SISRS_output.py`
 ```{bash, comment=NA, echo=FALSE, class.output="bg_slurm"}
 cat filterByTaxa/filter_SISRS_output.sh
 ```
-### Python script: `filter_SISRS_output.py`
+#### Python script: `filter_SISRS_output.py`
 *  run by previous shell script: `filter_SISRS_output.sh`
 ```{bash, comment=NA, echo=FALSE, class.output="bg_python"}
 cat filterByTaxa/filter_SISRS_output.py
 ```
-### Taxon-to-group table: `groups.csv`
+#### Taxon-to-group table: `groups.csv`
 * specify path to this input file in previous shell script: `filter_SISRS_output.sh`
 ```{bash, comment=NA, echo=FALSE, class.output="bg_text"}
 cat filterByTaxa/groups.csv
 ```
 
-# 2. Annotate Loci
+## 2. Annotate Loci
 Scripts are located in the [annotation](https://github.com/LMBiancani/PlacentalPolytomy/tree/main/annotation) folder.
 
 * Aligns SISRS loci of a particular taxon to a reference genome (ideally, of the same taxon).
@@ -69,29 +82,29 @@ Scripts are located in the [annotation](https://github.com/LMBiancani/PlacentalP
 * A custom python script then processess the intersected BED file to produce the final output,
 either counts of different annotation types, or length proportion of each annotations type. The following types of annotations are recorded: pseudogene, CDS, UTR, intron, lnc_RNA, other (any other type), unannotated (or intergenic).
 
-### Slurm submission script: `download_reference.sh`
+#### Slurm submission script: `download_reference.sh`
 * downloads reference genome (FASTA) and annotation (GFF) for Pan troglodytes (chimpanzee) [GCF_002880755.1](https://www.ncbi.nlm.nih.gov/data-hub/genome/GCF_002880755.1/)
 ```{bash, comment=NA, echo=FALSE, class.output="bg_slurm"}
 cat annotation/download_reference.sh
 ```
-### Slurm submission script: `annotation_job.sh`
+#### Slurm submission script: `annotation_job.sh`
 * runs the following python scripts: `annotation_getTaxContigs.py`, `annotation_blast_parser.py`, `annotation_bed2table.py`
 ```{bash, comment=NA, echo=FALSE, class.output="bg_slurm"}
 cat annotation/annotation_job.sh
 ```
-### Python script: `annotation_getTaxContigs.py`
+#### Python script: `annotation_getTaxContigs.py`
 * run by previous shell script: `annotation_job.sh`
 * extracts SISRS loci of a particular taxon into a single file for use with BLAST
 ```{bash, comment=NA, echo=FALSE, class.output="bg_python"}
 cat annotation/annotation_getTaxContigs.py
 ```
-### Python script: `annotation_blast_parser.py`
+#### Python script: `annotation_blast_parser.py`
 * BLAST to BED python script run by the previous shell script: `annotation_job.sh`
 * adjust parameters on lines 10-12 as needed
 ```{bash, comment=NA, echo=FALSE, class.output="bg_python"}
 cat annotation/annotation_blast_parser.py
 ```
-### Python script: `annotation_bed2table.py`
+#### Python script: `annotation_bed2table.py`
 * BED to table python script run by the previous shell script: `annotation_job.sh`
 * two options are provided (to be specified in shell script: `annotation_job.sh`)
 1. count the number of each feature per locus (`c`), for ex. 1 CDS, 2 introns, etc.
@@ -100,33 +113,33 @@ cat annotation/annotation_blast_parser.py
 cat annotation/annotation_bed2table.py
 ```
 
-# 3. Assess Locus Properties
-## 3.1. AMAS
+## 3. Assess Locus Properties
+### 3.1. AMAS
 Scripts are located in the [amas](https://github.com/LMBiancani/PlacentalPolytomy/tree/main/amas) folder.
 
 * Runs AMAS to assess locus features
 * **Note:** AMAS takes file names as command line arguments with a limit on how long the line can be. In order to analyze several hundred thousand files, AMAS is run in batches by the driver script (`run_amas.py`).
 
-### Download AMAS
+#### Download AMAS
 * note path to `AMAS.py` and add path to slurm script `run_amas.sh`
 ```
 git clone https://github.com/marekborowiec/AMAS/
 ```
-### Slurm submission script: `run_amas.sh`
+#### Slurm submission script: `run_amas.sh`
 * runs the following python script: `run_amas.py`
 ```{bash, comment=NA, echo=FALSE, class.output="bg_slurm"}
 cat amas/run_amas.sh
 ```
-### Python script: `run_amas.py`
+#### Python script: `run_amas.py`
 * python script run by shell script: `run_amas.sh`
 ```{bash, comment=NA, echo=FALSE, class.output="bg_python"}
 cat amas/run_amas.py
 ```
 
-# 4. Asses Phylogenetic Signal: IQ-TREE
+## 4. Asses Phylogenetic Signal: IQ-TREE
 Scripts are located in the [iqtree](https://github.com/LMBiancani/PlacentalPolytomy/tree/main/iqtree) folder.
 
-### Slurm submission script: `iqtree_prep.sh`
+#### Slurm submission script: `iqtree_prep.sh`
 * sets up the folders and lists of files to process
 * generates batch fasta files for aligned loci
 * generates the array details that need to be added to subsequent array submission scripts
@@ -135,7 +148,7 @@ Scripts are located in the [iqtree](https://github.com/LMBiancani/PlacentalPolyt
 cat iqtree/iqtree_prep.sh
 ```
 
-### Slurm submission script: `iqtree_array.sh`
+#### Slurm submission script: `iqtree_array.sh`
 * runs the following R scripts: `trimTrees.R`, `getSCF.R`
 * update paths to specified input files (described below)
 * generates CSV files (one for each batch fasta file created by prep script) in the `$array_work_dir`
@@ -147,7 +160,7 @@ cat iqtree/iqtree_prep.sh
 cat iqtree/iqtree_array.sh
 ```
 
-### Topology Constraints
+#### Topology Constraints
 Collapsed trees were created for each alternative hypothesis and used as constraint trees in IQtree
 
 Scaffold hypotheis trees:
@@ -175,7 +188,7 @@ XENARTHRA:
 (Mylodon_darwinii,Choloepus_didactylus,Myrmecophaga_tridactyla,Tamandua_tetradactyla,Dasypus_novemcinctus,Tolypeutes_matacus,Chaetophractus_vellerosus)
 ```
 
-### Alternative Hypothesis Trees: `Polytomy_Placental_Hypotheses.tree`
+#### Alternative Hypothesis Trees: `Polytomy_Placental_Hypotheses.tree`
 * text file containing alternative hypotheses trees (in Newick format)
 * specify path to this input file in previous shell script: `iqtree_array.sh`
 * Keep note of tree order in file:
@@ -186,44 +199,44 @@ XENARTHRA:
 cat iqtree/hypothesis_trees/Polytomy_Placental_Hypotheses.tree
 ```
 
-## Specify a list of focal taxa for each hypothesis tree:
+### Specify a list of focal taxa for each hypothesis tree:
 * For placental root topology question: determine which 2 out of 3 groups are sisters for each hypothesis and select one of these 2 sister groups.
 
-### Focal taxa for tree 1: `tips_Xenarthra.txt`
+#### Focal taxa for tree 1: `tips_Xenarthra.txt`
 * Tree 1 = Afrotheria Out, focal taxa = Xenarthra
 * specify path to this input file in previous shell script: `iqtree_array.sh`
 ```{bash, comment=NA, echo=FALSE, class.output="bg_text"}
 cat iqtree/hypothesis_trees/tips_Xenarthra.txt
 ```
 
-### Focal taxa for tree 2: `tips_Afrotheria.txt`
+#### Focal taxa for tree 2: `tips_Afrotheria.txt`
 * Tree 2 = Boreoeutheria Out, focal taxa = Afrotheria
 * specify path to this input file in previous shell script: `iqtree_array.sh`
 ```{bash, comment=NA, echo=FALSE, class.output="bg_text"}
 cat iqtree/hypothesis_trees/tips_Afrotheria.txt
 ```
 
-### Focal taxa for tree 3: `tips_Boreoeutheria.txt`
+#### Focal taxa for tree 3: `tips_Boreoeutheria.txt`
 * Tree 3 = Xenarthra Out, focal taxa = Boreoeutheria
 * specify path to this input file in previous shell script: `iqtree_array.sh`
 ```{bash, comment=NA, echo=FALSE, class.output="bg_text"}
 cat iqtree/hypothesis_trees/tips_Boreoeutheria.txt
 ```
 
-### Outgroup taxa list: `tips_Outgroup.txt`
+#### Outgroup taxa list: `tips_Outgroup.txt`
 * specify path to this input file in previous shell script: `iqtree_array.sh`
 ```{bash, comment=NA, echo=FALSE, class.output="bg_text"}
 cat iqtree/hypothesis_trees/tips_Outgroup.txt
 ```
 
-### R script: `trimTrees.R`
+#### R script: `trimTrees.R`
 * run by the following shell scripts: `iqtree_array.sh` `iqtree_array_concat.sh`
 * trim taxa off of the main tree(s) if not included in taxon composition of a particular alignment
 ```{bash, comment=NA, echo=FALSE, class.output="bg_Rcode"}
 cat iqtree/trimTrees.R
 ```
 
-### R script: `getSCF.R`
+#### R script: `getSCF.R`
 * run by previous shell script: `iqtree_array.sh`
 * extract sCF values for the branch of interest from IQ-TREE output
 ```{bash, comment=NA, echo=FALSE, class.output="bg_Rcode"}
@@ -231,7 +244,7 @@ cat iqtree/getSCF.R
 ```
 
 
-### Slurm submission script: `iqtree_array_concat.sh`
+#### Slurm submission script: `iqtree_array_concat.sh`
 * runs AMAS to infer concatenated trees and iqtree to calculate likelihoods
 * runs the following R scripts: `trimTrees.R`
 * Note: update paths to specified input files
@@ -247,3 +260,5 @@ cat iqtree/iqtree_array_concat.sh
 * iqtree_collect_phyloinference_LnL.sh - slurm script to submit: collect concatenation fit assessment data
 * trimTrees.R - script to trim taxa off of the main tree(s) depending on the taxon composition of a particular alignment, run by the previous shell script.
 * getSCF.R - script to extract sCF values for the branch of interest from IQ-TREE output, run by the previous shell script.
+
+***
