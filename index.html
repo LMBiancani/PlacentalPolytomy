@@ -298,23 +298,17 @@ overflow-y: auto;
 border: 1px solid #ddd;
 border-radius: 4px;
 }
-.tabset-dropdown > .nav-tabs > li.active:before {
-content: "";
+.tabset-dropdown > .nav-tabs > li.active:before, .tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+content: "\e259";
 font-family: 'Glyphicons Halflings';
 display: inline-block;
 padding: 10px;
 border-right: 1px solid #ddd;
 }
 .tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
-content: "";
-border: none;
-}
-.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
-content: "";
+content: "\e258";
 font-family: 'Glyphicons Halflings';
-display: inline-block;
-padding: 10px;
-border-right: 1px solid #ddd;
+border: none;
 }
 .tabset-dropdown > .nav-tabs > li.active {
 display: block;
@@ -364,6 +358,7 @@ display: none;
 <p>Scripts and analyses associated with the Placental Mammal Polytomy
 Project.<br />
 GitHub Repository: <a href="https://github.com/LMBiancani/PlacentalPolytomy">PlacentalPolytomy</a></p>
+<p>Scripts adapted from <a href="https://github.com/AlexKnyshov/TreeshrewProject">AlexKnyshov/TreeshrewProject</a>.</p>
 <style type="text/css">
 
 .bg_slurm {
@@ -387,21 +382,22 @@ border: 1px solid black;
 }
 </style>
 <hr />
-<div id="data-selection" class="section level1">
-<h1>Data Selection</h1>
+<div id="data-processing" class="section level1">
+<h1>Data Processing</h1>
+<!-- and Data Selection? -->
+<hr />
+<div id="orthology-assessment-using-sisrs-v2.0" class="section level2">
+<h2>00. Orthology assessment using SISRS v2.0</h2>
+<p>Scripts are located in the <a href="https://github.com/LMBiancani/PlacentalPolytomy/tree/main/00_SISRS">00_SISRS</a>
+folder. Scripts adapted from <a href="https://github.com/SchwartzLabURI/SISRS">SchwartzLabURI/SISRS</a></p>
 <hr />
 </div>
-<div id="orthology-assessment-using-sisrs-v2.0" class="section level1">
-<h1>Orthology assessment using SISRS v2.0</h1>
-<p>Scripts are located in the SISRS folder. Scripts adapted from <a href="https://github.com/SchwartzLabURI/SISRS">SchwartzLabURI/SISRS</a></p>
-<hr />
+<div id="phylogenetic-signal" class="section level2">
+<h2>Phylogenetic Signal</h2>
 </div>
-<div id="annotation-locus-properties-and-phylogenetic-signal" class="section level1">
-<h1>Annotation, Locus Properties, and Phylogenetic Signal</h1>
-<p>Scripts adapted from <a href="https://github.com/AlexKnyshov/TreeshrewProject">AlexKnyshov/TreeshrewProject</a>.</p>
 <div id="filter-by-taxa" class="section level2">
-<h2>1. Filter By Taxa</h2>
-<p>Scripts are located in the <a href="https://github.com/LMBiancani/PlacentalPolytomy/tree/main/filterByTaxa">filterByTaxa</a>
+<h2>01. Filter By Taxa</h2>
+<p>Scripts are located in the <a href="https://github.com/LMBiancani/PlacentalPolytomy/tree/main/01_FilterByTaxa">01_FilterByTaxa</a>
 folder.</p>
 <ul>
 <li>Removes excessively incomplete sequences (ex. sequence must be less
@@ -419,8 +415,9 @@ group1,taxonName1
 group1,taxonName2
 group2,taxonName3
 group2,taxonName4</code></pre>
-<div id="slurm-submission-script-filter_sisrs_output.sh" class="section level4">
-<h4>Slurm submission script: <code>filter_SISRS_output.sh</code></h4>
+<div id="slurm-submission-script-01.00_filter_sisrs_output.sh" class="section level4">
+<h4>Slurm submission script:
+<code>01.00_filter_SISRS_output.sh</code></h4>
 <ul>
 <li>runs the following python script:
 <code>filter_SISRS_output.py</code></li>
@@ -461,7 +458,7 @@ python $SCRIPTS/filter_SISRS_output.py $TXNGROUPS $LOCI $OUTPUT $SEQCOMPLETE $MI
 <h4>Python script: <code>filter_SISRS_output.py</code></h4>
 <ul>
 <li>run by previous shell script:
-<code>filter_SISRS_output.sh</code></li>
+<code>01.00_filter_SISRS_output.sh</code></li>
 </ul>
 <pre class="bg_python"><code>import sys
 import glob
@@ -518,7 +515,7 @@ print (&quot;done&quot;)</code></pre>
 <h4>Taxon-to-group table: <code>groups.csv</code></h4>
 <ul>
 <li>specify path to this input file in previous shell script:
-<code>filter_SISRS_output.sh</code></li>
+<code>01.00_filter_SISRS_output.sh</code></li>
 </ul>
 <pre class="bg_text"><code>Group,Taxa
 Afrotheria,Amblysomus_hottentotus_longiceps
