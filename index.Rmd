@@ -6,6 +6,8 @@ output: html_document
 Scripts and analyses associated with the Placental Mammal Polytomy Project. \
 GitHub Repository: [PlacentalPolytomy](https://github.com/LMBiancani/PlacentalPolytomy)
 
+Scripts adapted from [AlexKnyshov/TreeshrewProject](https://github.com/AlexKnyshov/TreeshrewProject).
+
 ```{css backgrounds, echo=FALSE}
 /* Define a background class for displaying content of slurm submission text files */
 .bg_slurm {
@@ -29,21 +31,20 @@ GitHub Repository: [PlacentalPolytomy](https://github.com/LMBiancani/PlacentalPo
 }
 ```
 ***
-# Data Selection
-
-
+# Data Processing
+<!-- and Data Selection? -->
 ***
-# Orthology assessment using SISRS v2.0
-Scripts are located in the SISRS folder.
+## 00. Orthology assessment using SISRS v2.0
+Scripts are located in the [00_SISRS](https://github.com/LMBiancani/PlacentalPolytomy/tree/main/00_SISRS) folder.
 Scripts adapted from [SchwartzLabURI/SISRS](https://github.com/SchwartzLabURI/SISRS)
 
 
 ***
-# Annotation, Locus Properties, and Phylogenetic Signal
-Scripts adapted from [AlexKnyshov/TreeshrewProject](https://github.com/AlexKnyshov/TreeshrewProject).
+## Phylogenetic Signal
 
-## 1. Filter By Taxa
-Scripts are located in the [filterByTaxa](https://github.com/LMBiancani/PlacentalPolytomy/tree/main/filterByTaxa) folder.
+
+## 01. Filter By Taxa
+Scripts are located in the [01_FilterByTaxa](https://github.com/LMBiancani/PlacentalPolytomy/tree/main/01_FilterByTaxa) folder.
 
 * Removes excessively incomplete sequences (ex. sequence must be less than 33% Ns)
 * Removes aligned loci with too few taxa represented (ex. locus must include sequences for at least 25 taxa)
@@ -56,20 +57,20 @@ group1,taxonName2
 group2,taxonName3
 group2,taxonName4
 ```
-#### Slurm submission script: `filter_SISRS_output.sh`
+#### Slurm submission script: `01.00_filter_SISRS_output.sh`
 * runs the following python script: `filter_SISRS_output.py`
 ```{bash, comment=NA, echo=FALSE, class.output="bg_slurm"}
-cat filterByTaxa/filter_SISRS_output.sh
+cat 01_FilterByTaxa/01.00_filter_SISRS_output.sh
 ```
 #### Python script: `filter_SISRS_output.py`
-*  run by previous shell script: `filter_SISRS_output.sh`
+*  run by previous shell script: `01.00_filter_SISRS_output.sh`
 ```{bash, comment=NA, echo=FALSE, class.output="bg_python"}
-cat filterByTaxa/filter_SISRS_output.py
+cat 01_FilterByTaxa/filter_SISRS_output.py
 ```
 #### Taxon-to-group table: `groups.csv`
-* specify path to this input file in previous shell script: `filter_SISRS_output.sh`
+* specify path to this input file in previous shell script: `01.00_filter_SISRS_output.sh`
 ```{bash, comment=NA, echo=FALSE, class.output="bg_text"}
-cat filterByTaxa/groups.csv
+cat 01_FilterByTaxa/groups.csv
 ```
 
 ## 2. Annotate Loci
