@@ -27,5 +27,11 @@ module purge
 #for URI's Andromeda cluster
 module load Biopython/1.78-foss-2020b 
 
+echo "Total number of unfiltered SISRS loci:"
+ls -1U $LOCI | wc -l
+
 mkdir -p $OUTPUT
 python $SCRIPTS/filter_SISRS_output.py $TXNGROUPS $LOCI $OUTPUT $SEQCOMPLETE $MINTAXA $MINGROUPS
+
+echo "Number of filtered SISRS loci:"
+ls -1U $OUTPUT | wc -l
