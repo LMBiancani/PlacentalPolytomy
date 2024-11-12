@@ -9,12 +9,15 @@
 ## UPDATE PATHS:
 # path to SISRS loci (aligned contigs) folder:
 LOCI=/data/schwartzlab/Biancani/PLACENTAL/SISRS_out/SISRS_Run/aligned_contigs
+# path to project directory:
+PROJECT=/data/schwartzlab/Biancani/PlacentalPolytomy
+
 # path to folder containing filterByTaxa scripts:
-SCRIPTS=/data/schwartzlab/Biancani/PlacentalPolytomy/01_FilterByTaxa
+SCRIPTS=$PROJECT/01_FilterByTaxa
 # path to taxon group table (csv):
-TXNGROUPS=/data/schwartzlab/Biancani/PlacentalPolytomy/01_FilterByTaxa/groups.csv
+TXNGROUPS=$SCRIPTS/groups.csv
 # path to output folder for filtered loci (will be created by script if necessary):
-OUTPUT=/data/schwartzlab/Biancani/PlacentalPolytomy/output/01_SISRS_loci_filtered
+OUTPUT=$PROJECT/output/01_SISRS_loci_filtered
 
 ## UPDATE parameters:
 SEQCOMPLETE=0.33 # taxon sequence completeness, (e.g. 0.33 is 33% non N)
