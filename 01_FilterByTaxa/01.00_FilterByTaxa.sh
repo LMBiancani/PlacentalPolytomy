@@ -10,16 +10,16 @@
 # path to SISRS loci (aligned contigs) folder:
 LOCI=/data/schwartzlab/Biancani/PLACENTAL/SISRS_out/SISRS_Run/aligned_contigs
 # path to folder containing filterByTaxa scripts:
-SCRIPTS=/data/schwartzlab/Biancani/PlacentalPolytomy/annotation
+SCRIPTS=/data/schwartzlab/Biancani/PlacentalPolytomy/01_FilterByTaxa
 # path to taxon group table (csv):
-TXNGROUPS=/data/schwartzlab/Biancani/PlacentalPolytomy/filterByTaxa/groups.csv
+TXNGROUPS=/data/schwartzlab/Biancani/PlacentalPolytomy/01_FilterByTaxa/groups.csv
 # path to output folder for filtered loci (will be created by script if necessary):
-OUTPUT=/data/schwartzlab/Biancani/PlacentalPolytomy/output/SISRS_out_filtered
+OUTPUT=/data/schwartzlab/Biancani/PlacentalPolytomy/output/01_SISRS_loci_filtered
 
 ## UPDATE parameters:
 SEQCOMPLETE=0.33 # taxon sequence completeness, (e.g. 0.33 is 33% non N)
-MINTAXA=18 # minimum number taxa to be present, e.g. 25
-MINGROUPS=4 # minimum number of groups to be present, e.g. 4
+MINTAXA=18 # minimum number taxa to be present, e.g. 18
+MINGROUPS=4 # minimum number of taxon groups to be present, e.g. 4
 
 cd $SLURM_SUBMIT_DIR
 
