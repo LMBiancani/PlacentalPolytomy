@@ -35,7 +35,6 @@ Scripts adapted from [AlexKnyshov/TreeshrewProject](https://github.com/AlexKnysh
 # 00. Orthology assessment using SISRS v2.0
 The [SISRS v2.0](https://github.com/SchwartzLabURI/SISRS/releases/tag/v2.0) pipeline is used to obtain putatively orthologous loci from raw genomic sequencing reads.\
 Required SISRS steps: 1, 2, 3, 4, 5, 6, 6b, 6c, 6d, 7, 7a, and 7b.
-<!-- Required SISRS steps: 1, 2, 3, 4, 5, 6, 6b, 6c, 6d, 7, runRAxML, 7a, and 7b. -->
 
 * In SISRS step 3 the approximate genome size was specified as 3,500,000,000 bases. (```GENOME=3500000000```)
 * In SISRS step 6d the number of reads required to call a site (```MINREAD=3```) and the proportion of sites required to be the same to call a site (```THRESHOLD=1```) were left as defaults.
@@ -52,7 +51,7 @@ After running SISRS, note path to the SISRS loci (aligned contigs) output direct
 Scripts are located in the [01_FilterByTaxa](https://github.com/LMBiancani/PlacentalPolytomy/tree/main/01_FilterByTaxa) folder.
 
 * Removes excessively incomplete sequences (sequence must be less than 33% Ns)
-* Removes aligned loci with too few taxa represented (locus must include sequences for at least 18 taxa)
+* Removes aligned loci with incomplete clade sampling (locus must include sequences for at least 18 of the 37 taxa, approx. 50%)
 * Removes aligned loci with incomplete clade sampling (locus must include a sequence from all 4 taxon groups included in the `groups.csv` file)
 * The required taxon-to-group correspondence table, `groups.csv`, is a csv file with the following format: \
 ```Group,Taxa```\
