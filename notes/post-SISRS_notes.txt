@@ -1,0 +1,108 @@
+2024.11.11 
+
+SISRS input (Raw Reads):
+/data/schwartzlab/Biancani/data/mammals
+
+SISRS scripts:
+/data/schwartzlab/Biancani/PLACENTAL/SISRS
+
+SISRS Output Directory:
+/data/schwartzlab/Biancani/PLACENTAL/SISRS_out
+
+SISRS loci (aligned contigs) folder:
+LOCI=/data/schwartzlab/Biancani/PLACENTAL/SISRS_out/SISRS_Run/aligned_contigs
+_______________________________
+
+Restarting post-SISRS analysis:
+Github: https://github.com/LMBiancani/PlacentalPolytomy.git
+
+cd /data/schwartzlab/Biancani/
+git clone https://github.com/LMBiancani/PlacentalPolytomy.git
+
+cd /data/schwartzlab/Biancani/PlacentalPolytomy/01_FilterByTaxa/
+nano 01.00_FilterByTaxa.sh
+_______________________________
+#!/bin/sh
+#SBATCH --job-name="filter"
+#SBATCH --time=30:00:00  # walltime limit (HH:MM:SS)
+#SBATCH --nodes=1   # number of nodes
+#SBATCH --ntasks-per-node=1   # processor core(s) per node - just use 1 
+#SBATCH --mail-user="biancani@uri.edu" #CHANGE to your email
+#SBATCH --mail-type=ALL
+
+## UPDATE PATHS:
+# path to SISRS loci (aligned contigs) folder:
+LOCI=/data/schwartzlab/Biancani/PLACENTAL/SISRS_out/SISRS_Run/aligned_contigs
+# path to folder containing filterByTaxa scripts:
+SCRIPTS=/data/schwartzlab/Biancani/PlacentalPolytomy/01_FilterByTaxa
+# path to taxon group table (csv):
+TXNGROUPS=/data/schwartzlab/Biancani/PlacentalPolytomy/01_FilterByTaxa/groups.csv
+# path to output folder for filtered loci (will be created by script if necessary):
+OUTPUT=/data/schwartzlab/Biancani/PlacentalPolytomy/output/01_SISRS_loci_filtered
+
+## UPDATE parameters:
+SEQCOMPLETE=0.33 # taxon sequence completeness, (e.g. 0.33 is 33% non N)
+MINTAXA=18 # minimum number taxa to be present, e.g. 18
+MINGROUPS=4 # minimum number of taxon groups to be present, e.g. 4
+
+echo "Total number of unfiltered SISRS loci:"
+ls -1U $LOCI | wc -l
+
+cd $SLURM_SUBMIT_DIR
+
+module purge
+#for URI's Andromeda cluster
+module load Biopython/1.78-foss-2020b 
+
+mkdir -p $OUTPUT
+python $SCRIPTS/filter_SISRS_output.py $TXNGROUPS $LOCI $OUTPUT $SEQCOMPLETE $MINTAXA $MINGROUPS
+
+echo "Number of filtered SISRS loci:"
+ls -1U $OUTPUT | wc -l
+_______________________________
+sbatch -q schwartzlab 01.00_FilterByTaxa.sh
+Submitted batch job 348540
+Job ID: 348540
+Cluster: andromeda
+User/Group: biancani/schwartzlab
+State: COMPLETED (exit code 0)
+Cores: 1
+CPU Utilized: 00:14:45
+CPU Efficiency: 3.86% of 06:21:38 core-walltime
+Job Wall-clock time: 06:21:38
+Memory Utilized: 610.78 MB
+Memory Efficiency: 29.82% of 2.00 GB
+
+2024.11.12
+
+Run job with just count loci lines:
+###
+echo "Total number of unfiltered SISRS loci:"
+ls -1U $LOCI | wc -l
+echo "Number of filtered SISRS loci:"
+ls -1U $OUTPUT | wc -l
+###
+Submitted batch job 348557
+Job ID: 348557
+Cluster: andromeda
+User/Group: biancani/schwartzlab
+State: COMPLETED (exit code 0)
+Cores: 1
+CPU Utilized: 00:00:14
+CPU Efficiency: 1.38% of 00:16:53 core-walltime
+Job Wall-clock time: 00:16:53
+Memory Utilized: 524.00 KB
+Memory Efficiency: 0.02% of 2.00 GB
+
+Total number of unfiltered SISRS loci:
+3,510,445
+Number of filtered SISRS loci:
+109,799
+
+2025.03.24 - rerunning prior analysis steps
+
+
+
+
+
+

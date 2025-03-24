@@ -1,0 +1,935 @@
+Note open/close interactive session:
+interactive
+exit
+
+2022.11.08
+Rerunning mammal data after taxon removal.
+
+working directory:
+/home/biancani/BIANCANI/PLACENTAL/
+
+slurm submission scripts:
+cd /home/biancani/BIANCANI/PLACENTAL/SISRS/scripts/slurm_submissions
+
+Zack slum submission scripts:
+cd /data/schwartzlab/zbergeron/SISRS/scripts/slurm_submissions
+
+SISRS Step 1: Creates specified output file and file organization within it. Produces the TaxonList.txt from names of folders in data folder.
+__________________________________________________
+1_submit.slurm
+__________________________________________________
+
+#!/bin/bash
+#SBATCH --job-name="1_step"
+#SBATCH --time=1:00:00  # walltime limit (HH:MM:SS)
+#SBATCH --nodes=1   # number of nodes
+#SBATCH --ntasks-per-node=1   # processor core(s) per node
+#SBATCH --mail-user="biancani@uri.edu" #CHANGE TO user email address
+#SBATCH --mail-type=END,FAIL
+
+cd $SLURM_SUBMIT_DIR
+
+module purge
+
+#CHANGE THESE IF NOT ON A URI SYSTEM
+
+module load Python/3.7.4-GCCcore-8.3.0
+module load SciPy-bundle/2019.10-foss-2019b-Python-3.7.4
+module load Bowtie2/2.3.5.1-GCC-8.3.0
+module load FastQC/0.11.8-Java-1.8
+module load BBMap/38.81-foss-2019b-Java-1.8
+module load Biopython/1.75-foss-2019b-Python-3.7.4
+module load Ray/2.3.1-foss-2019b
+module load SAMtools/1.10-GCC-8.3.0
+module load BEDTools/2.29.2-GCC-8.3.0
+
+D=/data/schwartzlab/Biancani/data/mammals #CHANGE THIS to the path for the folder containing folders of fastq.gz
+DIR=/data/schwartzlab/Biancani/PLACENTAL/SISRS_out #CHANGE THIS to the path for the output of your analysis (SISRS will create this directory)
+
+python3 sisrs_01_folder_setup.py -d $D -dir $DIR
+
+__________________________________________________
+Submitted batch job 192103
+ob ID: 192103
+Cluster: andromeda
+User/Group: biancani/schwartzlab
+State: COMPLETED (exit code 0)
+Cores: 1
+CPU Utilized: 00:00:01
+CPU Efficiency: 2.78% of 00:00:36 core-walltime
+Job Wall-clock time: 00:00:36
+Memory Utilized: 5.08 MB
+Memory Efficiency: 0.00% of 128.00 GB
+
+SISRS Step 2
+__________________________________________________
+2_submit.slurm
+__________________________________________________
+#!/bin/bash
+#SBATCH --job-name="2_step"
+#SBATCH --time=100:00:00  # walltime limit (HH:MM:SS)
+#SBATCH --nodes=1   # number of nodes
+#SBATCH --ntasks-per-node=36   # CHANGE THIS to the number of processors on your node
+#SBATCH --mail-user="biancani@uri.edu" #CHANGE THIS to your email address
+#SBATCH --mail-type=END,FAIL
+#SBATCH --exclusive
+
+cd $SLURM_SUBMIT_DIR
+
+module purge
+
+#CHANGE THIS IF NOT ON A URI SYSTEM
+module load Python/3.7.4-GCCcore-8.3.0
+module load SciPy-bundle/2019.10-foss-2019b-Python-3.7.4
+module load Bowtie2/2.3.5.1-GCC-8.3.0
+module load FastQC/0.11.8-Java-1.8
+module load BBMap/38.81-foss-2019b-Java-1.8
+module load Biopython/1.75-foss-2019b-Python-3.7.4
+module load Ray/2.3.1-foss-2019b
+module load SAMtools/1.10-GCC-8.3.0
+module load BEDTools/2.29.2-GCC-8.3.0
+
+P=36 #CHANGE THIS to the number of processors
+
+D=/data/schwartzlab/Biancani/data/mammals #CHANGE THIS to the directory with input data
+DIR=/data/schwartzlab/Biancani/PLACENTAL/SISRS_out #CHANGE THIS to the analysis (output) directory
+
+#Note - the only taxa used will be in TaxonList.txt so edit that for fewer taxa
+
+python3 sisrs_02_read_trimmer.py -p $P -d $D -dir $DIR
+
+__________________________________________________
+sbatch slurm_submissions/2_submit.slurm
+Submitted batch job 192111
+Job ID: 192111
+Cluster: andromeda
+User/Group: biancani/schwartzlab
+State: COMPLETED (exit code 0)
+Nodes: 1
+Cores per node: 36
+CPU Utilized: 6-04:54:34
+CPU Efficiency: 36.15% of 17-03:54:36 core-walltime
+Job Wall-clock time: 11:26:31
+Memory Utilized: 5.93 GB
+Memory Efficiency: 4.63% of 128.00 GB
+
+2022.11.09
+
+SISRS Step 3
+__________________________________________________
+3_submit.slurm
+__________________________________________________
+#!/bin/bash
+#SBATCH --job-name="3_step"
+#SBATCH --time=100:00:00  # walltime limit (HH:MM:SS)
+#SBATCH --nodes=1   # number of nodes
+#SBATCH --ntasks-per-node=36   # CHANGE THIS to the number of processors
+#SBATCH --mail-user="biancani@uri.edu" #CHANGE THIS to your email address
+#SBATCH --mail-type=ALL
+#SBATCH --exclusive
+
+cd $SLURM_SUBMIT_DIR
+
+module purge
+
+#CHANGE THIS if not on a URI system
+module load Python/3.7.4-GCCcore-8.3.0
+module load SciPy-bundle/2019.10-foss-2019b-Python-3.7.4
+module load Bowtie2/2.3.5.1-GCC-8.3.0
+module load FastQC/0.11.8-Java-1.8
+module load BBMap/38.81-foss-2019b-Java-1.8
+module load Biopython/1.75-foss-2019b-Python-3.7.4
+module load Ray/2.3.1-foss-2019b
+module load SAMtools/1.10-GCC-8.3.0
+module load BEDTools/2.29.2-GCC-8.3.0
+
+GENOME=3500000000 #CHANGE THIS to the approximate size of your genome
+DIR=/data/schwartzlab/Biancani/PLACENTAL/SISRS_out #CHANGE this to your analysis folder
+
+python3 sisrs_03_read_subsetter.py -gs $GENOME -d $DIR
+
+__________________________________________________
+# sbatch dependencies: https://bioinformaticsworkbook.org/Appendix/HPC/SLURM/submitting-dependency-jobs-using-slurm.html#gsc.tab=0
+# sbatch with submission dependency of successful completion of step 2.
+sbatch --dependency=afterok:192111 slurm_submissions/3_submit.slurm
+Submitted batch job 192178
+Job ID: 192178
+Cluster: andromeda
+User/Group: biancani/schwartzlab
+State: COMPLETED (exit code 0)
+Nodes: 1
+Cores per node: 36
+CPU Utilized: 1-02:49:50
+CPU Efficiency: 13.75% of 8-03:04:48 core-walltime
+Job Wall-clock time: 05:25:08
+Memory Utilized: 1.96 GB
+Memory Efficiency: 1.53% of 128.00 GB
+
+2022.11.10
+
+SISRS Step 4
+# Previous runs have run out of memory - update submit job to specify memory
+__________________________________________________
+4_submit.slurm
+__________________________________________________
+
+#!/bin/bash
+#SBATCH --job-name="4_step"
+#SBATCH --time=100:00:00  # walltime limit (HH:MM:SS)
+#SBATCH --nodes=1   # number of nodes
+#SBATCH --ntasks-per-node=36   # CHANGE THIS to the number of processor core(s) per node
+#SBATCH --mail-user="biancani@uri.edu" #CHANGE THIS to your email address
+#SBATCH --mail-type=ALL
+#SBATCH --exclusive
+#SBATCH --mem=500GB
+cd $SLURM_SUBMIT_DIR
+
+module purge
+
+#CHANGE THIS if not on a URI system
+module load Python/3.7.4-GCCcore-8.3.0
+module load SciPy-bundle/2019.10-foss-2019b-Python-3.7.4
+module load Bowtie2/2.3.5.1-GCC-8.3.0
+module load FastQC/0.11.8-Java-1.8
+module load BBMap/38.81-foss-2019b-Java-1.8
+module load Biopython/1.75-foss-2019b-Python-3.7.4
+module load Ray/2.3.1-foss-2019b
+module load SAMtools/1.10-GCC-8.3.0
+module load BEDTools/2.29.2-GCC-8.3.0
+
+
+P=36 #CHANGE THIS to the number of processors
+DIR=/data/schwartzlab/Biancani/PLACENTAL/SISRS_out #CHANGE this to your analysis folder
+python3 sisrs_04_ray_composite.py -p $P -d $DIR
+
+__________________________________________________
+sbatch -q schwartzlab slurm_submissions/4_submit.slurm
+Submitted batch job 192770
+Job ID: 192770
+Cluster: andromeda
+User/Group: biancani/schwartzlab
+State: COMPLETED (exit code 0)
+Nodes: 1
+Cores per node: 36
+CPU Utilized: 26-11:03:56
+CPU Efficiency: 99.84% of 26-12:06:36 core-walltime
+Job Wall-clock time: 17:40:11
+Memory Utilized: 372.59 GB
+Memory Efficiency: 74.52% of 500.00 GB
+
+
+SISRS Step 5
+
+__________________________________________________
+5_submit.slurm
+__________________________________________________
+#!/bin/bash
+#SBATCH --job-name="5_step"
+#SBATCH --time=10:00:00  # walltime limit (HH:MM:SS)
+#SBATCH --nodes=1   # number of nodes
+#SBATCH --ntasks-per-node=36   # CHANGE THIS to processor core(s) per node
+#SBATCH --mail-user="biancani@uri.edu" #CHANGE THIS to your user email address
+#SBATCH --mail-type=ALL
+#SBATCH --exclusive
+
+cd $SLURM_SUBMIT_DIR
+
+module purge
+
+#CHANGE THIS IF NOT on a URI system
+module load Python/3.7.4-GCCcore-8.3.0
+module load SciPy-bundle/2019.10-foss-2019b-Python-3.7.4
+module load Bowtie2/2.3.5.1-GCC-8.3.0
+module load FastQC/0.11.8-Java-1.8
+module load BBMap/38.81-foss-2019b-Java-1.8
+module load Biopython/1.75-foss-2019b-Python-3.7.4
+module load Ray/2.3.1-foss-2019b
+module load SAMtools/1.10-GCC-8.3.0
+module load BEDTools/2.29.2-GCC-8.3.0
+
+
+P=36 #CHANGE THIS to the number of processors
+DIR=/data/schwartzlab/Biancani/PLACENTAL/SISRS_out #CHANGE this to your analysis folder
+python3 sisrs_05_setup_sisrs.py -p $P -d $DIR
+
+__________________________________________________
+sbatch -q schwartzlab --dependency=afterok:192770 slurm_submissions/5_submit.slurm
+Submitted batch job 192771
+Job ID: 192771
+Cluster: andromeda
+User/Group: biancani/schwartzlab
+State: COMPLETED (exit code 0)
+Nodes: 1
+Cores per node: 36
+CPU Utilized: 01:04:09
+CPU Efficiency: 2.19% of 2-00:46:12 core-walltime
+Job Wall-clock time: 01:21:17
+Memory Utilized: 6.59 GB
+Memory Efficiency: 5.15% of 128.00 GB
+
+2022.11.11
+
+SISRS Step 6
+
+__________________________________________________
+6_submit_array.slurm
+__________________________________________________
+#!/bin/bash
+#SBATCH --job-name="6_step"
+#SBATCH --time=120:00:00  # walltime limit (HH:MM:SS)
+#SBATCH --nodes=1   # number of nodes
+#SBATCH --ntasks-per-node=36   # CHANGE THIS to the number of processors
+#SBATCH --mail-user="biancani@uri.edu" #CHANGE THIS to your user email address
+#SBATCH --mail-type=ALL
+#SBATCH --exclusive
+#SBATCH --array=[0-36]%6 # CHANGE this second bracketed number to the total jobs you need(taxa-1); CHANGE after % to number of  simultaneous jobs
+#SBATCH -o %x_%A_%a.out
+#SBATCH -e %x_%A_%a.out
+#SBATCH --open-mode=append
+cd $SLURM_SUBMIT_DIR
+
+#for advice on array jobs see https://github.com/nreid/using_array_jobs
+
+module purge
+
+#CHANGE IF NOT on a URI system
+module load Python/3.7.4-GCCcore-8.3.0
+module load SciPy-bundle/2019.10-foss-2019b-Python-3.7.4
+module load Bowtie2/2.3.5.1-GCC-8.3.0
+module load FastQC/0.11.8-Java-1.8
+module load BBMap/38.81-foss-2019b-Java-1.8
+module load Biopython/1.75-foss-2019b-Python-3.7.4
+module load Ray/2.3.1-foss-2019b
+module load SAMtools/1.10-GCC-8.3.0
+module load BEDTools/2.29.2-GCC-8.3.0
+
+# create an array variable containing the folders names
+PROCESSORS=36 #CHANGE to number of processors
+OUTFOLDER=/data/schwartzlab/Biancani/PLACENTAL/SISRS_out #CHANGE to analysis directory
+
+SPP=($(cat ${OUTFOLDER}/TaxonList.txt))
+echo ${SPP[@]}
+echo ${SPP[$SLURM_ARRAY_TASK_ID]}
+
+python3 sisrs_06_align.py -d $OUTFOLDER -p $PROCESSORS -f ${SPP[$SLURM_ARRAY_TASK_ID]}
+__________________________________________________
+sbatch -q schwartzlab slurm_submissions/6_submit_array.slurm
+Submitted batch job 193188
+Job ID: 193188
+Array Job ID: 193188_36
+Cluster: andromeda
+User/Group: biancani/schwartzlab
+State: COMPLETED (exit code 0)
+Nodes: 1
+Cores per node: 36
+CPU Utilized: 1-22:21:19
+CPU Efficiency: 97.39% of 1-23:36:00 core-walltime
+Job Wall-clock time: 01:19:20
+Memory Utilized: 20.99 GB
+Memory Efficiency: 16.40% of 128.00 GB
+
+11/12/2022
+
+SISRS Step 6b
+__________________________________________________
+6b_submit_array.slurm
+__________________________________________________
+
+#!/bin/bash
+#SBATCH --job-name="6b_step"
+#SBATCH --time=12:00:00  # walltime limit (HH:MM:SS)
+#SBATCH --nodes=1   # number of nodes
+#SBATCH --ntasks-per-node=1   # processor core(s) per node - only use 1 for this!
+#SBATCH --mail-user="biancani@uri.edu" #CHANGE to user email address
+#SBATCH --mail-type=ALL
+#SBATCH --array=[0-36]%9 #bracketed numbers indicate number of total jobs you need(taxa-1) - 0 based, inclusive; following number = simultaneous
+#SBATCH -o %x_%A_%a.out
+#SBATCH -e %x_%A_%a.out
+#SBATCH --open-mode=append
+cd $SLURM_SUBMIT_DIR
+
+#for advice on array jobs see https://github.com/nreid/using_array_jobs
+
+module purge
+
+#CHANGE IF not on a URI system
+module load Python/3.7.4-GCCcore-8.3.0
+module load SciPy-bundle/2019.10-foss-2019b-Python-3.7.4
+module load Bowtie2/2.3.5.1-GCC-8.3.0
+module load FastQC/0.11.8-Java-1.8
+module load BBMap/38.81-foss-2019b-Java-1.8
+module load Biopython/1.75-foss-2019b-Python-3.7.4
+module load Ray/2.3.1-foss-2019b
+module load SAMtools/1.10-GCC-8.3.0
+module load BEDTools/2.29.2-GCC-8.3.0
+
+OUTFOLDER=/data/schwartzlab/Biancani/PLACENTAL/SISRS_out #CHANGE to analysis directory
+
+SPP=($(cat ${OUTFOLDER}/TaxonList.txt))
+echo ${SPP[@]}
+echo ${SPP[$SLURM_ARRAY_TASK_ID]}
+
+python3 sisrs_06b_pileup.py -d $OUTFOLDER -s ${SPP[$SLURM_ARRAY_TASK_ID]}
+__________________________________________________
+sbatch -q schwartzlab slurm_submissions/6b_submit_array.slurm
+Submitted batch job 193329
+Job ID: 193329
+Array Job ID: 193329_36
+Cluster: andromeda
+User/Group: biancani/schwartzlab
+State: COMPLETED (exit code 0)
+Cores: 1
+CPU Utilized: 00:49:26
+CPU Efficiency: 94.16% of 00:52:30 core-walltime
+Job Wall-clock time: 00:52:30
+Memory Utilized: 40.96 GB
+Memory Efficiency: 32.00% of 128.00 GB
+
+SISRS step 6c
+__________________________________________________
+6c_submit_array.slurm
+__________________________________________________
+#!/bin/bash
+#SBATCH --job-name="6c_step"
+#SBATCH --time=120:00:00  # walltime limit (HH:MM:SS)
+#SBATCH --nodes=1   # number of nodes
+#SBATCH --ntasks-per-node=36   # CHANGE processor core(s) per node
+#SBATCH --mail-user="biancani@uri.edu" #CHANGE user email address
+#SBATCH --mail-type=ALL
+#SBATCH --exclusive
+#SBATCH --array=[0-36]%9 #CHANGE like 6b - bracketed numbers indicate number of total jobs you need(taxa-1) - 0 based, inclusive; following number = simultaneous
+#SBATCH -o %x_%A_%a.out
+#SBATCH -e %x_%A_%a.out
+#SBATCH --open-mode=append
+
+
+cd $SLURM_SUBMIT_DIR
+
+#for advice on array jobs see https://github.com/nreid/using_array_jobs
+
+module purge
+
+#CHANGE if not on a URI system
+module load Python/3.7.4-GCCcore-8.3.0
+module load SciPy-bundle/2019.10-foss-2019b-Python-3.7.4
+module load Bowtie2/2.3.5.1-GCC-8.3.0
+module load FastQC/0.11.8-Java-1.8
+module load BBMap/38.81-foss-2019b-Java-1.8
+module load Biopython/1.75-foss-2019b-Python-3.7.4
+module load Ray/2.3.1-foss-2019b
+module load SAMtools/1.10-GCC-8.3.0
+module load BEDTools/2.29.2-GCC-8.3.0
+
+PROCESSORS=36 #CHANGE to the number of processors
+OUTFOLDER=/data/schwartzlab/Biancani/PLACENTAL/SISRS_out #CHANGE to analysis directory
+
+SPP=($(cat ${OUTFOLDER}/TaxonList.txt))
+echo ${SPP[@]}
+echo ${SPP[$SLURM_ARRAY_TASK_ID]}
+
+python3 sisrs_06c_align2.py -d $OUTFOLDER -p $PROCESSORS -f ${SPP[$SLURM_ARRAY_TASK_ID]}
+
+__________________________________________________
+sbatch -q schwartzlab --dependency=afterok:193329 slurm_submissions/6c_submit_array.slurm
+Submitted batch job 193344
+Job ID: 193344
+Array Job ID: 193344_36
+Cluster: andromeda
+User/Group: biancani/schwartzlab
+State: COMPLETED (exit code 0)
+Nodes: 1
+Cores per node: 36
+CPU Utilized: 2-00:36:13
+CPU Efficiency: 73.39% of 2-18:13:48 core-walltime
+Job Wall-clock time: 01:50:23
+Memory Utilized: 25.04 GB
+Memory Efficiency: 19.56% of 128.00 GB
+
+2022.11.13
+
+SISRS step 6d
+__________________________________________________
+6d_submit_array.slurm
+__________________________________________________
+#!/bin/bash
+#SBATCH --job-name="6d_step"
+#SBATCH --time=120:00:00  # walltime limit (HH:MM:SS)
+#SBATCH --nodes=1   # number of nodes
+#SBATCH --ntasks-per-node=1   # processor core(s) per node - only use 1 for this!
+#SBATCH --mail-user="biancani@uri.edu" #user email address
+#SBATCH --mail-type=ALL
+#SBATCH --array=[0-36]%37 #CHANGE as 6c - note each job only takes 1 core so you can run them all simultaneously
+#SBATCH -o %x_%A_%a.out
+#SBATCH -e %x_%A_%a.out
+#SBATCH --open-mode=append
+
+cd $SLURM_SUBMIT_DIR
+
+#for advice on array jobs see https://github.com/nreid/using_array_jobs
+
+module purge
+
+#CHANGE if not on a URI system
+module load Python/3.7.4-GCCcore-8.3.0
+module load SciPy-bundle/2019.10-foss-2019b-Python-3.7.4
+module load Bowtie2/2.3.5.1-GCC-8.3.0
+module load FastQC/0.11.8-Java-1.8
+module load BBMap/38.81-foss-2019b-Java-1.8
+module load Biopython/1.75-foss-2019b-Python-3.7.4
+module load Ray/2.3.1-foss-2019b
+module load SAMtools/1.10-GCC-8.3.0
+module load BEDTools/2.29.2-GCC-8.3.0
+
+OUTFOLDER=/data/schwartzlab/Biancani/PLACENTAL/SISRS_out #CHANGE to analysis directory
+MINREAD=3 #CHANGE to set the threshold for the number of reads to call a site
+THRESHOLD=1 #CHANGE to set the threshold [<=1] for the proportion of sites required to be the same to call a site
+
+SPP=($(cat ${OUTFOLDER}/TaxonList.txt))
+echo ${SPP[@]}
+echo ${SPP[$SLURM_ARRAY_TASK_ID]}
+
+python3 sisrs_06d_pileup2.py -d $OUTFOLDER -m $MINREAD -t $THRESHOLD -s ${SPP[$SLURM_ARRAY_TASK_ID]}
+
+__________________________________________________
+sbatch -q schwartzlab --dependency=afterok:193344 slurm_submissions/6d_submit_array.slurm
+Submitted batch job 193379
+andromeda Slurm Array Summary Job_id=193379_* (193379) Name=6d_step Failed, Mixed, ExitCode [0-137]
+Job ID: 193379
+Array Job ID: 193379_36
+Cluster: andromeda
+User/Group: biancani/schwartzlab
+State: COMPLETED (exit code 0)
+Cores: 1
+CPU Utilized: 01:11:10
+CPU Efficiency: 97.60% of 01:12:55 core-walltime
+Job Wall-clock time: 01:12:55
+Memory Utilized: 15.86 GB
+Memory Efficiency: 12.39% of 128.00 GB
+ERROR message from output file:
+__________________________________________________
+Ceratotherium_simum
+[mpileup] 1 samples in 1 input files
+/var/spool/slurmd/job193509/slurm_script: line 38: 42408 Killed                  python3 sisrs_06d_pileup2.py -d $OUTFOLDER -m $MINREAD -t $THRESHOLD -s ${SPP[$SLURM_ARRAY_TASK_ID]}
+__________________________________________________
+
+2022.11.14
+
+SISRS step 6d run on Ceratotherium_simum only
+
+__________________________________________________
+6d_Ceratotherium_simum_submit.slurm
+__________________________________________________
+#!/bin/bash
+#SBATCH --job-name="6d_step"
+#SBATCH --time=120:00:00  # walltime limit (HH:MM:SS)
+#SBATCH --nodes=1   # number of nodes
+#SBATCH --ntasks-per-node=1   # processor core(s) per node - only use 1 for this!
+#SBATCH --mail-user="biancani@uri.edu" #user email address
+#SBATCH --mail-type=ALL
+#SBATCH -o %x_%A_%a.out
+#SBATCH -e %x_%A_%a.out
+#SBATCH --open-mode=append
+cd $SLURM_SUBMIT_DIR
+
+module purge
+
+#CHANGE if not on a URI system
+module load Python/3.7.4-GCCcore-8.3.0
+module load SciPy-bundle/2019.10-foss-2019b-Python-3.7.4
+module load Bowtie2/2.3.5.1-GCC-8.3.0
+module load FastQC/0.11.8-Java-1.8
+module load BBMap/38.81-foss-2019b-Java-1.8
+module load Biopython/1.75-foss-2019b-Python-3.7.4
+module load Ray/2.3.1-foss-2019b
+module load SAMtools/1.10-GCC-8.3.0
+module load BEDTools/2.29.2-GCC-8.3.0
+
+
+OUTFOLDER=/data/schwartzlab/Biancani/PLACENTAL/SISRS_out #CHANGE to analysis directory
+MINREAD=3 #CHANGE to set the threshold for the number of reads to call a site
+THRESHOLD=1 #CHANGE to set the threshold [<=1] for the proportion of sites required to be the same to call a site
+
+SPP="Ceratotherium_simum"
+echo ${SPP[@]}
+echo ${SPP[$SLURM_ARRAY_TASK_ID]}
+
+python3 sisrs_06d_pileup2.py -d $OUTFOLDER -m $MINREAD -t $THRESHOLD -s $SPP
+__________________________________________________
+sbatch -q schwartzlab slurm_submissions/6d_Ceratotherium_simum_submit.slurm
+Submitted batch job 193593
+ERROR:
+usage: sisrs_06d_pileup2.py [-h] [-d [DIRECTORY]] [-m [MINREAD]]
+                            [-s [SPECIES]] [-t [THRESHOLD]]
+sisrs_06d_pileup2.py: error: unrecognized arguments: 3 1
+FIXED:
+Fixed sisrs_06d_pileup2.py argument flags in 6d_submit.slurm due to unrecognized arguments error:
+minread: -mr changed to -m
+threshold: -thr changed to -t
+PULL REQUEST SENT to UPDATE SISRS Repo
+https://github.com/SchwartzLabURI/SISRS/pull/38
+
+Submitted batch job 193594
+Job ID: 193594
+Cluster: andromeda
+User/Group: biancani/schwartzlab
+State: COMPLETED (exit code 0)
+Cores: 1
+CPU Utilized: 01:10:48
+CPU Efficiency: 96.39% of 01:13:27 core-walltime
+Job Wall-clock time: 01:13:27
+Memory Utilized: 16.49 GB
+Memory Efficiency: 12.88% of 128.00 GB
+
+
+SISRS Step 7
+
+__________________________________________________
+7_submit.slurm
+__________________________________________________
+#!/bin/bash
+#SBATCH --job-name="7_step"
+#SBATCH --time=45:00:00  # walltime limit (HH:MM:SS)
+#SBATCH --nodes=1   # number of nodes
+#SBATCH --ntasks-per-node=1   # processor core(s) per node - just use 1 - it doesn't parallel
+#SBATCH --mail-user="biancani@uri.edu" #CHANGE to your user email address
+#SBATCH --mail-type=ALL
+#SBATCH --mem=500GB
+cd $SLURM_SUBMIT_DIR
+
+module purge
+
+#CHANGE if not on a URI system
+module load Python/3.7.4-GCCcore-8.3.0
+module load SciPy-bundle/2019.10-foss-2019b-Python-3.7.4
+module load Bowtie2/2.3.5.1-GCC-8.3.0
+module load FastQC/0.11.8-Java-1.8
+module load BBMap/38.81-foss-2019b-Java-1.8
+module load Biopython/1.75-foss-2019b-Python-3.7.4
+module load Ray/2.3.1-foss-2019b
+module load SAMtools/1.10-GCC-8.3.0
+module load BEDTools/2.29.2-GCC-8.3.0
+
+
+#CHANGE following example
+#python3 sisrs_07_output_sisrs.py -m <list of number of species allowed to be missing> -d <main output folder>
+OUTFOLDER=/data/schwartzlab/Biancani/PLACENTAL/SISRS_out #CHANGE to analysis directory
+
+python3 sisrs_07_output_sisrs.py -m 10 15 20 25 -d $OUTFOLDER
+
+__________________________________________________
+
+sbatch -q schwartzlab --dependency=afterok:193594 slurm_submissions/7_submit.slurm
+Submitted batch job 193598
+Job ID: 193598
+Cluster: andromeda
+User/Group: biancani/schwartzlab
+State: FAILED (exit code 137)
+Cores: 1
+CPU Utilized: 02:02:15
+CPU Efficiency: 97.88% of 02:04:54 core-walltime
+Job Wall-clock time: 02:04:54
+Memory Utilized: 122.61 GB
+Memory Efficiency: 95.79% of 128.00 GB
+ERROR:
+/var/spool/slurmd/job193598/slurm_script: line 28: 50472 Killed                  python3 sisrs_07_output_sisrs.py -m 10 15 20 25 -d $OUTFOLDER
+
+sbatch -q schwartzlab slurm_submissions/7_submit.slurm
+Submitted batch job 193721
+Job ID: 193721
+Cluster: andromeda
+User/Group: biancani/schwartzlab
+State: FAILED (exit code 137)
+Cores: 1
+CPU Utilized: 02:02:01
+CPU Efficiency: 96.33% of 02:06:40 core-walltime
+Job Wall-clock time: 02:06:40
+Memory Utilized: 122.66 GB
+Memory Efficiency: 95.83% of 128.00 GB
+
+2022.11.18
+
+Not sure why this is failing. Possibly running out of memory - try specifying:
+#SBATCH --mem=500GB
+
+sbatch -q schwartzlab slurm_submissions/7_submit.slurm
+Submitted batch job 194502
+Job ID: 194502
+Cluster: andromeda
+User/Group: biancani/schwartzlab
+State: COMPLETED (exit code 0)
+Cores: 1
+CPU Utilized: 1-02:05:06
+CPU Efficiency: 99.57% of 1-02:11:51 core-walltime
+Job Wall-clock time: 1-02:11:51
+Memory Utilized: 371.05 GB
+Memory Efficiency: 74.21% of 500.00 GB
+
+
+SISRS Step 7a
+
+__________________________________________________
+7a_submit.slurm
+__________________________________________________
+#!/bin/sh
+#SBATCH --job-name="7_a"
+#SBATCH --time=45:00:00  # walltime limit (HH:MM:SS)
+#SBATCH --nodes=1   # number of nodes
+#SBATCH --ntasks-per-node=36   # processor core(s) per node
+#SBATCH --mail-user="biancani@uri.edu" #user email address
+#SBATCH --mail-type=ALL
+#SBATCH --exclusive
+cd $SLURM_SUBMIT_DIR
+
+module purge
+
+module load SAMtools/1.12-GCC-10.2.0
+module load BCFtools/1.12-GCC-10.2.0
+module load BBMap/38.87-foss-2020b
+module load BEDTools/2.30.0-GCC-10.2.0
+module load Biopython/1.78-foss-2020b
+
+#Optionally specify coverage threshold: '-c', '--cov' (default set to 3) and heterozygosity threshold: '-z', '--hz'(default set to 0.01)
+
+T=4 #CHANGE THIS to the threshold number
+
+OUTFOLDER=/data/schwartzlab/Biancani/PLACENTAL/SISRS_out #CHANGE to analysis directory
+
+python3 sisrs_07_a_contigs_processing.py -t $T -d $OUTFOLDER
+
+__________________________________________________
+sbatch -q schwartzlab --dependency=afterok:194502 slurm_submissions/7a_submit.slurm
+Submitted batch job 194503
+Job ID: 194503
+Cluster: andromeda
+User/Group: biancani/schwartzlab
+State: COMPLETED (exit code 0)
+Nodes: 1
+Cores per node: 36
+CPU Utilized: 17:23:02
+CPU Efficiency: 1.44% of 50-05:00:00 core-walltime
+Job Wall-clock time: 1-09:28:20
+Memory Utilized: 13.93 GB
+Memory Efficiency: 10.88% of 128.00 GB
+
+
+SISRS Step 7b
+
+__________________________________________________
+7b_submit.slurm
+__________________________________________________
+#!/bin/sh
+#SBATCH --job-name="7_b"
+#SBATCH --time=180:00:00  # walltime limit (HH:MM:SS)
+#SBATCH --nodes=1   # number of nodes
+#SBATCH --ntasks-per-node=36   # CHANGE processor core(s) per node
+#SBATCH --mail-user="biancani@uri.edu" #CHANGE user email address
+#SBATCH --mail-type=ALL
+#SBATCH --exclusive
+
+cd $SLURM_SUBMIT_DIR
+
+module purge
+
+module load MAFFT/7.475-gompi-2020b-with-extensions
+
+#python sisrs_07_b_contigs_alignment.py -p <number of processors to use> -d <path to the output directory>
+
+P=36 #CHANGE THIS to the number of processors
+
+OUTFOLDER=/data/schwartzlab/Biancani/PLACENTAL/SISRS_out #CHANGE to analysis directory
+
+python3 sisrs_07_b_contigs_alignment.py -p $P -d $OUTFOLDER
+
+__________________________________________________
+sbatch -q schwartzlab --dependency=afterok:194503 slurm_submissions/7b_submit.slurm
+Submitted batch job 194504
+Job ID: 194504
+Cluster: andromeda
+User/Group: biancani/schwartzlab
+State: TIMEOUT (exit code 0)
+Nodes: 1
+Cores per node: 36
+CPU Utilized: 5-22:46:24
+CPU Efficiency: 2.20% of 270-00:04:12 core-walltime
+Job Wall-clock time: 7-12:00:07
+Memory Utilized: 1.79 GB
+Memory Efficiency: 1.40% of 128.00 GB
+
+Continue after timeout:
+sbatch -q schwartzlab slurm_submissions/7b_submit.slurm
+Submitted batch job 198076
+Job ID: 198076
+Cluster: andromeda
+User/Group: biancani/schwartzlab
+State: COMPLETED (exit code 0)
+Nodes: 1
+Cores per node: 36
+CPU Utilized: 5-23:19:23
+CPU Efficiency: 2.46% of 242-10:59:24 core-walltime
+Job Wall-clock time: 6-17:38:19
+Memory Utilized: 1.53 GB
+Memory Efficiency: 1.20% of 128.00 GB
+
+
+2022.12.05
+
+RAxML
+alignment_pi_m10_nogap.phylip-relaxed
+__________________________________________________
+runRAxML.sh
+__________________________________________________
+#!/bin/bash
+#SBATCH --job-name="RAxML"
+#SBATCH --time=96:00:00  # walltime limit (HH:MM:SS)
+#SBATCH --nodes=1   # number of nodes
+#SBATCH --ntasks-per-node=36   # CHANGE processor core(s) per node
+#SBATCH --mail-user="biancani@uri.edu" #CHANGE to your email
+#SBATCH --mail-type=ALL
+
+cd $SLURM_SUBMIT_DIR
+
+module purge
+
+module load RAxML/8.2.12-intel-2019b-hybrid-avx2
+
+ALIGNMENT=/data/schwartzlab/Biancani/PLACENTAL/SISRS_out/SISRS_Run/alignment_pi_m10_nogap.phylip-relaxed  #Put the path to your alignment file here
+OUTPUT=tree_pi_m10_nogap  #Give your output file a name relevant to the alignment
+P=36 #Change to the number of processors (20 or 36)
+
+raxmlHPC -s $ALIGNMENT -n $OUTPUT -m ASC_GTRGAMMA --asc-corr="lewis" -T $P -f a -p $RANDOM -N 100 -x $RANDOM
+__________________________________________________
+sbatch -q schwartzlab slurm_submissions/runRAxML.sh
+Submitted batch job 199819
+Job ID: 199819
+Cluster: andromeda
+User/Group: biancani/schwartzlab
+State: COMPLETED (exit code 0)
+Nodes: 1
+Cores per node: 36
+CPU Utilized: 9-06:50:25
+CPU Efficiency: 99.87% of 9-07:07:48 core-walltime
+Job Wall-clock time: 06:11:53
+Memory Utilized: 3.30 GB
+Memory Efficiency: 2.58% of 128.00 GB
+
+RAxML
+alignment_pi_m15_nogap.phylip-relaxed
+__________________________________________________
+runRAxML_m15.sh
+__________________________________________________
+#!/bin/bash
+#SBATCH --job-name="RAxML"
+#SBATCH --time=96:00:00  # walltime limit (HH:MM:SS)
+#SBATCH --nodes=1   # number of nodes
+#SBATCH --ntasks-per-node=36   # CHANGE processor core(s) per node
+#SBATCH --mail-user="biancani@uri.edu" #CHANGE to your email
+#SBATCH --mail-type=ALL
+
+cd $SLURM_SUBMIT_DIR
+
+module purge
+
+module load RAxML/8.2.12-intel-2019b-hybrid-avx2
+
+ALIGNMENT=/data/schwartzlab/Biancani/PLACENTAL/SISRS_out/SISRS_Run/alignment_pi_m15_nogap.phylip-relaxed  #Put the path to your alignment file here
+OUTPUT=tree_pi_m15_nogap  #Give your output file a name relevant to the alignment
+P=36 #Change to the number of processors (20 or 36)
+
+raxmlHPC -s $ALIGNMENT -n $OUTPUT -m ASC_GTRGAMMA --asc-corr="lewis" -T $P -f a -p $RANDOM -N 100 -x $RANDOM
+__________________________________________________
+sbatch -q schwartzlab slurm_submissions/runRAxML_m15.sh
+Submitted batch job 199821
+Job ID: 199821
+Cluster: andromeda
+User/Group: biancani/schwartzlab
+State: COMPLETED (exit code 0)
+Nodes: 1
+Cores per node: 36
+CPU Utilized: 26-19:36:03
+CPU Efficiency: 99.94% of 26-19:58:48 core-walltime
+Job Wall-clock time: 17:53:18
+Memory Utilized: 7.58 GB
+Memory Efficiency: 5.93% of 128.00 GB
+
+RAxML
+alignment_pi_m20_nogap.phylip-relaxed
+__________________________________________________
+runRAxML_m20.sh
+__________________________________________________
+#!/bin/bash
+#SBATCH --job-name="RAxML"
+#SBATCH --time=96:00:00  # walltime limit (HH:MM:SS)
+#SBATCH --nodes=1   # number of nodes
+#SBATCH --ntasks-per-node=36   # CHANGE processor core(s) per node
+#SBATCH --mail-user="biancani@uri.edu" #CHANGE to your email
+#SBATCH --mail-type=ALL
+
+cd $SLURM_SUBMIT_DIR
+
+module purge
+
+module load RAxML/8.2.12-intel-2019b-hybrid-avx2
+
+ALIGNMENT=/data/schwartzlab/Biancani/PLACENTAL/SISRS_out/SISRS_Run/alignment_pi_m20_nogap.phylip-relaxed  #Put the path to your alignment file here
+OUTPUT=tree_pi_m20_nogap  #Give your output file a name relevant to the alignment
+P=36 #Change to the number of processors (20 or 36)
+
+raxmlHPC -s $ALIGNMENT -n $OUTPUT -m ASC_GTRGAMMA --asc-corr="lewis" -T $P -f a -p $RANDOM -N 100 -x $RANDOM
+__________________________________________________
+sbatch -q schwartzlab slurm_submissions/runRAxML_m20.sh
+Submitted batch job 199822
+Job ID: 199822
+Cluster: andromeda
+User/Group: biancani/schwartzlab
+State: COMPLETED (exit code 0)
+Nodes: 1
+Cores per node: 36
+CPU Utilized: 50-06:31:23
+CPU Efficiency: 99.97% of 50-06:54:00 core-walltime
+Job Wall-clock time: 1-09:31:30
+Memory Utilized: 15.37 GB
+Memory Efficiency: 12.01% of 128.00 GB
+
+RAxML
+alignment_pi_m25_nogap.phylip-relaxed
+__________________________________________________
+runRAxML_m25.sh
+__________________________________________________
+#!/bin/bash
+#SBATCH --job-name="RAxML"
+#SBATCH --time=96:00:00  # walltime limit (HH:MM:SS)
+#SBATCH --nodes=1   # number of nodes
+#SBATCH --ntasks-per-node=36   # CHANGE processor core(s) per node
+#SBATCH --mail-user="biancani@uri.edu" #CHANGE to your email
+#SBATCH --mail-type=ALL
+
+cd $SLURM_SUBMIT_DIR
+
+module purge
+
+module load RAxML/8.2.12-intel-2019b-hybrid-avx2
+
+ALIGNMENT=/data/schwartzlab/Biancani/PLACENTAL/SISRS_out/SISRS_Run/alignment_pi_m25_nogap.phylip-relaxed  #Put the path to your alignment file here
+OUTPUT=tree_pi_m25_nogap  #Give your output file a name relevant to the alignment
+P=36 #Change to the number of processors (20 or 36)
+
+raxmlHPC -s $ALIGNMENT -n $OUTPUT -m ASC_GTRGAMMA --asc-corr="lewis" -T $P -f a -p $RANDOM -N 100 -x $RANDOM
+__________________________________________________
+sbatch -q schwartzlab slurm_submissions/runRAxML_m25.sh
+Submitted batch job 199823
+Job ID: 199823
+Cluster: andromeda
+User/Group: biancani/schwartzlab
+State: COMPLETED (exit code 0)
+Nodes: 1
+Cores per node: 36
+CPU Utilized: 77-01:41:55
+CPU Efficiency: 99.95% of 77-02:36:00 core-walltime
+Job Wall-clock time: 2-03:24:20
+Memory Utilized: 28.82 GB
+Memory Efficiency: 22.51% of 128.00 GB
+
+Completed:
+7a: sisrs_07_a_contigs_processing
+7b: sisrs_07_b_contigs_alignment
+7a & 7b replace Alex's Align Loci step.

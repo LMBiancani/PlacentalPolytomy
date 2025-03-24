@@ -1,0 +1,1844 @@
+2022.12.13
+- Filter by Taxa:
+What it does:
+Removes alignments with incomplete clade sampling (save IQTree time)
+Defaults same as Tree Shrew project
+Remove excessive missing data - must have 33% or more
+Remove very short sequences -
+Number of taxa present - 50%?, update absolute number
+Number of groups present - change to 4 for mammals project (3 groups & outgroup)
+Scripts: https://github.com/AlexKnyshov/TreeshrewProject/tree/main/filterByTaxa (obtained on 12/13/2022)
+
+filter_SISRS_output.sh - slurm script to run
+filter_SISRS_output.py - script run by the previous shell script Loci are first filtered from incomplete sequences (for the treeshrew project each passing sequence must have over 33% non N), then are filtered by the number of taxa retained (for the treeshrew project the locus passes if 25 taxa are remaining) and then by the number of groups present (for the treeshrew project all 6 groups must be present). The taxa to group correspondence table is expected to be a csv file and look like this ######including heading?#######
+Group,Taxa
+group1,taxonName1
+group1,taxonName2
+group2,taxonName3
+group2,taxonName4
+
+From within
+/home/biancani/BIANCANI/PLACENTAL/SISRS/scripts/
+get python script:
+curl -L https://raw.githubusercontent.com/AlexKnyshov/TreeshrewProject/main/filterByTaxa/filter_SISRS_output.py > filter_SISRS_output.py
+
+nano /data/schwartzlab/Biancani/PLACENTAL/groups.csv
+__________________________________________________
+groups.csv
+__________________________________________________
+Group,Taxa
+Afrotheria,Amblysomus_hottentotus_longiceps
+Afrotheria,Chrysochloris_asiatica
+Afrotheria,Echinops_telfairi
+Afrotheria,Elephantulus_edwardii
+Afrotheria,Hydrodamalis_gigas
+Afrotheria,Loxodonta_africana
+Afrotheria,Microgale_talazaci
+Afrotheria,Orycteropus_afer
+Afrotheria,Procavia_capensis
+Afrotheria,Trichechus_manatus_latirostris
+Boreoeutheria,Ceratotherium_simum
+Boreoeutheria,Condylura_cristata
+Boreoeutheria,Galeopterus_variegatus
+Boreoeutheria,Hippopotamus_amphibius
+Boreoeutheria,Manis_javanica
+Boreoeutheria,Odobenus_rosmarus_divergens
+Boreoeutheria,Pan_troglodytes
+Boreoeutheria,Pteropus_vampyrus
+Boreoeutheria,Rattus_norvegicus
+Boreoeutheria,Tupaia_tana
+Metatheria,Didelphis_virginiana
+Metatheria,Gymnobelideus_leadbeateri
+Metatheria,Phalanger_gymnotis
+Metatheria,Phascolarctos_cinereus
+Metatheria,Potorous_gilbertii
+Metatheria,Pseudochirops_corinnae
+Metatheria,Sarcophilus_harrisii
+Metatheria,Thylacinus_cynocephalus
+Metatheria,Vombatus_ursinus
+Metatheria,Wallabia_bicolor
+Xenarthra,Chaetophractus_vellerosus
+Xenarthra,Choloepus_didactylus
+Xenarthra,Dasypus_novemcinctus
+Xenarthra,Mylodon_darwinii
+Xenarthra,Myrmecophaga_tridactyla
+Xenarthra,Tamandua_tetradactyla
+Xenarthra,Tolypeutes_matacus
+__________________________________________________
+
+nano /home/biancani/BIANCANI/PLACENTAL/SISRS/scripts/slurm_submissions/filter_SISRS_output.sh
+__________________________________________________
+filter_SISRS_output.sh
+__________________________________________________
+#!/bin/sh
+
+#SBATCH --job-name="filter"
+#SBATCH --time=30:00:00  # walltime limit (HH:MM:SS)
+#SBATCH --nodes=1   # number of nodes
+#SBATCH --ntasks-per-node=36   # processor core(s) per node - just use 1 - it do$
+#SBATCH --mail-user="biancani@uri.edu" #CHANGE to your email
+#SBATCH --mail-type=ALL
+### adjust/add sbatch flags as needed
+
+cd $SLURM_SUBMIT_DIR
+
+module purge
+#for URI's Andromeda cluster:
+module load Biopython/1.78-foss-2020b
+
+OUTPUT=/data/schwartzlab/Biancani/PLACENTAL/SISRS_out_filtered # change to name and path for output folder (will be created by script!)
+TXNGROUPS=/data/schwartzlab/Biancani/PLACENTAL/groups.csv # path to taxon group table (csv)
+LOCI=/data/schwartzlab/Biancani/PLACENTAL/SISRS_out/SISRS_Run/aligned_contigs # path to SISRS loci (aligned contigs)folder
+SEQCOMPLETE=0.33 # taxon sequence completeness, (e.g. 0.33 is 33% non N)
+MINTAXA=18 # minimum number taxa to be present, e.g. 25
+MINGROUPS=4 # minimum number of groups to be present, e.g. 6
+
+# adjust the command as needed, check the correct path to the python script
+mkdir $OUTPUT
+python filter_SISRS_output.py $TXNGROUPS $LOCI $OUTPUT $SEQCOMPLETE $MINTAXA $MINGROUPS
+__________________________________________________
+sbatch -q schwartzlab slurm_submissions/filter_SISRS_output.sh
+Submitted batch job 203233
+Job ID: 203233
+Cluster: andromeda
+User/Group: biancani/schwartzlab
+State: FAILED (exit code 1)
+Nodes: 1
+Cores per node: 36
+CPU Utilized: 00:08:22
+CPU Efficiency: 0.04% of 16-06:32:24 core-walltime
+Job Wall-clock time: 10:50:54
+Memory Utilized: 610.46 MB
+Memory Efficiency: 0.47% of 128.00 GB
+
+Traceback (most recent call last):
+  File "filter_SISRS_output.py", line 32, in <module>
+    maxlen = max(seqlens)
+ValueError: max() arg is an empty sequence
+
+- Compared input files to Zachs and updated groups.csv to include a header line (Groups,Taxa)
+- removed output file: was large! possibly much of the filtering script HAD run?
+mv /data/schwartzlab/Biancani/PLACENTAL/SISRS_out_filtered /home/biancani/BIANCANI/Trash/
+
+- rerun job:
+__________________________________________________
+sbatch -q schwartzlab slurm_submissions/filter_SISRS_output.sh
+Submitted batch job 203257
+Job ID: 203257
+Cluster: andromeda
+User/Group: biancani/schwartzlab
+State: FAILED (exit code 1)
+Nodes: 1
+Cores per node: 36
+CPU Utilized: 00:07:14
+CPU Efficiency: 0.05% of 9-23:46:48 core-walltime
+Job Wall-clock time: 06:39:38
+Memory Utilized: 610.68 MB
+Memory Efficiency: 0.47% of 128.00 GB
+
+Traceback (most recent call last):
+  File "filter_SISRS_output.py", line 32, in <module>
+    maxlen = max(seqlens)
+ValueError: max() arg is an empty sequence
+
+2022.12.16
+
+from Rachel/Zack:
+It kills it if the seqlens = 0, so if you look at the python script in that same folder where you found my output files, you’ll see that we added some lines right above that line 32 code. They read:
+if len(seqlens) == 0:
+  continue
+
+- updated python script with code above
+- removed output folder: /data/schwartzlab/Biancani/PLACENTAL/SISRS_out_filtered/
+sbatch -q schwartzlab delete_files.sh
+Submitted batch job 203613
+Job ID: 203613
+Cluster: andromeda
+User/Group: biancani/schwartzlab
+State: COMPLETED (exit code 0)
+Cores: 1
+CPU Utilized: 00:00:03
+CPU Efficiency: 0.18% of 00:28:21 core-walltime
+Job Wall-clock time: 00:28:21
+Memory Utilized: 8.89 MB
+Memory Efficiency: 0.01% of 128.00 GB
+
+- rerun job:
+__________________________________________________
+sbatch -q schwartzlab slurm_submissions/filter_SISRS_output.sh
+Submitted batch job 203634
+Job ID: 203634
+Cluster: andromeda
+User/Group: biancani/schwartzlab
+State: COMPLETED (exit code 0)
+Nodes: 1
+Cores per node: 36
+CPU Utilized: 00:23:05
+CPU Efficiency: 0.10% of 16-06:45:36 core-walltime
+Job Wall-clock time: 10:51:16
+Memory Utilized: 607.15 MB
+Memory Efficiency: 0.46% of 128.00 GB
+
+2022.12.14
+
+- Look at RAxML trees
+Copy to home machine:
+scp -r biancani@ssh4.hac.uri.edu:/home/biancani/BIANCANI/PLACENTAL/SISRS/scripts/RAxML.outfiles .
+
+2022.12.18
+
+- Annotate Loci
+# download annotation scripts:
+svn checkout https://github.com/AlexKnyshov/TreeshrewProject/trunk/annotation
+
+A    annotation/annotation_bed2table.py
+A    annotation/annotation_blast_parser.py
+A    annotation/annotation_getTaxContigs.py
+A    annotation/annotation_job.sh
+Checked out revision 37.
+
+# update .sh file:
+/data/schwartzlab/Biancani/PLACENTAL/annotation_scripts/annotation_job.sh
+__________________________________________________
+#!/bin/bash
+#SBATCH --job-name="annotate"
+#SBATCH --time=100:00:00  # walltime limit (HH:MM:SS)
+#SBATCH --nodes=1   # number of nodes
+#SBATCH --ntasks-per-node=36   # processor core(s) per node
+#SBATCH --mail-user="biancani@uri.edu" ### CHANGE THIS to your user email address
+
+cd $SLURM_SUBMIT_DIR
+date
+### location of annotation scripts:
+scripts_dir="/data/schwartzlab/Biancani/PLACENTAL/annotation_scripts/"
+### path to aligned loci(contigs):
+sisrsContigs="/data/schwartzlab/Biancani/PLACENTAL/SISRS_out_filtered/"
+### taxon name closest to reference
+taxonName="Pan_troglodytes"
+### location of Homo_sapiens reference:
+assemblyDB="/home/aknyshov/alex_data/tree_shew_analysis/NCBI_genomes/Homo_sapiens/GCF_000001405.39_GRCh38.p13_genomic.mod.fna"
+assemblyGFF="/home/aknyshov/alex_data/tree_shew_analysis/NCBI_genomes/Homo_sapiens/GCF_000001405.39_GRCh38.p13_genomic.gff"
+outputMode="l"
+
+#Andromeda (URI's cluster) specific
+module purge
+module load Biopython/1.78-foss-2020b
+#
+python ${scripts_dir}/annotation_getTaxContigs.py ${taxonName} ${sisrsContigs}
+
+#Andromeda (URI's cluster) specific
+module purge
+module load BLAST+
+#
+
+### commented out because Blast DB already created for this reference
+#makeblastdb -in ${assemblyDB} -dbtype nucl
+
+blastn -query ${taxonName}.fasta -db ${assemblyDB} -outfmt 6 -num_threads 20 > blast_results.blast
+
+python3 ${scripts_dir}/annotation_blast_parser.py blast_results.blast > full_table.bed
+
+sort -k1,1 -k2,2n full_table.bed > full_table_sorted.bed
+
+#Andromeda (URI's cluster) specific
+module purge
+module load BEDTools/2.27.1-foss-2018b
+#
+
+bedtools intersect -a full_table_sorted.bed -b ${assemblyGFF} -wa -wb > full_table_annotated.bed
+
+python3 ${scripts_dir}/annotation_bed2table.py full_table_annotated.bed ${outputMode} > annotations.csv
+
+date
+__________________________________________________
+submit job from /data/schwartzlab/Biancani/PLACENTAL/annotation
+sbatch -q schwartzlab ../annotation_scripts/annotation_job.sh
+Submitted batch job 203672
+Completed, ~50min, exit code 0
+
+- Assess locus properties - AMAS
+# download AMAS program:
+git clone https://github.com/marekborowiec/AMAS/
+# path to AMAS.py:
+/data/schwartzlab/Biancani/AMAS/amas/AMAS.py
+# download amas scripts:
+svn checkout https://github.com/AlexKnyshov/TreeshrewProject/trunk/amas
+
+# update .sh file:
+/data/schwartzlab/Biancani/PLACENTAL/amas/run_amas.py
+__________________________________________________
+#!/bin/bash
+#SBATCH --job-name="amas"
+#SBATCH --time=24:00:00  # walltime limit (HH:MM:SS)
+#SBATCH --nodes=1   # number of nodes
+#SBATCH --ntasks-per-node=36   # processor core(s) per node
+#SBATCH --mail-user="biancani@uri.edu"
+#SBATCH --mail-type=ALL
+
+module purge
+module load Python/3.7.4-GCCcore-8.3.0
+path_to_run_amas_py="/data/schwartzlab/Biancani/PLACENTAL/amas/run_amas.py"
+path_to_amas="/data/schwartzlab/Biancani/AMAS/amas/AMAS.py"
+folder_with_loci="/data/schwartzlab/Biancani/PLACENTAL/SISRS_out_filtered/"
+cores_to_use=36
+
+cd $SLURM_SUBMIT_DIR
+date
+
+mkdir amas_assessments
+
+python ${path_to_run_amas_py} ${folder_with_loci} ${cores_to_use} ${path_to_amas}
+
+mv amas_total_results.txt amas_assessments/
+rm amas_output_temp.txt
+
+date
+__________________________________________________
+submit job from /data/schwartzlab/Biancani/PLACENTAL
+sbatch -q schwartzlab amas/run_amas.sh
+Submitted batch job 203676
+Job ID: 203676
+Cluster: andromeda
+User/Group: biancani/schwartzlab
+State: COMPLETED (exit code 0)
+Nodes: 1
+Cores per node: 36
+CPU Utilized: 00:18:59
+CPU Efficiency: 5.48% of 05:46:12 core-walltime
+Job Wall-clock time: 00:09:37
+Memory Utilized: 761.84 MB
+Memory Efficiency: 0.58% of 128.00 GB
+
+Assess locus properties - Saturation:
+# download saturation scripts:
+svn checkout https://github.com/AlexKnyshov/TreeshrewProject/trunk/saturation
+
+# update .sh file:
+/data/schwartzlab/Biancani/PLACENTAL/saturation/saturation.sh
+__________________________________________________
+#!/bin/bash
+#SBATCH --job-name="satur"
+#SBATCH --time=24:00:00  # walltime limit (HH:MM:SS)
+#SBATCH --nodes=1   # number of nodes
+#SBATCH --ntasks-per-node=1   # processor core(s) per node
+#SBATCH -c 1
+#SBATCH --mem-per-cpu=6G
+#SBATCH --mail-user="biancani@uri.edu"
+#SBATCH --mail-type=ALL
+
+aligned_loci_path="/data/schwartzlab/Biancani/PLACENTAL/SISRS_out_filtered/"
+script_path="/data/schwartzlab/Biancani/PLACENTAL/saturation/saturation.R"
+cd $SLURM_SUBMIT_DIR
+module load R/4.0.3-foss-2020b
+date
+mkdir saturation_assessments
+Rscript ${script_path} ${aligned_loci_path}
+mv saturation_output.csv saturation_assessments/
+date
+__________________________________________________
+submit job from /data/schwartzlab/Biancani/PLACENTAL
+sbatch -q schwartzlab saturation/saturation.sh
+Submitted batch job 203679
+Job ID: 203679
+Cluster: andromeda
+User/Group: biancani/schwartzlab
+State: COMPLETED (exit code 0)
+Cores: 1
+CPU Utilized: 00:01:45
+CPU Efficiency: 31.82% of 00:05:30 core-walltime
+Job Wall-clock time: 00:05:30
+Memory Utilized: 142.43 MB
+Memory Efficiency: 2.32% of 6.00 GB
+
+2022.12.20
+
+Assess Locus Properties - Phylomad
+# Download PhyloMad:
+git clone https://github.com/duchene/phylomad
+path to commandLineFile.Rscript:
+/data/schwartzlab/Biancani/phylomad/codeFolder/commandLineFile.Rscript
+
+# download Phylomad scripts:
+svn checkout https://github.com/AlexKnyshov/TreeshrewProject/trunk/phylomad
+
+phylomad_prep.sh - slurm script to set up the phylomad array; adjust the paths, possibly also the number of simultaneously run jobs on line 18 after the % sign.
+/data/schwartzlab/Biancani/PLACENTAL/phylomad/phylomad_prep.sh
+__________________________________________________
+#!/bin/bash
+#SBATCH --job-name="PMprep"
+#SBATCH --time=1:00:00  # walltime limit (HH:MM:SS)
+#SBATCH --nodes=1   # number of nodes
+#SBATCH --ntasks-per-node=1   # processor core(s) per node
+#SBATCH -c 1
+#SBATCH --mem-per-cpu=6G
+#SBATCH --mail-user="biancani@uri.edu"
+#SBATCH --mail-type=ALL
+
+script_work_dir="/data/schwartzlab/Biancani/PLACENTAL/"
+array_script="/data/schwartzlab/Biancani/PLACENTAL/phylomad/phylomad_array.sh"
+aligned_loci_path="/data/schwartzlab/Biancani/PLACENTAL/SISRS_out_filtered/"
+cd ${script_work_dir}
+mkdir phylomad_assessment
+cd phylomad_assessment
+ls ${aligned_loci_path} | rev | cut -f1 -d/ | rev | split - aligned_loci_list_
+arrayN=$(ls aligned_loci_list_* | wc -l)
+ls aligned_loci_list_* > array_list.txt
+echo sbatch --array=1-${arrayN}%40 ${array_script}
+__________________________________________________
+sbatch -q schwartzlab phylomad_prep.sh
+Submitted batch job 203682
+Job ID: 203682
+Cluster: andromeda
+User/Group: biancani/schwartzlab
+State: COMPLETED (exit code 0)
+Cores: 1
+CPU Utilized: 00:00:01
+CPU Efficiency: 6.67% of 00:00:15 core-walltime
+Job Wall-clock time: 00:00:15
+Memory Utilized: 0.00 MB (estimated maximum)
+Memory Efficiency: 0.00% of 6.00 GB (6.00 GB/core)
+
+command generated:
+sbatch --array=1-110%40 /data/schwartzlab/Biancani/PLACENTAL/phylomad/phylomad_array.sh
+
+Submitted batch job 206836
+Submitted batch job 206881
+Submitted batch job 206923
+
+
+
+__________________________________________________
+sbatch -q schwartzlab phylomad_prep.sh
+Removed output directory and rerun after errors in array script (for clean rerun):
+Submitted batch job 206792
+Job ID: 206792
+Cluster: andromeda
+User/Group: biancani/schwartzlab
+State: COMPLETED (exit code 0)
+Cores: 1
+CPU Utilized: 00:00:01
+CPU Efficiency: 1.06% of 00:01:34 core-walltime
+Job Wall-clock time: 00:01:34
+Memory Utilized: 27.31 MB
+Memory Efficiency: 0.44% of 6.00 GB
+
+command generated:
+sbatch --array=1-110%40 /data/schwartzlab/Biancani/PLACENTAL/phylomad/phylomad_array.sh
+
+
+phylomad_array.sh - slurm script to run the array job; adjust the paths.
+/data/schwartzlab/Biancani/PLACENTAL/phylomad/phylomad_array.sh
+__________________________________________________
+#!/bin/bash
+#SBATCH --job-name="PMarr"
+#SBATCH --time=72:00:00  # walltime limit (HH:MM:SS)
+#SBATCH --nodes=1   # number of nodes
+#SBATCH --ntasks-per-node=1   # processor core(s) per node
+#SBATCH -c 1
+#SBATCH --mem-per-cpu=6G
+#SBATCH --mail-user="biancani@uri.edu"
+#SBATCH --mail-type=ALL
+
+module load R/4.0.3-foss-2020b
+date
+
+fileline=$(sed -n ${SLURM_ARRAY_TASK_ID}p array_list.txt)
+aligned_loci_path="/data/schwartzlab/Biancani/PLACENTAL/SISRS_out_filtered/"
+base_phylomad_script="/data/schwartzlab/Biancani/phylomad/codeFolder/commandLineFile.Rscript"
+
+cat ${fileline} | while read line
+do
+        echo $line #locus file
+        sed -e 's+input$dataPath <- c(".*")+input$dataPath <- c("'"$aligned_loci_path""$line"'")+g' ${base_phylomad_script} | sed -e 's/alNames <- c(".*")/alNames <- c("'"$line"'")/g' | sed -e 's+input$outputFolder <- ".*"+input$outputFolder <- "'"$PWD"'/"+g' > script_${SLURM_ARRAY_TASK_ID}.R
+        Rscript script_${SLURM_ARRAY_TASK_ID}.R
+        rm script_${SLURM_ARRAY_TASK_ID}.R
+done
+__________________________________________________
+Update submit command generated by prep script:
+sbatch -q schwartzlab --array=1-110%40 /data/schwartzlab/Biancani/PLACENTAL/phylomad/phylomad_array.sh
+error in every output:
+sed: can't read array_list.txt: No such file or directory
+
+Submit job from inside pylomad_assessment folder!
+Submitted batch job 203905
+Job ID: 203905
+Array Job ID: 203905_110
+Cluster: andromeda
+User/Group: biancani/schwartzlab
+State: COMPLETED (exit code 0)
+Cores: 1
+CPU Utilized: 00:04:07
+CPU Efficiency: 63.01% of 00:06:32 core-walltime
+Job Wall-clock time: 00:06:32
+Memory Utilized: 37.91 MB
+Memory Efficiency: 0.62% of 6.00 GB
+
+Still didn't work. slurm output files show error:
+SISRS_contig-1211000006.fasta
+[1] "License statement. Copyright (C) 2017 Authors. PhyloMAd is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or any later version. This program is distributed in the hope that it will be useful but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License found in the folder codeFolder or see www.gnu.org/licenses/ for more details. Users must cite IQtree when using PhyloMAd as indicated in the manual."
+Error in file(filename, "r", encoding = encoding) :
+  cannot open the connection
+Calls: source -> file
+In addition: Warning message:
+In file(filename, "r", encoding = encoding) :
+  cannot open file 'testBackbones/Clock/test.server.R': No such file or directory
+Execution halted
+
+## Need to update path to phylomad scripts.
+## Remove old output folder before re-running phylomad.
+## Rerun prep script before re-running phylomad.
+
+# rm -r /data/schwartzlab/Biancani/PLACENTAL/phylomad_assessment
+
+# From PLACENTAL/phylomad/ run submit phylomad prep script:
+sbatch -q schwartzlab phylomad_prep.sh
+Submitted batch job 204247
+Job ID: 204247
+Cluster: andromeda
+User/Group: biancani/schwartzlab
+State: COMPLETED (exit code 0)
+Cores: 1
+CPU Utilized: 00:00:01
+CPU Efficiency: 2.04% of 00:00:49 core-walltime
+Job Wall-clock time: 00:00:49
+Memory Utilized: 16.89 MB
+Memory Efficiency: 0.27% of 6.00 GB
+
+Output Array Command:
+sbatch --array=1-110%40 /data/schwartzlab/Biancani/PLACENTAL/phylomad/phylomad_array.sh
+
+# changes made to bash script:
+# Specify Path to the phylomad/codeFolder/ default in base phylomad script was "."
+# Specify output folder (was specified as $PWD in bash script)
+# Specify path to araylist.txt (within output folder)
+
+Note: still fails if bash script not submitted from withing output folder (/data/schwartzlab/Biancani/PLACENTAL/phylomad_assessment)
+Error:
+cat: aligned_loci_list_dv: No such file or directory
+Therefore *** must submit job from within output folder:*****
+
+Error:
+Loading required package: ape
+Error in library(apTreeshape) : there is no package called ‘apTreeshape’
+Calls: source -> withVisible -> eval -> eval -> library
+Execution halted
+
+From Rachel: in an interactive session load the module for R that you plan to use then run R and install that library (Iocally)
+make a note in shell script that library must be installed for future users
+
+interactive
+module load R/4.0.3-foss-2020b
+R
+install.packages("apTreeshape")
+Warning in install.packages("apTreeshape") :
+  'lib = "/opt/software/R/4.0.3-foss-2020b/lib64/R/library"' is not writable
+Would you like to use a personal library instead? (yes/No/cancel) yes
+Would you like to create a personal library
+‘~/R/x86_64-pc-linux-gnu-library/4.0’
+to install packages into? (yes/No/cancel) yes
+
+More errors:
+In file(file, "r") :
+  cannot open file '/home/biancani/Desktop/phylomad/codeFolder/exampleData/betgmc1/simulationduchene.trees': No such file or directory
+Execution halted
+
+**** Next Need to incorporate Alex's hard-coded changes in his base base_phylomad_script****
+alex's script:
+/home/aknyshov/alex_data/andromeda_tools/phylomad/codeFolder/commandLineFile.Rscript
+original script:
+/data/schwartzlab/Biancani/phylomad/codeFolder/commandLineFile.Rscript
+
+*************************************************************************
+
+phylomad_array.sh - slurm script to run the array job; adjust the paths.
+/data/schwartzlab/Biancani/PLACENTAL/phylomad/phylomad_array.sh
+__________________________________________________
+#!/bin/bash
+#SBATCH --job-name="PMarr"
+#SBATCH --time=72:00:00  # walltime limit (HH:MM:SS)
+#SBATCH --nodes=1   # number of nodes
+#SBATCH --ntasks-per-node=1   # processor core(s) per node
+#SBATCH -c 1
+#SBATCH --mem-per-cpu=6G
+#SBATCH --mail-user="biancani@uri.edu"
+#SBATCH --mail-type=ALL
+
+module load R/4.0.3-foss-2020b
+date
+
+aligned_loci_path="/data/schwartzlab/Biancani/PLACENTAL/SISRS_out_filtered/"
+base_phylomad_script="/data/schwartzlab/Biancani/phylomad/codeFolder/commandLineFile.Rscript"
+phylomad_codefolder="/data/schwartzlab/Biancani/phylomad/codeFolder"
+output_folder="/data/schwartzlab/Biancani/PLACENTAL/phylomad_assessment"
+fileline=$(sed -n ${SLURM_ARRAY_TASK_ID}p ${output_folder}/array_list.txt)
+
+cat ${fileline} | while read line
+do
+        echo $line #locus file
+        sed -e 's+input$dataPath <- c(".*")+input$dataPath <- c("'"$aligned_loci_path""$line"'")+g' ${base_phylomad_script} | sed -e 's/alNames <- c(".*")/alNames <- c("'"$line"'")/g' | sed -e 's+input$outputFolder <- ".*"+input$outputFolder <- "'"$output_folder"'/"+g' | sed -e 's+phylomadpath <- ".*"+phylomadpath <- "'"$phylomad_codefolder"'/"+g' > script_${SLURM_ARRAY_TASK_ID}.R
+        Rscript script_${SLURM_ARRAY_TASK_ID}.R
+        rm script_${SLURM_ARRAY_TASK_ID}.R
+done
+__________________________________________________
+Update submit command generated by prep script: # must submit from inside output folder:
+cd /data/schwartzlab/Biancani/PLACENTAL/phylomad_assessment
+sbatch -q schwartzlab --array=1-110%40 /data/schwartzlab/Biancani/PLACENTAL/phylomad/phylomad_array.sh
+
+2023.01.08 - Finish fixing Phylomad scripts
+- incorporated Alex's hard-coded changes in his base base_phylomad_scrip by adding sed lines to bash script
+alex's script:
+/home/aknyshov/alex_data/andromeda_tools/phylomad/codeFolder/commandLineFile.Rscript
+original script:
+/data/schwartzlab/Biancani/phylomad/codeFolder/commandLineFile.Rscript
+- add array information to #SBATCH header (instead of specifying during submit command)
+Output from prep scrip was:
+sbatch --array=1-110%40 /data/schwartzlab/Biancani/PLACENTAL/phylomad/phylomad_array.sh
+so header line should be:
+#SBATCH --array=[1-110]%40
+__________________________________________________
+/data/schwartzlab/Biancani/PLACENTAL/phylomad/phylomad_array.sh
+__________________________________________________
+#!/bin/bash
+#SBATCH --job-name="PMarr"
+#SBATCH --time=72:00:00  # walltime limit (HH:MM:SS)
+#SBATCH --nodes=1   # number of nodes
+#SBATCH --ntasks-per-node=1   # processor core(s) per node
+#SBATCH -c 1
+#SBATCH --mem-per-cpu=6G
+#SBATCH --mail-user="biancani@uri.edu"
+#SBATCH --mail-type=ALL
+#SBATCH --array=[1-110]%40
+
+module load R/4.0.3-foss-2020b
+## NOTE: the following R packages must be installed: apTreeshape
+date
+
+# Path to the phylomad/codeFolder/
+
+aligned_loci_path="/data/schwartzlab/Biancani/PLACENTAL/SISRS_out_filtered/"
+base_phylomad_script="/data/schwartzlab/Biancani/phylomad/codeFolder/commandLineFile.Rscript"
+phylomad_codefolder="/data/schwartzlab/Biancani/phylomad/codeFolder"
+output_folder="/data/schwartzlab/Biancani/PLACENTAL/phylomad_assessment"
+
+
+fileline=$(sed -n ${SLURM_ARRAY_TASK_ID}p ${output_folder}/array_list.txt)
+cat ${fileline} | while read line
+do
+        echo $line #locus file
+
+        sed -e 's+input$dataPath <- c(".*")+input$dataPath <- c("'"$aligned_loci_path""$line"'")+g' ${base_phylomad_script} \
+        | sed -e 's+phylomadpath <- ".*"+phylomadpath <- "'"$phylomad_codefolder"'/"+g' \
+        | sed -e 's+input$modeltotest <- ".*"+input$modeltotest <- "'"Substitutions"'"+g' \
+        | sed -e 's/alNames <- c(".*")/alNames <- c("'"$line"'")/g' \
+        | sed -e 's+input$dataFormat <- ".*"+input$dataFormat <- "'"FASTA"'"+g' \
+        | sed -e 's+input$treesFormat <- ".*"+input$treesFormat <- "'"none"'"+g' \
+        | sed -e 's/input$treesPath <- c(".*")/input$treesPath <- c("'""'")/g' \
+        | sed -e 's/input$posteriorPath <- c(".*")/input$posteriorPath <- c("'""'")/g' \
+        | sed -e 's+input$model <- ".*"+input$model <- "'"GTR"'"+g' \
+        | sed -e 's/input$testStats <- list(".*")/input$testStats <- list("'"chisq"'", "'"multlik"'", "'"biochemdiv"'", "'"consind"'", "'"delta"'", "'"brsup"'", "'"CIbrsup"'", "'"trlen"'", "'"maha"'")/g' \
+        | sed -e 's+input$outputFormat <- ".*"+input$outputFormat <- "'"FASTA"'"+g' \
+        | sed -e 's+input$outputFolder <- ".*"+input$outputFolder <- "'"$output_folder"'/"+g' \
+        | sed -e 's/input$Ncores <- 4/input$Ncores <- 1/g' \
+        > script_${SLURM_ARRAY_TASK_ID}.R
+        Rscript script_${SLURM_ARRAY_TASK_ID}.R
+        rm script_${SLURM_ARRAY_TASK_ID}.R
+done
+__________________________________________________
+# must submit from inside output folder:
+cd /data/schwartzlab/Biancani/PLACENTAL/phylomad_assessment
+sbatch -q schwartzlab /data/schwartzlab/Biancani/PLACENTAL/phylomad/phylomad_array.sh
+Submitted batch job 206793
+CANCELLED JOB due to errors in output filter_SISRS_output
+
+sample array output file:
+Sun Jan  8 18:23:55 EST 2023
+SISRS_contig-1000000007.fasta
+[1] "License statement. Copyright (C) 2017 Authors. PhyloMAd is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or any later version. This program is distributed in the hope that it will be useful but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License found in the folder codeFolder or see www.gnu.org/licenses/ for more details. Users must cite IQtree when using PhyloMAd as indicated in the manual."
+Loading required package: ape
+[1] "The number of loci in this assessment was 1"
+[1] "Functions required were loaded successfully"
+[1] "Model to be assessed was identified"
+[1] "Locus was cleaned successfully"
+[1] "Output folder was identified successfully"
+sh: /glfs/brick01/gv0/schwartzlab/Biancani/phylomad/codeFolder/otherScripts/iqtree: cannot execute binary file
+Error in file(con, "r") : cannot open the connection
+In addition: Warning message:
+In file(con, "r") :
+  cannot open file 'empirical.alignment.phy.iqtree': No such file or directory
+[1] "Analisis of locus SISRS_contig-1000000007.fasta failed"
+[1] "Assessment completed successfully in 53.59 seconds."
+SISRS_contig-100000000.fasta
+[1] "License statement. Copyright (C) 2017 Authors. PhyloMAd is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or any later version. This program is distributed in the hope that it will be useful but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License found in the folder codeFolder or see www.gnu.org/licenses/ for more details. Users must cite IQtree when using PhyloMAd as indicated in the manual."
+Loading required package: ape
+[1] "The number of loci in this assessment was 1"
+[1] "Functions required were loaded successfully"
+[1] "Model to be assessed was identified"
+[1] "Locus was cleaned successfully"
+[1] "Output folder was identified successfully"
+sh: /glfs/brick01/gv0/schwartzlab/Biancani/phylomad/codeFolder/otherScripts/iqtree: cannot execute binary file
+Error in file(con, "r") : cannot open the connection
+In addition: Warning message:
+In file(con, "r") :
+  cannot open file 'empirical.alignment.phy.iqtree': No such file or directory
+
+An internet search of the error yielded the following info:
+https://github.com/duchene/phylomad/issues/4
+"""
+Ok. The issue is that you are using an Ubuntu machine, and PhyloMAd uses a
+version of IQ-TREE that is ideal for Mac.
+
+There are two possible solutions. One solution is to leave the original
+IQTREE version, but add a shebang (#!) so that it can run. The way to do
+this is to replace all of line 12 of the file
+phylomad/codeFolder/testBackbones/Substitutions/test.server.R
+to
+iqtreePath <- paste0("#!", getwd(), "/otherScripts/iqtree")
+"""
+
+- I copied the original file to test.server.R_ORIGINAL
+- and updated test.server.R as specified above.
+- Then I removed the phylomad output directory and re-ran the prep script before re-running the array script
+__________________________________________________
+# must submit from inside output folder:
+cd /data/schwartzlab/Biancani/PLACENTAL/phylomad_assessment
+sbatch -q schwartzlab /data/schwartzlab/Biancani/PLACENTAL/phylomad/phylomad_array.sh
+Submitted batch job 206837
+
+another error:
+
+Error in file(con, "r") : cannot open the connection
+In addition: Warning message:
+In file(con, "r") :
+  cannot open file 'empirical.alignment.phy.iqtree': No such file or directory
+
+More internet advice from:
+https://github.com/duchene/phylomad/issues/4
+"""
+I followed your suggestion, downloaded the linux version 2.1.3 of iqtree and replaced it. Then, replaced all of line 12 of the file
+phylomad/codeFolder/testBackbones/Substitutions/test.server.R
+to
+iqtreePath <- paste0(getwd(), "/otherScripts/iqtree2")
+"""
+I'm going to try pointing phylomad to Alex's installation of iqtree:
+"/data/schwartzlab/alex/andromeda_tools/iqtree-2.1.2-Linux/bin/iqtree2"
+so replace line 12 in phylomad/codeFolder/testBackbones/Substitutions/test.server.R
+with
+iqtreePath <- "/data/schwartzlab/alex/andromeda_tools/iqtree-2.1.2-Linux/bin/iqtree2"
+
+# must submit from inside output folder:
+cd /data/schwartzlab/Biancani/PLACENTAL/phylomad_assessment
+sbatch -q schwartzlab /data/schwartzlab/Biancani/PLACENTAL/phylomad/phylomad_array.sh
+Submitted batch job 206924
+OUTPUT files look good!!!!
+(yay)
+
+2022.12.21
+- IQTree -
+Notes:
+Things to update in script:
+PREP:
+e-mail
+script_work_dir (path to main output folder: SISRS_run)
+scripts_dir (path to iqtree scripts)
+aligned_loci_path (path to aligned loci)
+array_work_folder (name output folder - gets created by script)
+“split -” to “split -l 4000 -” to increase bin size from 1000 (default) to 4000
+
+ARRAY;
+e-mail
+Increase time limit (x4)
+aligned_loci_path (path to aligned & filtered loci)
+iqtree_exe (update location of program, see 6/13 meeting notes)
+scripts_dir (path to iqtree scripts)
+trees_to_eval (path to alternative trees file)
+  Need 3 alt. Trees in one file and 4 lists of taxa
+  Alternative trees: keep track of which is primary, 2nd, 3rd
+  - Can hypotheses trees have polytomies?
+focal_tips1, 2, 3 (taxon lists for ingroups)
+Specify taxon list for each hypothesis tree:
+Determine which 2 out of 3 groups are sisters for each hypothesis and select one of the sisters.
+List 1 = Afrotheria Out: Boreoeutheria
+List 2 = Boreoeutheria Out: Afrotheria
+List 3 = Xenarthra Out: Boreoeutheria
+outgroup_tips (taxon list for outgroup)
+
+Prep script
+  Will output command for array job to log file
+Array script
+  Use command generated by prep script (in log file) to run
+  No longer nessary- instead specify working directory in bash script: Submit job from inside array_work_output folder (location of job file doesn’t matter but where they are submitted from does!)
+  iqtree_exe - options:
+    - Copy executable from Alex’s folder
+    - ** See if you can execute from Alex’s folder - yes, but path needs updating!
+        /data/schwartzlab/alex/andromeda_tools/iqtree-2.1.2-Linux/bin/iqtree2
+    - Download from iq tree
+    - Load module and change path to name of iqtree
+Collection script
+dLnLs: 3 columns for 3 topologies/trees, each has likelihood for each locus
+
+Prep setup files:
+
+/data/schwartzlab/Biancani/PLACENTAL/hypothesis_trees/Placental_Hypotheses.tree
+Trees in file:
+1. Afrotheria out
+2. Boreoeutheria out
+3. Xenarthra out
+
+((((((Chaetophractus_vellerosus,Tolypeutes_matacus),Dasypus_novemcinctus),((Tamandua_tetradactyla,Myrmecophaga_tridactyla),(Choloepus_didactylus,Mylodon_darwinii))),((((Tupaia_tana,Rattus_norvegicus),Pan_troglodytes),Galeopterus_variegatus),((((Pteropus_vampyrus,Hippopotamus_amphibius),(Odobenus_rosmarus_divergens,Manis_javanica)),Ceratotherium_simum),Condylura_cristata))),(((((Echinops_telfairi,Microgale_talazaci),(Chrysochloris_asiatica,Amblysomus_hottentotus_longiceps)),Elephantulus_edwardii),Orycteropus_afer),((Trichechus_manatus_latirostris,Hydrodamalis_gigas),(Loxodonta_africana,Procavia_capensis)))),((((((Potorous_gilbertii,Wallabia_bicolor),(Pseudochirops_corinnae,Gymnobelideus_leadbeateri)),Phalanger_gymnotis),(Phascolarctos_cinereus,Vombatus_ursinus)),(Sarcophilus_harrisii,Thylacinus_cynocephalus)),Didelphis_virginiana));
+((((((((Echinops_telfairi,Microgale_talazaci),(Chrysochloris_asiatica,Amblysomus_hottentotus_longiceps)),Elephantulus_edwardii),Orycteropus_afer),((Trichechus_manatus_latirostris,Hydrodamalis_gigas),(Loxodonta_africana,Procavia_capensis))),(((Chaetophractus_vellerosus,Tolypeutes_matacus),Dasypus_novemcinctus),((Tamandua_tetradactyla,Myrmecophaga_tridactyla),(Choloepus_didactylus,Mylodon_darwinii)))),((((Tupaia_tana,Rattus_norvegicus),Pan_troglodytes),Galeopterus_variegatus),((((Pteropus_vampyrus,Hippopotamus_amphibius),(Odobenus_rosmarus_divergens,Manis_javanica)),Ceratotherium_simum),Condylura_cristata))),((((((Potorous_gilbertii,Wallabia_bicolor),(Pseudochirops_corinnae,Gymnobelideus_leadbeateri)),Phalanger_gymnotis),(Phascolarctos_cinereus,Vombatus_ursinus)),(Sarcophilus_harrisii,Thylacinus_cynocephalus)),Didelphis_virginiana));
+((((((((Echinops_telfairi,Microgale_talazaci),(Chrysochloris_asiatica,Amblysomus_hottentotus_longiceps)),Elephantulus_edwardii),Orycteropus_afer),((Trichechus_manatus_latirostris,Hydrodamalis_gigas),(Loxodonta_africana,Procavia_capensis))),((((Tupaia_tana,Rattus_norvegicus),Pan_troglodytes),Galeopterus_variegatus),((((Pteropus_vampyrus,Hippopotamus_amphibius),(Odobenus_rosmarus_divergens,Manis_javanica)),Ceratotherium_simum),Condylura_cristata))),(((Chaetophractus_vellerosus,Tolypeutes_matacus),Dasypus_novemcinctus),((Tamandua_tetradactyla,Myrmecophaga_tridactyla),(Choloepus_didactylus,Mylodon_darwinii)))),((((((Potorous_gilbertii,Wallabia_bicolor),(Pseudochirops_corinnae,Gymnobelideus_leadbeateri)),Phalanger_gymnotis),(Phascolarctos_cinereus,Vombatus_ursinus)),(Sarcophilus_harrisii,Thylacinus_cynocephalus)),Didelphis_virginiana));
+
+Create these files:
+tips_Afrotheria.txt  tips_Boreoeutheria.txt  tips_Outgroup.txt  tips_Xenarthra.txt
+
+tips_Outgroup.txt:
+Didelphis_virginiana
+Thylacinus_cynocephalus
+Sarcophilus_harrisii
+Vombatus_ursinus
+Phascolarctos_cinereus
+Phalanger_gymnotis
+Gymnobelideus_leadbeateri
+Pseudochirops_corinnae
+Wallabia_bicolor
+Potorous_gilbertii
+
+tips_Afrotheria.txt:
+Procavia_capensis
+Loxodonta_africana
+Hydrodamalis_gigas
+Trichechus_manatus_latirostris
+Orycteropus_afer
+Elephantulus_edwardii
+Amblysomus_hottentotus_longiceps
+Chrysochloris_asiatica
+Microgale_talazaci
+Echinops_telfairi
+
+tips_Boreoeutheria.txt:
+Condylura_cristata
+Ceratotherium_simum
+Manis_javanica
+Odobenus_rosmarus_divergens
+Hippopotamus_amphibius
+Pteropus_vampyrus
+Galeopterus_variegatus
+Pan_troglodytes
+Rattus_norvegicus
+Tupaia_tana
+
+tips_Xenarthra.txt:
+Mylodon_darwinii
+Choloepus_didactylus
+Myrmecophaga_tridactyla
+Tamandua_tetradactyla
+Dasypus_novemcinctus
+Tolypeutes_matacus
+Chaetophractus_vellerosus
+
+# download IQtree scripts:
+svn checkout https://github.com/AlexKnyshov/TreeshrewProject/trunk/iqtree
+
+
+iqtree_prep.sh - slurm script to run: sets up the folders, lists of files to process and produces the command to run after; adjust paths on lines 9-12 as well as the number of simultaneous jobs on line 20 as needed.
+__________________________________________________
+/data/schwartzlab/Biancani/PLACENTAL/iqtree/iqtree_prep.sh
+__________________________________________________
+#!/bin/bash
+#SBATCH --job-name="IQprep"
+#SBATCH --time=1:00:00  # walltime limit (HH:MM:SS)
+#SBATCH --mail-user="biancani@uri.edu" #CHANGE THIS to your user email address
+#SBATCH --mail-type=ALL
+#SBATCH --nodes=1   # number of nodes
+#SBATCH --ntasks-per-node=1   # processor core(s) per node
+#SBATCH -c 1
+#SBATCH --mem-per-cpu=6G
+
+script_work_dir="/data/schwartzlab/Biancani/PLACENTAL/"
+scripts_dir="/data/schwartzlab/Biancani/PLACENTAL/iqtree/"
+aligned_loci_path="/data/schwartzlab/Biancani/PLACENTAL/SISRS_out_filtered/"
+array_work_folder="iqtree_assessment"
+cd ${script_work_dir}
+mkdir ${array_work_folder}
+cd ${array_work_folder}
+mkdir scf
+ls ${aligned_loci_path} | rev | cut -f1 -d/ | rev | split -l 4000 - aligned_loci_list_
+arrayN=$(ls aligned_loci_list_* | wc -l)
+ls aligned_loci_list_* > array_list.txt
+echo sbatch --array=1-${arrayN}%40 ${scripts_dir}iqtree_array.sh
+__________________________________________________
+submitting from inside iqtree folder:
+sbatch -q schwartzlab iqtree_prep.sh
+Submitted batch job 204668
+Job ID: 204668
+Cluster: andromeda
+User/Group: biancani/schwartzlab
+State: COMPLETED (exit code 0)
+Cores: 1
+CPU Utilized: 00:00:01
+CPU Efficiency: 7.69% of 00:00:13 core-walltime
+Job Wall-clock time: 00:00:13
+Memory Utilized: 0.00 MB (estimated maximum)
+Memory Efficiency: 0.00% of 6.00 GB (6.00 GB/core)
+
+Output command:
+sbatch --array=1-28%40 /data/schwartzlab/Biancani/PLACENTAL/iqtree/iqtree_array.sh
+
+iqtree_array.sh - slurm script to submit: runs the analyses; submit using the command output by the previous step in its log file (*.out); adjust paths on lines 16-27 as needed.
+trimTrees.R - script to trim taxa off of the main tree(s) depending on the taxon composition of a particular alignment, run by the previous shell script.
+getSCF.R - script to extract sCF values for the branch of interest from IQ-TREE output, run by the previous shell script.
+
+
+Notes:
+- outputs CSV files (one for each batch fasta file created by prep script) in the array_work_dir
+  - CSV files contain likelihoods scores for each hypothesis (3 scores) for every Locus
+- also creates an scf folder - full of scf files (one for each contig)
+  - scf files have 3 lines (one for each hypothesesis)
+__________________________________________________
+/data/schwartzlab/Biancani/PLACENTAL/iqtree/iqtree_array.sh
+__________________________________________________
+#!/bin/bash
+#SBATCH --job-name="IQarr"
+#SBATCH --time=192:00:00  # walltime limit (HH:MM:SS)
+#SBATCH --nodes=1   # number of nodes
+#SBATCH --ntasks-per-node=1   # processor core(s) per node
+#SBATCH -c 1
+#SBATCH --mem-per-cpu=6G
+#SBATCH --mail-user="biancani@uri.edu" #CHANGE THIS to your user email address
+#SBATCH --mail-type=ALL
+
+#specify working dirctory (the folder created by prep script)
+array_work_dir="/data/schwartzlab/Biancani/PLACENTAL/iqtree_assessment/"
+
+cd $array_work_dir
+
+date
+module load R/4.0.3-foss-2020b
+
+fileline=$(sed -n ${SLURM_ARRAY_TASK_ID}p array_list.txt)
+aligned_loci_path="/data/schwartzlab/Biancani/PLACENTAL/SISRS_out_filtered/"
+#location of iqtree executable:
+iqtree_exe="/data/schwartzlab/alex/andromeda_tools/iqtree-2.1.2-Linux/bin/iqtree2"
+#path to iqtree scripts
+scripts_dir="/data/schwartzlab/Biancani/PLACENTAL/iqtree/"
+# path to file containing 3 alternative hypotheses trees:
+trees_to_eval="/data/schwartzlab/Biancani/PLACENTAL/hypothesis_trees/Placental_Hypotheses.tree"
+# Specify taxon list for each hypothesis tree: Determine which 2 out of 3 groups are sisters for each hypothesis and select one of the sisters.
+# List 1 (Afrotheria Out) = Boreoeutheria
+focal_tips1="/data/schwartzlab/Biancani/PLACENTAL/hypothesis_trees/tips_Boreoeutheria.txt"
+# List 2 (Boreoeutheria Out) = Afrotheria
+focal_tips2="/data/schwartzlab/Biancani/PLACENTAL/hypothesis_trees/tips_Afrotheria.txt"
+# List 3 (Xenarthra Out) = Boreoeutheria
+focal_tips3="/data/schwartzlab/Biancani/PLACENTAL/hypothesis_trees/tips_Boreoeutheria.txt"
+# Outgroup taxa list:
+outgroup_tips="/data/schwartzlab/Biancani/PLACENTAL/hypothesis_trees/tips_Outgroup.txt"
+
+> LnLs_${SLURM_ARRAY_TASK_ID}.csv
+cat ${fileline} | while read line
+do
+        echo $line
+        Rscript ${scripts_dir}trimTrees.R ${aligned_loci_path}/${line} ${trees_to_eval} ./trees_${line}.tre
+        ${iqtree_exe} -nt 1 -s ${aligned_loci_path}/${line} -z ./trees_${line}.tre -pre calcLnL_${line} -n 0 -m GTR+G
+        echo $line","$(grep "Tree 1 / LogL:" calcLnL_${line}.log | cut -f2 -d: )","$(grep "Tree 2 / LogL:" calcLnL_${line}.log | cut -f2 -d: )","$(grep "Tree 3 / LogL:" calcLnL_${line}.log | cut -f2 -d: ) >> LnLs_${SLURM_ARRAY_TASK_ID}.csv
+
+        sed -n 1p ./trees_${line}.tre > ./tree1_${line}.tre
+        ${iqtree_exe} -nt 1 -t ./tree1_${line}.tre -s ${aligned_loci_path}/${line} --scf 500 --prefix concord1_${line}
+        rm ./tree1_${line}.tre
+        echo "ID,sCF,sCF_N,sDF1,sDF1_N,sDF2,sDF2_N,sN,debug" > scf/scf_${line}
+        Rscript ${scripts_dir}getSCF.R concord1_${line}.cf.branch concord1_${line}.cf.stat ${focal_tips1} ${outgroup_tips} >> scf/scf_${line}
+        rm concord1_${line}.log concord1_${line}.cf.branch concord1_${line}.cf.stat concord1_${line}.cf.tree concord1_${line}.cf.tree.nex
+
+        sed -n 2p ./trees_${line}.tre > ./tree2_${line}.tre
+        ${iqtree_exe} -nt 1 -t ./tree2_${line}.tre -s ${aligned_loci_path}/${line} --scf 500 --prefix concord2_${line}
+        rm ./tree2_${line}.tre
+        Rscript ${scripts_dir}getSCF.R concord2_${line}.cf.branch concord2_${line}.cf.stat ${focal_tips2} ${outgroup_tips} >> scf/scf_${line}
+        rm concord2_${line}.log concord2_${line}.cf.branch concord2_${line}.cf.stat concord2_${line}.cf.tree concord2_${line}.cf.tree.nex
+
+        sed -n 3p ./trees_${line}.tre > ./tree3_${line}.tre
+        ${iqtree_exe} -nt 1 -t ./tree3_${line}.tre -s ${aligned_loci_path}/${line} --scf 500 --prefix concord3_${line}
+        rm ./tree3_${line}.tre
+        Rscript ${scripts_dir}getSCF.R concord3_${line}.cf.branch concord3_${line}.cf.stat ${focal_tips3} ${outgroup_tips} >> scf/scf_${line}
+        rm concord3_${line}.log concord3_${line}.cf.branch concord3_${line}.cf.stat concord3_${line}.cf.tree concord3_${line}.cf.tree.nex
+
+        rm ./trees_${line}.tre calcLnL_${line}.ckp.gz calcLnL_${line}.iqtree calcLnL_${line}.log calcLnL_${line}.treefile calcLnL_${line}.trees
+        rm calcLnL_${line}.uniqueseq.phy
+done
+__________________________________________________
+submitted from inside iqtree folder:
+sbatch -q schwartzlab --array=1-28%40 /data/schwartzlab/Biancani/PLACENTAL/iqtree/iqtree_array.sh
+Submitted batch job 204669
+andromeda Slurm Array Summary Job_id=204669_* (204669) Name=IQarr Failed, Mixed, ExitCode [0-1]
+Job ID: 204669
+Array Job ID: 204669_28
+Cluster: andromeda
+User/Group: biancani/schwartzlab
+State: COMPLETED (exit code 0)
+Cores: 1
+CPU Utilized: 01:00:34
+CPU Efficiency: 13.81% of 07:18:40 core-walltime
+Job Wall-clock time: 07:18:40
+Memory Utilized: 63.40 MB
+Memory Efficiency: 1.03% of 6.00 GB
+
+Failed? I can’t see any issues in output files (however log files are extremely long and I’m not quite sure what I’m looking for)
+Location of log files:
+/data/schwartzlab/Biancani/PLACENTAL/iqtree/slurm-204669_*
+Output files from attempting to run iqtree this summer were filled with the “ERROR” so tried searching these files:
+grep "ERROR" slurm-204669_* (yields no results)
+Will continue moving forward with iqtree steps…?
+
+2023.12.30
+
+iqtree_array_concat.sh - slurm script to submit: infer concatenation trees
+trimTrees.R - script to trim taxa off of the main tree(s) depending on the taxon composition of a particular alignment, run by the previous shell script.
+
+
+Issues with script:
+Need to load additional modules (python3)
+Modules conflict? Purge and load new module before python vs R commands?
+Path to amas.py hardcoded in (changed)
+Comment to copy files from another folder before running script (incorporated into script with path to folder specified)
+
+Previous Error:
+in
+/var/spool/slurmd/job205560/slurm_script: line 36: /opt/software/Python/3.7.4-GCCcore-8.3.0/bin/python3: Argument list too long
+Cause: didn't run as array job so was trying to use all contigs as input files!
+Fix: add array sbatch line
+
+
+RUN AS ARRAY JOB - add additional SBATCH LINE
+__________________________________________________
+/data/schwartzlab/Biancani/PLACENTAL/iqtree/iqtree_array_concat.sh
+__________________________________________________
+#!/bin/bash
+#SBATCH --job-name="IQarr"
+#SBATCH --time=24:00:00  # walltime limit (HH:MM:SS)
+#SBATCH --nodes=1   # number of nodes
+#SBATCH --ntasks-per-node=1   # processor core(s) per node
+#SBATCH -c 10
+#SBATCH --mem-per-cpu=6G
+#SBATCH --mail-user="biancani@uri.edu" #CHANGE THIS to your user email address
+#SBATCH --mail-type=ALL
+#SBATCH --array=[1-28]%28
+
+cd $SLURM_SUBMIT_DIR
+
+date
+
+module purge
+module load Python/3.7.4-GCCcore-8.3.0
+
+# first need to copy array_list.txt and aligned_loci_list_* from iqtree_assessment
+iqtree_assessment_path="/data/schwartzlab/Biancani/PLACENTAL/iqtree_assessment"
+cp ${iqtree_assessment_path}/array_list.txt .
+cp ${iqtree_assessment_path}/aligned_loci_list_* .
+
+fileline=$(sed -n ${SLURM_ARRAY_TASK_ID}p array_list.txt)
+aligned_loci_path="/data/schwartzlab/Biancani/PLACENTAL/SISRS_out_filtered"
+#location of iqtree executable:
+iqtree_exe="/data/schwartzlab/alex/andromeda_tools/iqtree-2.1.2-Linux/bin/iqtree2"
+# path to file containing 3 alternative hypotheses trees:
+trees_to_eval="/data/schwartzlab/Biancani/PLACENTAL/hypothesis_trees/Placental_Hypotheses.tree"
+#path to iqtree scripts
+scripts_dir="/data/schwartzlab/Biancani/PLACENTAL/iqtree"
+path_to_amas="/data/schwartzlab/Biancani/AMAS/amas/AMAS.py"
+
+# generates list of paths to infiles for
+infiles=$(cat ${fileline} | while read line; do echo ${aligned_loci_path}/${line}; done | paste -sd" ")
+
+#amas concatenated
+python3 ${path_to_amas} concat -f fasta -d dna --out-format fasta --part-format raxml -i $infiles -t concatenated_${SLURM_ARRAY_TASK_ID}.fasta -p partitions_${SLURM_ARRAY_TASK_ID}.txt
+
+module purge
+module load R/4.0.3-foss-2020b
+
+Rscript ${scripts_dir}/trimTrees.R concatenated_${SLURM_ARRAY_TASK_ID}.fasta ${trees_to_eval} ./trees_${SLURM_ARRAY_TASK_ID}.tre
+
+${iqtree_exe} -nt 10 -s concatenated_${SLURM_ARRAY_TASK_ID}.fasta -spp partitions_${SLURM_ARRAY_TASK_ID}.txt -z ./trees_${SLURM_ARRAY_TASK_ID}.tre -pre calcLnL_${SLURM_ARRAY_TASK_ID} -n 0 -m GTR+G -wsl
+${iqtree_exe} -nt 10 -s concatenated_${SLURM_ARRAY_TASK_ID}.fasta -spp partitions_${SLURM_ARRAY_TASK_ID}.txt -pre inference_${SLURM_ARRAY_TASK_ID} -m GTR+G -bb 1000 -alrt 1000 -wsr
+
+date
+__________________________________________________
+sbatch -q schwartzlab iqtree_array_concat.sh
+Submitted batch job 205581
+Job ID: 205581
+Array Job ID: 205581_28
+Cluster: andromeda
+User/Group: biancani/schwartzlab
+State: COMPLETED (exit code 0)
+Nodes: 1
+Cores per node: 10
+CPU Utilized: 06:04:31
+CPU Efficiency: 85.53% of 07:06:10 core-walltime
+Job Wall-clock time: 00:42:37
+Memory Utilized: 2.36 GB
+Memory Efficiency: 3.93% of 60.00 GB
+
+1 & 2 failed. Remove output files for 1 and 2 and rerun array for just 1 and 2:
+change array line to: #SBATCH --array=[1-2]%2
+sbatch -q schwartzlab iqtree_array_concat_1_2.sh
+Submitted batch job 205614
+Job ID: 205614
+Array Job ID: 205614_2
+Cluster: andromeda
+User/Group: biancani/schwartzlab
+State: COMPLETED (exit code 0)
+Nodes: 1
+Cores per node: 10
+CPU Utilized: 19:04:44
+CPU Efficiency: 85.97% of 22:11:30 core-walltime
+Job Wall-clock time: 02:13:09
+Memory Utilized: 5.23 GB
+Memory Efficiency: 8.71% of 60.00 GB
+
+19 failed as well.
+change array line to: #SBATCH --array=[19-19]%1
+sbatch -q schwartzlab iqtree_array_concat_19.sh
+Submitted batch job 205617
+Job ID: 205617
+Array Job ID: 205617_19
+Cluster: andromeda
+User/Group: biancani/schwartzlab
+State: COMPLETED (exit code 0)
+Nodes: 1
+Cores per node: 10
+CPU Utilized: 1-11:06:06
+CPU Efficiency: 89.87% of 1-15:03:30 core-walltime
+Job Wall-clock time: 03:54:21
+Memory Utilized: 6.36 GB
+Memory Efficiency: 10.60% of 60.00 GB
+
+iqtree_array_gtree.sh - slurm script to submit: infer gene trees
+Changes to make:
+Add Array SBATCH line
+Update paths
+*** this job dumps a ton of gene tree files in the iqtree directory: needs updating to have a subdirectory!
+__________________________________________________
+/data/schwartzlab/Biancani/PLACENTAL/iqtree/iqtree_array_gtree.sh
+__________________________________________________
+#!/bin/bash
+#SBATCH --job-name="IQarr"
+#SBATCH --time=48:00:00  # walltime limit (HH:MM:SS)
+#SBATCH --nodes=1   # number of nodes
+#SBATCH --ntasks-per-node=1   # processor core(s) per node
+#SBATCH -c 1
+#SBATCH --mem-per-cpu=6G
+#SBATCH --mail-user="biancani@uri.edu" #CHANGE THIS to your user email address
+#SBATCH --mail-type=ALL
+#SBATCH --array=[1-28]%28
+
+cd $SLURM_SUBMIT_DIR
+
+date
+
+fileline=$(sed -n ${SLURM_ARRAY_TASK_ID}p array_list.txt)
+aligned_loci_path="/data/schwartzlab/Biancani/PLACENTAL/SISRS_out_filtered"
+#location of iqtree executable:
+iqtree_exe="/data/schwartzlab/alex/andromeda_tools/iqtree-2.1.2-Linux/bin/iqtree2"
+
+cat ../iqtree_assessment/${fileline} | while read line
+do
+        echo $line
+        ${iqtree_exe} -nt 1 -s ${aligned_loci_path}/${line} -pre inference_${line} -alrt 1000 -m GTR+G
+        rm inference_${line}.ckp.gz inference_${line}.iqtree inference_${line}.log inference_${line}.bionj inference_${line}.mldist inference_${line}.uniqueseq.phy
+done
+__________________________________________________
+sbatch -q schwartzlab iqtree_array_gtree.sh
+Submitted batch job 205865
+andromeda Slurm Array Summary Job_id=205865_* (205865) Name=IQarr Failed, Mixed, ExitCode [0-1]
+Job ID: 205865
+Array Job ID: 205865_28
+Cluster: andromeda
+User/Group: biancani/schwartzlab
+State: COMPLETED (exit code 0)
+Cores: 1
+CPU Utilized: 02:28:32
+CPU Efficiency: 24.84% of 09:57:58 core-walltime
+Job Wall-clock time: 09:57:58
+Memory Utilized: 11.35 MB
+Memory Efficiency: 0.18% of 6.00 GB
+
+I just accidentally deleted a directory with a bunch of slurm output files I really shouldn't have deleted. I don't suppose there's any way to recover them...
+The files were originally in the following directory:
+/data/schwartzlab/Biancani/PLACENTAL/iqtree
+I created a new directory and moved them into it:
+/data/schwartzlab/Biancani/PLACENTAL/iqtree/slurm-205865_out
+Then (like a dumbass) I deleted the directory.
+Here are the filenames:
+slurm-205865_10.out  slurm-205865_15.out  slurm-205865_1.out   slurm-205865_24.out  slurm-205865_2.out  slurm-205865_7.out
+slurm-205865_11.out  slurm-205865_16.out  slurm-205865_20.out  slurm-205865_25.out  slurm-205865_3.out  slurm-205865_8.out
+slurm-205865_12.out  slurm-205865_17.out  slurm-205865_21.out  slurm-205865_26.out  slurm-205865_4.out  slurm-205865_9.out
+slurm-205865_13.out  slurm-205865_18.out  slurm-205865_22.out  slurm-205865_27.out  slurm-205865_5.out
+slurm-205865_14.out  slurm-205865_19.out  slurm-205865_23.out  slurm-205865_28.out  slurm-205865_6.out
+
+I'm going to assume the job ran fine because I can't look at the outfiles!
+
+2023.01.03
+iqtree_collect_gtrees.sh - slurm script to submit: collect gene tree data
+__________________________________________________
+/data/schwartzlab/Biancani/PLACENTAL/iqtree/iqtree_collect_gtrees.sh
+__________________________________________________
+#!/bin/bash
+#SBATCH --job-name="IQout"
+#SBATCH --time=24:00:00  # walltime limit (HH:MM:SS)
+#SBATCH --nodes=1   # number of nodes
+#SBATCH --ntasks-per-node=1   # processor core(s) per node
+#SBATCH -c 1
+#SBATCH --mem-per-cpu=8G
+#SBATCH --mail-user="biancani@uri.edu" #CHANGE THIS to your user email address
+#SBATCH --mail-type=ALL
+
+cd $SLURM_SUBMIT_DIR
+
+# path to IQtree output/working directory:
+iqtree_assessment_path="/data/schwartzlab/Biancani/PLACENTAL/iqtree_assessment"
+
+
+date
+> gtrees.txt; cat array_list.txt | while read line1; do cat ${iqtree_assessment_path}/${line1} >> gtrees.txt; done
+> gtrees.tre; cat gtrees.txt | while read line; do cat inference_${line}.treefile >> gtrees.tre; done
+date
+__________________________________________________
+sbatch -q schwartzlab iqtree_collect_gtrees.sh
+Submitted batch job 206323
+Job ID: 206323
+Cluster: andromeda
+User/Group: biancani/schwartzlab
+State: COMPLETED (exit code 0)
+Cores: 1
+CPU Utilized: 00:00:00
+CPU Efficiency: 0.00% of 00:00:01 core-walltime
+Job Wall-clock time: 00:00:01
+Memory Utilized: 0.00 MB (estimated maximum)
+Memory Efficiency: 0.00% of 8.00 GB (8.00 GB/core)
+ERROR in output file:
+cat: ./iqtree_assessment/aligned_loci_list_aa: No such file or directory
+(update paths!)
+
+sbatch -q schwartzlab iqtree_collect_gtrees.sh
+Submitted batch job 206356
+ERROR in output file:
+cat: iqtree_genetree/inference_SISRS_contig-1000000007.fasta.treefile: No such file or directory
+(another path update: genetree files are in the iqtree directory not an iqtree_genetree subdirectory - although they should be in a subdirectory: change that later?)
+
+sbatch -q schwartzlab iqtree_collect_gtrees.sh
+Submitted batch job 206359
+Job ID: 206359
+Cluster: andromeda
+User/Group: biancani/schwartzlab
+State: COMPLETED (exit code 0)
+Cores: 1
+CPU Utilized: 00:03:06
+CPU Efficiency: 1.77% of 02:55:10 core-walltime
+Job Wall-clock time: 02:55:10
+Memory Utilized: 756.00 KB
+Memory Efficiency: 0.01% of 8.00 GB
+
+
+iqtree_collect_output.sh - slurm script to submit: collect individual fit assessment data
+- update path and output prefix
+__________________________________________________
+/data/schwartzlab/Biancani/PLACENTAL/iqtree/iqtree_collect_output.sh
+__________________________________________________
+#!/bin/bash
+#SBATCH --job-name="IQout"
+#SBATCH --time=24:00:00  # walltime limit (HH:MM:SS)
+#SBATCH --nodes=1   # number of nodes
+#SBATCH --ntasks-per-node=1   # processor core(s) per node
+#SBATCH -c 1
+#SBATCH --mem-per-cpu=8G
+#SBATCH --mail-user="biancani@uri.edu" #CHANGE THIS to your user email address
+#SBATCH --mail-type=ALL
+
+cd $SLURM_SUBMIT_DIR
+
+date
+# path to IQtree output/working directory:
+assessment_folder="/data/schwartzlab/Biancani/PLACENTAL/iqtree_assessment"
+output_prefix="combined_iqtree_PLACENTAL"
+
+cat ${assessment_folder}/LnLs_*.csv > ${output_prefix}_dLnLs.csv
+
+date
+> ${output_prefix}_scf.csv
+cat ${assessment_folder}/array_list.txt | while read array_list_line
+do
+        cat ${assessment_folder}/${array_list_line} | while read aligned_loci_list_line
+        do
+                fscf="${assessment_folder}/scf/scf_${aligned_loci_list_line}"
+                echo $fscf","$(sed -n 2p $fscf | cut -f2 -d,)","$(sed -n 3p $fscf | cut -f2 -d,)","$(sed -n 4p $fscf | cut -f2 -d,) >> ${output_prefix}_scf.csv
+        done
+done
+date
+sed -i -e "s+${assessment_folder}/scf/scf_++g" ${output_prefix}_scf.csv
+date
+__________________________________________________
+sbatch -q schwartzlab iqtree_collect_output.sh
+Submitted batch job 206382
+Job ID: 206382
+Cluster: andromeda
+User/Group: biancani/schwartzlab
+State: COMPLETED (exit code 0)
+Cores: 1
+CPU Utilized: 00:19:33
+CPU Efficiency: 9.52% of 03:25:24 core-walltime
+Job Wall-clock time: 03:25:24
+Memory Utilized: 996.00 KB
+Memory Efficiency: 0.01% of 8.00 GB
+
+2023.01.04
+
+iqtree_collect_phyloinference_LnL.sh - slurm script to submit: collect concatenation fit assessment data
+
+__________________________________________________
+/data/schwartzlab/Biancani/PLACENTAL/iqtree/iqtree_collect_phyloinference_LnL.sh
+__________________________________________________
+#!/bin/bash
+#SBATCH --job-name="iqout"
+#SBATCH --time=24:00:00  # walltime limit (HH:MM:SS)
+#SBATCH --nodes=1   # number of nodes
+#SBATCH --ntasks-per-node=1   # processor core(s) per node
+#SBATCH -c 1
+#SBATCH --mem-per-cpu=8G
+#SBATCH --mail-user="biancani@uri.edu" #CHANGE THIS to your user email address
+#SBATCH --mail-type=ALL
+
+cd $SLURM_SUBMIT_DIR
+
+arrayLen=28 #specify length of the iqtree previous array jobs
+
+# assessment folder = location of "partitions_" files
+assessment_folder="/data/schwartzlab/Biancani/PLACENTAL/iqtree"
+
+> combined_iqtree_dLnLs_concat.csv
+date
+for f in $(seq 1 ${arrayLen})
+do
+        cat ${assessment_folder}/partitions_${f}.txt | while read l
+        do
+                locname=$(echo ${l} | cut -f2 -d" " | cut -f2- -d_)
+                range1=$(echo ${l} | cut -f4 -d" ")
+                tree1=$(sed -n 2p ${assessment_folder}/calcLnL_${f}.sitelh | awk -v a="${range1}" 'BEGIN {split(a, A, /-/)} {x=0;for(i=A[1]+1;i<=A[2]+1;i++)x=x+$i;print x}')
+                tree2=$(sed -n 3p ${assessment_folder}/calcLnL_${f}.sitelh | awk -v a="${range1}" 'BEGIN {split(a, A, /-/)} {x=0;for(i=A[1]+1;i<=A[2]+1;i++)x=x+$i;print x}')
+                tree3=$(sed -n 4p ${assessment_folder}/calcLnL_${f}.sitelh | awk -v a="${range1}" 'BEGIN {split(a, A, /-/)} {x=0;for(i=A[1]+1;i<=A[2]+1;i++)x=x+$i;print x}')
+                echo ${locname},${tree1},${tree2},${tree3} >> combined_iqtree_dLnLs_concat.csv
+        done
+done
+date
+__________________________________________________
+sbatch -q schwartzlab iqtree_collect_phyloinference_LnL.sh
+Submitted batch job 206452
+Job ID: 206452
+Cluster: andromeda
+User/Group: biancani/schwartzlab
+State: COMPLETED (exit code 0)
+Cores: 1
+CPU Utilized: 07:37:02
+CPU Efficiency: 83.43% of 09:07:49 core-walltime
+Job Wall-clock time: 09:07:49
+Memory Utilized: 101.61 MB
+Memory Efficiency: 1.24% of 8.00 GB
+
+
+2023.01.11
+
+Copy RAxML files to local machine:
+scp -r biancani@ssh4.hac.uri.edu:/data/schwartzlab/Biancani/PLACENTAL/SISRS/scripts/RAxML.outfiles ~/Downloads
+
+
+- Calculate SCFs for RAxML trees
+__________________________________________________
+/data/schwartzlab/Biancani/PLACENTAL/SISRS/scripts/slurm_submissions/runSCF.sh
+__________________________________________________
+#!/bin/bash
+#SBATCH --job-name="scfRun"
+#SBATCH --time=48:00:00  # walltime limit (HH:MM:SS)
+#SBATCH --nodes=1  # number of nodes
+#SBATCH --ntasks-per-node=36   # CHANGE to the number of processor core(s) per node
+#SBATCH --mail-user="biancani@uri.edu" #CHANGE THIS to your user email address
+#SBATCH --mail-type=ALL
+#SBATCH --output="out_scfRun"
+#SBATCH --error="err_scfRun"
+
+# LOAD MODULES, INSERT CODE, AND RUN YOUR PROGRAMS HERE
+
+cd $SLURM_SUBMIT_DIR
+
+module load IQ-TREE/2.1.2-foss-2020a
+
+TREE=/data/schwartzlab/Biancani/PLACENTAL/SISRS/scripts/RAxML.outfiles/RAxML_bestTree.tree_pi_m25_nogap #CHANGE to your filename (include the path as needed)
+ALIGNMENT=/data/schwartzlab/Biancani/PLACENTAL/SISRS_out/SISRS_Run/alignment_pi_m25_nogap.phylip-relaxed #CHANGE to the file used to generate the tree
+OUTPUT=tree_pi_m25_nogap #CHANGE to a name that will indicate the output information relevant to this tree
+T=36 #CHANGE to the number of processors (20 or 36)
+
+iqtree2 -t $TREE -s $ALIGNMENT --scf 100 --prefix $OUTPUT -nt $T
+__________________________________________________
+sbatch -q schwartzlab slurm_submissions/runSCF.sh
+Submitted batch job 207954
+Job ID: 207954
+Cluster: andromeda
+User/Group: biancani/schwartzlab
+State: COMPLETED (exit code 0)
+Nodes: 1
+Cores per node: 36
+CPU Utilized: 03:39:23
+CPU Efficiency: 88.75% of 04:07:12 core-walltime
+Job Wall-clock time: 00:06:52
+Memory Utilized: 2.36 GB
+Memory Efficiency: 1.85% of 128.00 GB
+
+Output:
+Alignment has 37 sequences with 5419271 columns, 5383143 distinct patterns
+5410995 parsimony-informative, 8276 singleton sites, 0 constant sites
+Tree with concordance factors written to tree_pi_m25_nogap.cf.tree
+Annotated tree (best viewed in FigTree) written to tree_pi_m25_nogap.cf.tree.nex
+Tree with branch IDs written to tree_pi_m25_nogap.cf.branch
+Concordance factors per branch printed to tree_pi_m25_nogap.cf.stat
+
+SCF outfiles moved to /data/schwartzlab/Biancani/PLACENTAL/SISRS/scripts/SCF.outfiles/
+copy SCF files to local machine:
+scp -r biancani@ssh4.hac.uri.edu:/data/schwartzlab/Biancani/PLACENTAL/SISRS/scripts/SCF.outfiles ~/Downloads
+
+
+
+- Run SVDQ for alignment used with RAxML
+__________________________________________________
+/data/schwartzlab/Biancani/PLACENTAL/SISRS/scripts/slurm_submissions/runSVDQ.sh
+__________________________________________________
+#!/bin/bash
+#SBATCH --job-name="svdq"
+#SBATCH --time=150:00:00  # walltime limit (HH:MM:SS)
+#SBATCH --nodes=1   # number of nodes
+#SBATCH --ntasks-per-node=36   # CHANGE processor core(s) per node
+#SBATCH --mail-user="biancani@uri.edu" #CHANGE THIS to your user email address
+#SBATCH --mail-type=ALL
+
+cd $SLURM_SUBMIT_DIR
+module load PAUP/4.0a168-centos64
+
+alignmentFile="../../SISRS_out/SISRS_Run/alignment_pi_m25_nogap.phylip-relaxed" #Change to the path to your phylip file - don't make the path too long
+logFile="${alignmentFile}.svdq.log"
+treeFile="${alignmentFile}.svdq.tre"
+
+nBoot=1000
+nCpus=36 #CHANGE to match ntasks line if needed
+
+date
+
+echo "
+log file=${logFile};
+tonexus format=RelPHYLIP fromfile=${alignmentFile} tofile=${alignmentFile}.svdq.nex interleaved=yes replace=yes;
+exe ${alignmentFile}.svdq.nex;
+svdq bootstrap nreps=${nBoot} nthreads=${nCpus};
+saveTrees file=${treeFile};
+quit;
+" | paup
+
+date
+__________________________________________________
+sbatch -q schwartzlab slurm_submissions/runSVDQ.sh
+Submitted batch job 207955
+
+
+Next:
+FINISH LOCUS PROPERTIES?
+phylomad - running
+others?
+
+
+#FIX ARRAY JOBS - put in script!
+Use SED to update jobs?
+
+
+## Filter By Taxa
+### Running filterByTaxa:
+2023.03.22
+```
+mkdir /data/schwartzlab/Biancani/PlacentalPolytomy
+cd /data/schwartzlab/Biancani/PlacentalPolytomy
+svn checkout https://github.com/LMBiancani/PlacentalPolytomy/trunk/filterByTaxa
+
+cd filterByTaxa/
+sbatch -q schwartzlab filter_SISRS_output.sh
+```
+Submitted batch job 244201
+Job ID: 244201
+Cluster: andromeda
+User/Group: biancani/schwartzlab
+State: COMPLETED (exit code 0)
+Cores: 1
+CPU Utilized: 00:14:16
+CPU Efficiency: 2.00% of 11:52:00 core-walltime
+Job Wall-clock time: 11:52:00
+Memory Utilized: 606.90 MB
+Memory Efficiency: 0.46% of 128.00 GB
+
+## Annotation
+### Running download_reference:
+2023.03.23
+```
+cd /data/schwartzlab/Biancani/PlacentalPolytomy
+svn checkout https://github.com/LMBiancani/PlacentalPolytomy/trunk/annotation
+# Checked out revision 61
+
+cd annotation
+sbatch -q schwartzlab download_reference.sh
+```
+Submitted batch job 244291
+Job ID: 244291
+Cluster: andromeda
+User/Group: biancani/schwartzlab
+State: COMPLETED (exit code 0)
+Cores: 1
+CPU Utilized: 00:00:38
+CPU Efficiency: 43.68% of 00:01:27 core-walltime
+Job Wall-clock time: 00:01:27
+Memory Utilized: 1.82 MB
+Memory Efficiency: 0.00% of 128.00 GB
+
+Files Created:
+
+/data/schwartzlab/Biancani/PlacentalPolytomy/output/reference_genome/GCF_002880755.1_Clint_PTRv2_genomic.gff
+
+/data/schwartzlab/Biancani/PlacentalPolytomy/output/reference_genome/GCF_002880755.1_Clint_PTRv2_genomic.fna
+
+### NOTE - PATHS USED THAT SHOULD NOT CHANGE MOVING FORWARD
+```
+# path to SISRS loci (aligned contigs) folder: (DO NOT USE AGAIN, USE ONLY FILTERED LOCI NOW)
+LOCI=/data/schwartzlab/Biancani/PLACENTAL/SISRS_out/SISRS_Run/aligned_contigs
+# path to FILTERED SISRS loci (aligned contigs) folder:
+LOCI=/data/schwartzlab/Biancani/PlacentalPolytomy/output/SISRS_out_filtered
+```
+
+### Running annotation_job.sh:
+2023.03.23
+```
+cd /data/schwartzlab/Biancani/PlacentalPolytomy
+svn checkout https://github.com/LMBiancani/PlacentalPolytomy/trunk/annotation
+# Checked out revision 62
+
+cd annotation
+sbatch -q schwartzlab annotation_job.sh
+```
+Submitted batch job 244294
+Job ID: 244294
+Cluster: andromeda
+User/Group: biancani/schwartzlab
+State: COMPLETED (exit code 0)
+Cores: 1
+Job Wall-clock time: 01:16:48
+
+## Loci Properties
+### AMAS
+2023.03.24
+
+download AMAS program files:
+```
+mkdir -p /data/schwartzlab/Biancani/Software
+cd /data/schwartzlab/Biancani/Software
+svn checkout https://github.com/marekborowiec/AMAS/
+# Checked out revision 227.
+```
+path to `AMAS.py` = `/data/schwartzlab/Biancani/Software/AMAS/amas/AMAS.py`
+
+### Running run_amas.sh:
+2023.03.24
+```
+cd /data/schwartzlab/Biancani/PlacentalPolytomy
+svn checkout https://github.com/LMBiancani/PlacentalPolytomy/trunk/amas
+# Checked out revision 69.
+
+cd amas
+sbatch -q schwartzlab run_amas.sh
+```
+Submitted batch job 244381
+Job ID: 244381
+Cluster: andromeda
+User/Group: biancani/schwartzlab
+State: COMPLETED (exit code 0)
+Nodes: 1
+Cores per node: 36
+CPU Utilized: 00:17:33
+CPU Efficiency: 1.74% of 16:50:24 core-walltime
+Job Wall-clock time: 00:28:04
+Memory Utilized: 742.70 MB
+Memory Efficiency: 0.57% of 128.00 GB
+
+### Running iqtree_prep.sh
+2023.03.27
+```
+cd /data/schwartzlab/Biancani/PlacentalPolytomy
+svn checkout https://github.com/LMBiancani/PlacentalPolytomy/trunk/iqtree
+# Checked out revision 67.
+
+cd iqtree
+sbatch -q schwartzlab iqtree_prep.sh
+```
+Submitted batch job 245433
+Job ID: 245433
+Cluster: andromeda
+User/Group: biancani/schwartzlab
+State: COMPLETED (exit code 0)
+Cores: 1
+CPU Utilized: 00:00:01
+CPU Efficiency: 2.17% of 00:00:46 core-walltime
+Job Wall-clock time: 00:00:46
+Memory Utilized: 17.45 MB
+Memory Efficiency: 0.28% of 6.00 GB
+
+### Updating iqtree_array.sh
+2023.04.03
+
+# copy these files to R project, iqtree folder:
+
+# Specify taxon list for each hypothesis tree:
+# For Placental root question: Determine which 2 out of 3 groups are sisters for each hypothesis and select one of the sisters.
+# List 1 (Afrotheria Out) = Boreoeutheria
+focal_tips1="/data/schwartzlab/Biancani/PLACENTAL/hypothesis_trees/tips_Boreoeutheria.txt"
+# List 2 (Boreoeutheria Out) = Afrotheria
+focal_tips2="/data/schwartzlab/Biancani/PLACENTAL/hypothesis_trees/tips_Afrotheria.txt"
+# List 3 (Xenarthra Out) = Boreoeutheria
+focal_tips3="/data/schwartzlab/Biancani/PLACENTAL/hypothesis_trees/tips_Boreoeutheria.txt"
+# Outgroup taxa list:
+outgroup_tips="/data/schwartzlab/Biancani/PLACENTAL/hypothesis_trees/tips_Outgroup.txt"
+
+
+### ReRunning iqtree_prep.sh
+2023.04.07
+```
+rm -r /data/schwartzlab/Biancani/PlacentalPolytomy/output/iqtree_assessment
+cd /data/schwartzlab/Biancani/PlacentalPolytomy
+svn checkout https://github.com/LMBiancani/PlacentalPolytomy/trunk/iqtree
+# Checked out revision 82.
+
+cd iqtree
+sbatch -q schwartzlab iqtree_prep.sh
+```
+Submitted batch job 246749
+Job ID: 246749
+Cluster: andromeda
+User/Group: biancani/schwartzlab
+State: COMPLETED (exit code 0)
+Cores: 1
+CPU Utilized: 00:00:01
+CPU Efficiency: 8.33% of 00:00:12 core-walltime
+Job Wall-clock time: 00:00:12
+Memory Utilized: 0.00 MB (estimated maximum)
+Memory Efficiency: 0.00% of 6.00 GB (6.00 GB/core)
+
+Output:
+#SBATCH --array=28%28
+
+### Running iqtree_array.sh
+2023.04.07
+
+```
+sbatch -q schwartzlab iqtree_array.sh
+```
+Submitted batch job 246750
+Error: path to R script not correct
+
+
+### ReRunning iqtree_prep.sh
+2023.04.10
+```
+mv /data/schwartzlab/Biancani/PlacentalPolytomy/output/iqtree_assessment /data/schwartzlab/Biancani/Trash
+cd /data/schwartzlab/Biancani/PlacentalPolytomy
+svn checkout https://github.com/LMBiancani/PlacentalPolytomy/trunk/iqtree
+# Checked out revision 83.
+
+cd iqtree
+sbatch -q schwartzlab iqtree_prep.sh
+```
+Submitted batch job 246948
+Job ID: 246948
+Cluster: andromeda
+User/Group: biancani/schwartzlab
+State: COMPLETED (exit code 0)
+Cores: 1
+CPU Utilized: 00:00:01
+CPU Efficiency: 2.70% of 00:00:37 core-walltime
+Job Wall-clock time: 00:00:37
+Memory Utilized: 22.16 MB
+Memory Efficiency: 0.36% of 6.00 GB
+
+### ReRunning iqtree_array.sh
+2023.04.10
+```
+cd /data/schwartzlab/Biancani/PlacentalPolytomy/iqtree
+sbatch -q schwartzlab iqtree_array.sh
+```
+Submitted batch job 246949
+andromeda Slurm Array Summary Job_id=246949_* (246949) Name=IQarr Failed, Mixed, ExitCode [0-1]
+Job ID: 246949
+Array Job ID: 246949_28
+Cluster: andromeda
+User/Group: biancani/schwartzlab
+State: COMPLETED (exit code 0)
+Cores: 1
+CPU Utilized: 04:18:37
+CPU Efficiency: 30.67% of 14:03:15 core-walltime
+Job Wall-clock time: 14:03:15
+Memory Utilized: 63.11 MB
+Memory Efficiency: 1.03% of 6.00 GB
+
+From an output file:
+Reading tree ./tree3_SISRS_contig-1000000007.fasta.tre ...
+rooted tree with 28 taxa and 35 branches
+ERROR: Alignment sequence Gymnobelideus_leadbeateri does not appear in the tree
+ERROR: Alignment sequence Phalanger_gymnotis does not appear in the tree
+ERROR: Alignment sequence Phascolarctos_cinereus does not appear in the tree
+ERROR: Alignment sequence Pseudochirops_corinnae does not appear in the tree
+ERROR: Alignment sequence Vombatus_ursinus does not appear in the tree
+((((Procavia_capensis,Loxodonta_africana,Hydrodamalis_gigas,Orycteropus_afer,Elephantulus_edwardii,Amblysomus_hottentotus_longiceps,Chrysochloris_asiatica,Echinops_telfairi),(Condylura_cristata,Ceratotherium_simum,Manis_javanica,Odobenus_rosmarus_divergens,Hippopotamus_amphibius,Pteropus_vampyrus,Galeopterus_variegatus,Pan_troglodytes,Rattus_norvegicus,Tupaia_tana)),(Mylodon_darwinii,Choloepus_didactylus,Dasypus_novemcinctus,Tolypeutes_matacus,Chaetophractus_vellerosus)),(Didelphis_virginiana,Thylacinus_cynocephalus,Sarcophilus_harrisii,Wallabia_bicolor,Potorous_gilbertii));
+ERROR: Tree taxa and alignment sequence do not match (see above)
+
+Updated Hypothesis trees (were missing taxa)
+
+### ReRunning iqtree_prep.sh
+2023.04.14
+```
+# delete previous output files:
+mv /data/schwartzlab/Biancani/PlacentalPolytomy/output/iqtree_assessment /data/schwartzlab/Biancani/PlacentalPolytomy/output/iqtree_assessment2
+mv /data/schwartzlab/Biancani/PlacentalPolytomy/output/iqtree_assessment2 /data/schwartzlab/Biancani/Trash
+cd /data/schwartzlab/Biancani/PlacentalPolytomy/iqtree
+rm -r hypothesis_trees/
+cd ..
+svn checkout https://github.com/LMBiancani/PlacentalPolytomy/trunk/iqtree
+# Checked out revision 86.
+
+cd iqtree
+sbatch -q schwartzlab iqtree_prep.sh
+```
+Submitted batch job 250481
+Job ID: 250481
+Cluster: andromeda
+User/Group: biancani/schwartzlab
+State: COMPLETED (exit code 0)
+Cores: 1
+CPU Utilized: 00:00:01
+CPU Efficiency: 2.78% of 00:00:36 core-walltime
+Job Wall-clock time: 00:00:36
+Memory Utilized: 21.78 MB
+Memory Efficiency: 0.35% of 6.00 GB
+
+### ReRunning iqtree_array.sh
+2023.04.14
+```
+cd /data/schwartzlab/Biancani/PlacentalPolytomy/iqtree
+sbatch -q schwartzlab iqtree_array.sh
+```
+Submitted batch job 250483
+andromeda Slurm Array Summary Job_id=250483_* (250483) Name=IQarr Failed, Mixed, ExitCode [0-1]
+Job ID: 250483
+Array Job ID: 250483_28
+Cluster: andromeda
+User/Group: biancani/schwartzlab
+State: COMPLETED (exit code 0)
+Cores: 1
+CPU Utilized: 03:51:37
+CPU Efficiency: 25.40% of 15:11:42 core-walltime
+Job Wall-clock time: 15:11:42
+Memory Utilized: 63.12 MB
+Memory Efficiency: 1.03% of 6.00 GB
+
+Says "Name=IQarr Failed, Mixed, ExitCode [0-1]" but no "ERROR" in output files
+rm errors:
+slurm-250483_21.out:rm: cannot remove ‘calcLnL_SISRS_contig-61349000020.fasta.trees’: No such file or directory
+slurm-250483_21.out:rm: cannot remove ‘calcLnL_SISRS_contig-61349000020.fasta.uniqueseq.phy’: No such file or directory
+slurm-250483_21.out:rm: cannot remove ‘calcLnL_SISRS_contig-61350000025.fasta.trees’: No such file or directory
+slurm-250483_21.out:rm: cannot remove ‘calcLnL_SISRS_contig-6135000033.fasta.trees’: No such file or directory
+slurm-250483_21.out:rm: cannot remove ‘calcLnL_SISRS_contig-6135000033.fasta.uniqueseq.phy’: No such file or directory
+slurm-250483_21.out:rm: cannot remove ‘calcLnL_SISRS_contig-61351000006.fasta.trees’: No such file or directory
+slurm-250483_21.out:rm: cannot remove ‘calcLnL_SISRS_contig-61351000006.fasta.uniqueseq.phy’: No such file or directory
+slurm-250483_21.out:rm: cannot remove ‘calcLnL_SISRS_contig-61351000021.fasta.trees’: No such file or directory
+slurm-250483_21.out:rm: cannot remove ‘calcLnL_SISRS_contig-61351000021.fasta.uniqueseq.phy’: No such file or directory
+slurm-250483_21.out:rm: cannot remove ‘calcLnL_SISRS_contig-61352000002.fasta.trees’: No such file or directory
+slurm-250483_21.out:rm: cannot remove ‘calcLnL_SISRS_contig-61352000009.fasta.trees’: No such file or directory
+slurm-250483_21.out:rm: cannot remove ‘calcLnL_SISRS_contig-61352000009.fasta.uniqueseq.phy’: No such file or directory
+slurm-250483_21.out:rm: cannot remove ‘calcLnL_SISRS_contig-61353000020.fasta.trees’: No such file or directory
+
+Example flies in output folder:
+scf (directory)
+aligned_loci_list_aa                              calcLnL_SISRS_contig-198396000025.fasta.parstree  calcLnL_SISRS_contig-45114000030.fasta.parstree
+aligned_loci_list_ag                              calcLnL_SISRS_contig-198370000005.fasta.parstree  calcLnL_SISRS_contig-24670000028.fasta.parstree
+aligned_loci_list_ak                              calcLnL_SISRS_contig-54402000003.fasta.parstree   calcLnL_SISRS_contig-217963000022.fasta.parstree
+aligned_loci_list_at                              calcLnL_SISRS_contig-145041000011.fasta.parstree  calcLnL_SISRS_contig-138976000021.fasta.parstree
+aligned_loci_list_au                              calcLnL_SISRS_contig-135964000034.fasta.parstree  calcLnL_SISRS_contig-50645000025.fasta.parstree
+aligned_loci_list_ay                              calcLnL_SISRS_contig-163419000003.fasta.parstree  calcLnL_SISRS_contig-34612000021.fasta.parstree
+LnLs_20.csv                                       calcLnL_SISRS_contig-54401000024.fasta.parstree   calcLnL_SISRS_contig-201145000016.fasta.parstree
+LnLs_4.csv                                        calcLnL_SISRS_contig-189777000012.fasta.parstree  calcLnL_SISRS_contig-116348000009.fasta.parstree
+LnLs_26.csv                                       calcLnL_SISRS_contig-206754000021.fasta.parstree  calcLnL_SISRS_contig-217973000003.fasta.parstree
+LnLs_6.csv                                        calcLnL_SISRS_contig-65317000018.fasta.parstree   calcLnL_SISRS_contig-7832000032.fasta.parstree
+LnLs_1.csv                                        calcLnL_SISRS_contig-87740000032.fasta.parstree   calcLnL_SISRS_contig-78339000003.fasta.parstree
+LnLs_28.csv                                       calcLnL_SISRS_contig-83000016.fasta.parstree      calcLnL_SISRS_contig-116366000014.fasta.parstree
+LnLs_16.csv                                       calcLnL_SISRS_contig-23164000010.fasta.parstree   calcLnL_SISRS_contig-67068000018.fasta.parstree
+LnLs_13.csv                                       calcLnL_SISRS_contig-154130000002.fasta.parstree  calcLnL_SISRS_contig-45116000012.fasta.parstree
+
+I think iqtree_array.sh should be removing calcLnL_${line}.parstree in addition to other output files, but I want to test this by moving these files before running collect scripts.
+
+```
+cd /data/schwartzlab/Biancani/PlacentalPolytomy/output/iqtree_assessment/
+mkdir delete_maybe
+mv calcLnL_SISRS_contig-4*.parstree delete_maybe
+ls -U | grep 'calcLnL_SISRS_contig' | grep 'parstree'
+
+for i in $(ls -U | grep 'calcLnL_SISRS_contig' | grep 'parstree')
+do
+   mv $i delete_maybe
+done
+
+```
+
+### Running iqtree_array_concat.sh
+2023.04.17
+```
+cd /data/schwartzlab/Biancani/PlacentalPolytomy/
+svn checkout https://github.com/LMBiancani/PlacentalPolytomy/trunk/iqtree
+# Checked out revision 91.
+
+cd iqtree
+sbatch -q schwartzlab iqtree_array_concat.sh
+```
+Submitted batch job 254075 - errors:
+cp: cannot create regular file ‘./array_list.txt’: File exists
+cp: cannot create regular file ‘./aligned_loci_list_ad’: File exists
+cp: cannot create regular file ‘./aligned_loci_list_ag’: File exists
+cp: cannot create regular file ‘./aligned_loci_list_ah’: File exists
+cp: cannot create regular file ‘./aligned_loci_list_ai’: File exists
+cp: cannot create regular file ‘./aligned_loci_list_aj’: File exists
+cp: cannot create regular file ‘./aligned_loci_list_ak’: File exists
+cp: cannot create regular file ‘./aligned_loci_list_al’: File exists
+cp: cannot create regular file ‘./aligned_loci_list_an’: File exists
+cp: cannot create regular file ‘./aligned_loci_list_ao’: File exists
+cp: cannot create regular file ‘./aligned_loci_list_ap’: File exists
+cp: cannot create regular file ‘./aligned_loci_list_at’: File exists
+cp: cannot create regular file ‘./aligned_loci_list_au’: File exists
+cp: cannot create regular file ‘./aligned_loci_list_av’: File exists
+cp: cannot create regular file ‘./aligned_loci_list_aw’: File exists
+Mon Apr 17 14:16:27 EDT 2023
+sed: can't read array_list.txt: No such file or directory
+
+Move file copying to iqtree prep script.
+
+```
+cd /data/schwartzlab/Biancani/PlacentalPolytomy/
+svn checkout https://github.com/LMBiancani/PlacentalPolytomy/trunk/iqtree
+# Checked out revision 92.
+
+cd iqtree
+sbatch -q schwartzlab iqtree_array_concat.sh
+```
+Submitted batch job 254132
+Job ID: 254132
+Array Job ID: 254132_28
+Cluster: andromeda
+User/Group: biancani/schwartzlab
+State: COMPLETED (exit code 0)
+Nodes: 1
+Cores per node: 10
+CPU Utilized: 05:54:21
+CPU Efficiency: 91.33% of 06:28:00 core-walltime
+Job Wall-clock time: 00:38:48
+Memory Utilized: 2.35 GB
+Memory Efficiency: 3.92% of 60.00 GB
