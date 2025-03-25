@@ -30,7 +30,7 @@ ANNOTATION="$OUTPUT/ReferenceGenome/GCF_002880755.1_Clint_PTRv2_genomic.gff"
 ## (`l`) compute proportion of length of each feature type per locus, for ex. 0.2 CDS, 0.8 introns
 outputMode="l"
 
-mkdir $OUTPUT
+mkdir -p $OUTPUT
 cd $OUTPUT
 
 #Andromeda (URI's cluster) specific

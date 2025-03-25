@@ -265,6 +265,134 @@ Submitted batch job 363264
 
 2025.03.25
 
+cd /data/schwartzlab/Biancani/PlacentalPolytomy/03_Annotation
+
+03.00_DownloadReference.sh
+_______________________________
+#!/bin/sh
+#SBATCH --job-name="download_reference"
+#SBATCH --time=10:00:00  # walltime limit (HH:MM:SS)
+#SBATCH --nodes=1   # number of nodes
+#SBATCH --ntasks-per-node=1   # processor core(s) per node
+#SBATCH --mail-user="biancani@uri.edu" #CHANGE to your email
+#SBATCH --mail-type=ALL
+
+## UPDATE PATHS:
+# path to project directory:
+PROJECT=/data/schwartzlab/Biancani/PlacentalPolytomy
+# path to output folder for annotation (will be created by script if necessary):
+OUTPUT=$PROJECT/output/03_Annotation
+# path to folder for reference genome (will be created by script if necessary):
+RefDir=$OUTPUT/ReferenceGenome
+
+## UPDATE URLs:
+#URL for GFF format reference annotation file: 
+ANNOTATION="https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/002/880/755/GCF_002880755.1_Clint_PTRv2/GCF_002880755.1_Clint_PTRv2_genomic.gff.gz"
+#URL for fasta format reference genome:
+GENOME="https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/002/880/755/GCF_002880755.1_Clint_PTRv2/GCF_002880755.1_Clint_PTRv2_genomic.fna.gz"
+
+mkdir -p $RefDir
+cd $RefDir
+
+for i in $ANNOTATION $GENOME
+do
+  #download file:
+  wget --tries=0 --retry-connrefused --continue --timeout=30 --progress=dot:giga $i
+  #extract filename from URL:
+  name=$(echo $i | rev | cut -d '/' -f 1 | rev)
+  #decompress file:
+  gunzip $name
+done
+_______________________________
+sbatch -q schwartzlab 03.00_DownloadReference.sh
+Submitted batch job 363295
+Job ID: 363295
+Cluster: andromeda
+User/Group: biancani/schwartzlab
+State: COMPLETED (exit code 0)
+Cores: 1
+CPU Utilized: 00:00:41
+CPU Efficiency: 13.95% of 00:04:54 core-walltime
+Job Wall-clock time: 00:04:54
+Memory Utilized: 1.86 MB
+Memory Efficiency: 0.09% of 2.00 GB
+
+
+
+cd /data/schwartzlab/Biancani/PlacentalPolytomy/03_Annotation
+
+03.01_Annotation.sh
+_______________________________
+#!/bin/bash
+#SBATCH --job-name="annotate"
+#SBATCH --time=100:00:00  # walltime limit (HH:MM:SS)
+#SBATCH --nodes=1   # number of nodes
+#SBATCH --ntasks-per-node=36   # processor core(s) per node
+#SBATCH --mail-user="biancani@uri.edu" # CHANGE THIS to your user email address
+#SBATCH --mail-type=ALL
+
+## UPDATE:
+# number of tasks/processor cores per node:
+TASKS=36
+# path to project directory:
+PROJECT=/data/schwartzlab/Biancani/PlacentalPolytomy
+# location of annotation scripts:
+SCRIPTS=$PROJECT/03_Annotation
+# path to FILTERED SISRS loci (aligned contigs) folder:
+# path to FILTERED SISRS loci (aligned contigs):
+LOCI=$PROJECT/output/01_SISRS_loci_filtered
+# path to output folder for annotation (will be created by script if necessary):
+OUTPUT=$PROJECT/output/03_Annotation
+
+# name of study taxon closest to reference:
+taxonName="Pan_troglodytes"
+# path to FASTA format reference genome:
+GENOME="$OUTPUT/ReferenceGenome/GCF_002880755.1_Clint_PTRv2_genomic.fna"
+# path to GFF format reference annotation file:
+ANNOTATION="$OUTPUT/ReferenceGenome/GCF_002880755.1_Clint_PTRv2_genomic.gff"
+# select output mode (either counts of different annotation types, or length proportion of each annotations type)
+## (`c`) count the number of each feature per locus, for ex. 1 CDS, 2 introns, etc.
+## (`l`) compute proportion of length of each feature type per locus, for ex. 0.2 CDS, 0.8 introns
+outputMode="l"
+
+mkdir $OUTPUT
+cd $OUTPUT
+
+#Andromeda (URI's cluster) specific
+module purge
+module load Biopython/1.78-foss-2020b
+#
+python ${SCRIPTS}/annotation_getTaxContigs.py ${taxonName} ${LOCI}
+
+#Andromeda (URI's cluster) specific
+module purge
+module load BLAST+
+#
+
+makeblastdb -in ${GENOME} -dbtype nucl
+
+blastn -query ${taxonName}.fasta -db ${GENOME} -outfmt 6 -num_threads ${TASKS} > blast_results.blast
+
+python3 ${SCRIPTS}/annotation_blast_parser.py blast_results.blast > full_table.bed
+
+sort -k1,1 -k2,2n full_table.bed > full_table_sorted.bed
+
+#Andromeda (URI's cluster) specific
+module purge
+module load BEDTools/2.27.1-foss-2018b
+#
+
+bedtools intersect -a full_table_sorted.bed -b ${ANNOTATION} -wa -wb > full_table_annotated.bed
+
+python3 ${SCRIPTS}/annotation_bed2table.py full_table_annotated.bed ${outputMode} > annotations.csv
+
+date
+_______________________________
+sbatch -q schwartzlab 03.01_Annotation.sh
+
+
+
+
 cd /data/schwartzlab/Biancani/PlacentalPolytomy/02_IQtree
 
 02.02_iqtree_array_concat.sh
