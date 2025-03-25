@@ -8,3 +8,13 @@ Total number of unfiltered SISRS loci:
 Number of filtered SISRS loci:
 109,799
 
+2025.03.24
+
+02.00_iqtree_prep.sh
+Job ID: 363263
+array info:
+#SBATCH --array=[1-28]%28
+
+02.01_iqtree_array.sh
+Submitted batch job 363264
+*running* estimated finish: noon on Mar 25th

@@ -161,6 +161,8 @@ Job Wall-clock time: 00:00:45
 Memory Utilized: 15.90 MB
 Memory Efficiency: 0.26% of 6.00 GB
 
+output:
+#SBATCH --array=[1-28]%28
 
 cd /data/schwartzlab/Biancani/PlacentalPolytomy/02_IQtree
 
@@ -258,4 +260,15 @@ do
 done
 _______________________________
 sbatch -q schwartzlab 02.01_iqtree_array.sh
+Submitted batch job 363264
 
+
+2025.03.25
+
+cd /data/schwartzlab/Biancani/PlacentalPolytomy/02_IQtree
+
+02.02_iqtree_array_concat.sh
+_______________________________
+
+_______________________________
+sbatch -q schwartzlab 02.02_iqtree_array_concat.sh

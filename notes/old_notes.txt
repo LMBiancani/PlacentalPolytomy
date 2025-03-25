@@ -1,3 +1,396 @@
+
+2023.03.22
+```
+mkdir /data/schwartzlab/Biancani/PlacentalPolytomy
+cd /data/schwartzlab/Biancani/PlacentalPolytomy
+svn checkout https://github.com/LMBiancani/PlacentalPolytomy/trunk/filterByTaxa
+
+cd filterByTaxa/
+sbatch -q schwartzlab filter_SISRS_output.sh
+```
+Submitted batch job 244201
+Job ID: 244201
+Cluster: andromeda
+User/Group: biancani/schwartzlab
+State: COMPLETED (exit code 0)
+Cores: 1
+CPU Utilized: 00:14:16
+CPU Efficiency: 2.00% of 11:52:00 core-walltime
+Job Wall-clock time: 11:52:00
+Memory Utilized: 606.90 MB
+Memory Efficiency: 0.46% of 128.00 GB
+
+## Annotation
+### Running download_reference:
+2023.03.23
+```
+cd /data/schwartzlab/Biancani/PlacentalPolytomy
+svn checkout https://github.com/LMBiancani/PlacentalPolytomy/trunk/annotation
+# Checked out revision 61
+
+cd annotation
+sbatch -q schwartzlab download_reference.sh
+```
+Submitted batch job 244291
+Job ID: 244291
+Cluster: andromeda
+User/Group: biancani/schwartzlab
+State: COMPLETED (exit code 0)
+Cores: 1
+CPU Utilized: 00:00:38
+CPU Efficiency: 43.68% of 00:01:27 core-walltime
+Job Wall-clock time: 00:01:27
+Memory Utilized: 1.82 MB
+Memory Efficiency: 0.00% of 128.00 GB
+
+Files Created:
+
+/data/schwartzlab/Biancani/PlacentalPolytomy/output/reference_genome/GCF_002880755.1_Clint_PTRv2_genomic.gff
+
+/data/schwartzlab/Biancani/PlacentalPolytomy/output/reference_genome/GCF_002880755.1_Clint_PTRv2_genomic.fna
+
+### NOTE - PATHS USED THAT SHOULD NOT CHANGE MOVING FORWARD
+```
+# path to SISRS loci (aligned contigs) folder: (DO NOT USE AGAIN, USE ONLY FILTERED LOCI NOW)
+LOCI=/data/schwartzlab/Biancani/PLACENTAL/SISRS_out/SISRS_Run/aligned_contigs
+# path to FILTERED SISRS loci (aligned contigs) folder:
+LOCI=/data/schwartzlab/Biancani/PlacentalPolytomy/output/SISRS_out_filtered
+```
+
+### Running annotation_job.sh:
+2023.03.23
+```
+cd /data/schwartzlab/Biancani/PlacentalPolytomy
+svn checkout https://github.com/LMBiancani/PlacentalPolytomy/trunk/annotation
+# Checked out revision 62
+
+cd annotation
+sbatch -q schwartzlab annotation_job.sh
+```
+Submitted batch job 244294
+Job ID: 244294
+Cluster: andromeda
+User/Group: biancani/schwartzlab
+State: COMPLETED (exit code 0)
+Cores: 1
+Job Wall-clock time: 01:16:48
+
+## Loci Properties
+### AMAS
+2023.03.24
+
+download AMAS program files:
+```
+mkdir -p /data/schwartzlab/Biancani/Software
+cd /data/schwartzlab/Biancani/Software
+svn checkout https://github.com/marekborowiec/AMAS/
+# Checked out revision 227.
+```
+path to `AMAS.py` = `/data/schwartzlab/Biancani/Software/AMAS/amas/AMAS.py`
+
+### Running run_amas.sh:
+2023.03.24
+```
+cd /data/schwartzlab/Biancani/PlacentalPolytomy
+svn checkout https://github.com/LMBiancani/PlacentalPolytomy/trunk/amas
+# Checked out revision 69.
+
+cd amas
+sbatch -q schwartzlab run_amas.sh
+```
+Submitted batch job 244381
+Job ID: 244381
+Cluster: andromeda
+User/Group: biancani/schwartzlab
+State: COMPLETED (exit code 0)
+Nodes: 1
+Cores per node: 36
+CPU Utilized: 00:17:33
+CPU Efficiency: 1.74% of 16:50:24 core-walltime
+Job Wall-clock time: 00:28:04
+Memory Utilized: 742.70 MB
+Memory Efficiency: 0.57% of 128.00 GB
+
+### Running iqtree_prep.sh
+2023.03.27
+```
+cd /data/schwartzlab/Biancani/PlacentalPolytomy
+svn checkout https://github.com/LMBiancani/PlacentalPolytomy/trunk/iqtree
+# Checked out revision 67.
+
+cd iqtree
+sbatch -q schwartzlab iqtree_prep.sh
+```
+Submitted batch job 245433
+Job ID: 245433
+Cluster: andromeda
+User/Group: biancani/schwartzlab
+State: COMPLETED (exit code 0)
+Cores: 1
+CPU Utilized: 00:00:01
+CPU Efficiency: 2.17% of 00:00:46 core-walltime
+Job Wall-clock time: 00:00:46
+Memory Utilized: 17.45 MB
+Memory Efficiency: 0.28% of 6.00 GB
+
+### Updating iqtree_array.sh
+2023.04.03
+
+# copy these files to R project, iqtree folder:
+
+# Specify taxon list for each hypothesis tree:
+# For Placental root question: Determine which 2 out of 3 groups are sisters for each hypothesis and select one of the sisters.
+# List 1 (Afrotheria Out) = Boreoeutheria
+focal_tips1="/data/schwartzlab/Biancani/PLACENTAL/hypothesis_trees/tips_Boreoeutheria.txt"
+# List 2 (Boreoeutheria Out) = Afrotheria
+focal_tips2="/data/schwartzlab/Biancani/PLACENTAL/hypothesis_trees/tips_Afrotheria.txt"
+# List 3 (Xenarthra Out) = Boreoeutheria
+focal_tips3="/data/schwartzlab/Biancani/PLACENTAL/hypothesis_trees/tips_Boreoeutheria.txt"
+# Outgroup taxa list:
+outgroup_tips="/data/schwartzlab/Biancani/PLACENTAL/hypothesis_trees/tips_Outgroup.txt"
+
+
+### ReRunning iqtree_prep.sh
+2023.04.07
+```
+rm -r /data/schwartzlab/Biancani/PlacentalPolytomy/output/iqtree_assessment
+cd /data/schwartzlab/Biancani/PlacentalPolytomy
+svn checkout https://github.com/LMBiancani/PlacentalPolytomy/trunk/iqtree
+# Checked out revision 82.
+
+cd iqtree
+sbatch -q schwartzlab iqtree_prep.sh
+```
+Submitted batch job 246749
+Job ID: 246749
+Cluster: andromeda
+User/Group: biancani/schwartzlab
+State: COMPLETED (exit code 0)
+Cores: 1
+CPU Utilized: 00:00:01
+CPU Efficiency: 8.33% of 00:00:12 core-walltime
+Job Wall-clock time: 00:00:12
+Memory Utilized: 0.00 MB (estimated maximum)
+Memory Efficiency: 0.00% of 6.00 GB (6.00 GB/core)
+
+Output:
+#SBATCH --array=28%28
+
+### Running iqtree_array.sh
+2023.04.07
+
+```
+sbatch -q schwartzlab iqtree_array.sh
+```
+Submitted batch job 246750
+Error: path to R script not correct
+
+
+### ReRunning iqtree_prep.sh
+2023.04.10
+```
+mv /data/schwartzlab/Biancani/PlacentalPolytomy/output/iqtree_assessment /data/schwartzlab/Biancani/Trash
+cd /data/schwartzlab/Biancani/PlacentalPolytomy
+svn checkout https://github.com/LMBiancani/PlacentalPolytomy/trunk/iqtree
+# Checked out revision 83.
+
+cd iqtree
+sbatch -q schwartzlab iqtree_prep.sh
+```
+Submitted batch job 246948
+Job ID: 246948
+Cluster: andromeda
+User/Group: biancani/schwartzlab
+State: COMPLETED (exit code 0)
+Cores: 1
+CPU Utilized: 00:00:01
+CPU Efficiency: 2.70% of 00:00:37 core-walltime
+Job Wall-clock time: 00:00:37
+Memory Utilized: 22.16 MB
+Memory Efficiency: 0.36% of 6.00 GB
+
+### ReRunning iqtree_array.sh
+2023.04.10
+```
+cd /data/schwartzlab/Biancani/PlacentalPolytomy/iqtree
+sbatch -q schwartzlab iqtree_array.sh
+```
+Submitted batch job 246949
+andromeda Slurm Array Summary Job_id=246949_* (246949) Name=IQarr Failed, Mixed, ExitCode [0-1]
+Job ID: 246949
+Array Job ID: 246949_28
+Cluster: andromeda
+User/Group: biancani/schwartzlab
+State: COMPLETED (exit code 0)
+Cores: 1
+CPU Utilized: 04:18:37
+CPU Efficiency: 30.67% of 14:03:15 core-walltime
+Job Wall-clock time: 14:03:15
+Memory Utilized: 63.11 MB
+Memory Efficiency: 1.03% of 6.00 GB
+
+From an output file:
+Reading tree ./tree3_SISRS_contig-1000000007.fasta.tre ...
+rooted tree with 28 taxa and 35 branches
+ERROR: Alignment sequence Gymnobelideus_leadbeateri does not appear in the tree
+ERROR: Alignment sequence Phalanger_gymnotis does not appear in the tree
+ERROR: Alignment sequence Phascolarctos_cinereus does not appear in the tree
+ERROR: Alignment sequence Pseudochirops_corinnae does not appear in the tree
+ERROR: Alignment sequence Vombatus_ursinus does not appear in the tree
+((((Procavia_capensis,Loxodonta_africana,Hydrodamalis_gigas,Orycteropus_afer,Elephantulus_edwardii,Amblysomus_hottentotus_longiceps,Chrysochloris_asiatica,Echinops_telfairi),(Condylura_cristata,Ceratotherium_simum,Manis_javanica,Odobenus_rosmarus_divergens,Hippopotamus_amphibius,Pteropus_vampyrus,Galeopterus_variegatus,Pan_troglodytes,Rattus_norvegicus,Tupaia_tana)),(Mylodon_darwinii,Choloepus_didactylus,Dasypus_novemcinctus,Tolypeutes_matacus,Chaetophractus_vellerosus)),(Didelphis_virginiana,Thylacinus_cynocephalus,Sarcophilus_harrisii,Wallabia_bicolor,Potorous_gilbertii));
+ERROR: Tree taxa and alignment sequence do not match (see above)
+
+Updated Hypothesis trees (were missing taxa)
+
+### ReRunning iqtree_prep.sh
+2023.04.14
+```
+# delete previous output files:
+mv /data/schwartzlab/Biancani/PlacentalPolytomy/output/iqtree_assessment /data/schwartzlab/Biancani/PlacentalPolytomy/output/iqtree_assessment2
+mv /data/schwartzlab/Biancani/PlacentalPolytomy/output/iqtree_assessment2 /data/schwartzlab/Biancani/Trash
+cd /data/schwartzlab/Biancani/PlacentalPolytomy/iqtree
+rm -r hypothesis_trees/
+cd ..
+svn checkout https://github.com/LMBiancani/PlacentalPolytomy/trunk/iqtree
+# Checked out revision 86.
+
+cd iqtree
+sbatch -q schwartzlab iqtree_prep.sh
+```
+Submitted batch job 250481
+Job ID: 250481
+Cluster: andromeda
+User/Group: biancani/schwartzlab
+State: COMPLETED (exit code 0)
+Cores: 1
+CPU Utilized: 00:00:01
+CPU Efficiency: 2.78% of 00:00:36 core-walltime
+Job Wall-clock time: 00:00:36
+Memory Utilized: 21.78 MB
+Memory Efficiency: 0.35% of 6.00 GB
+
+### ReRunning iqtree_array.sh
+2023.04.14
+```
+cd /data/schwartzlab/Biancani/PlacentalPolytomy/iqtree
+sbatch -q schwartzlab iqtree_array.sh
+```
+Submitted batch job 250483
+andromeda Slurm Array Summary Job_id=250483_* (250483) Name=IQarr Failed, Mixed, ExitCode [0-1]
+Job ID: 250483
+Array Job ID: 250483_28
+Cluster: andromeda
+User/Group: biancani/schwartzlab
+State: COMPLETED (exit code 0)
+Cores: 1
+CPU Utilized: 03:51:37
+CPU Efficiency: 25.40% of 15:11:42 core-walltime
+Job Wall-clock time: 15:11:42
+Memory Utilized: 63.12 MB
+Memory Efficiency: 1.03% of 6.00 GB
+
+Says "Name=IQarr Failed, Mixed, ExitCode [0-1]" but no "ERROR" in output files
+rm errors:
+slurm-250483_21.out:rm: cannot remove ‘calcLnL_SISRS_contig-61349000020.fasta.trees’: No such file or directory
+slurm-250483_21.out:rm: cannot remove ‘calcLnL_SISRS_contig-61349000020.fasta.uniqueseq.phy’: No such file or directory
+slurm-250483_21.out:rm: cannot remove ‘calcLnL_SISRS_contig-61350000025.fasta.trees’: No such file or directory
+slurm-250483_21.out:rm: cannot remove ‘calcLnL_SISRS_contig-6135000033.fasta.trees’: No such file or directory
+slurm-250483_21.out:rm: cannot remove ‘calcLnL_SISRS_contig-6135000033.fasta.uniqueseq.phy’: No such file or directory
+slurm-250483_21.out:rm: cannot remove ‘calcLnL_SISRS_contig-61351000006.fasta.trees’: No such file or directory
+slurm-250483_21.out:rm: cannot remove ‘calcLnL_SISRS_contig-61351000006.fasta.uniqueseq.phy’: No such file or directory
+slurm-250483_21.out:rm: cannot remove ‘calcLnL_SISRS_contig-61351000021.fasta.trees’: No such file or directory
+slurm-250483_21.out:rm: cannot remove ‘calcLnL_SISRS_contig-61351000021.fasta.uniqueseq.phy’: No such file or directory
+slurm-250483_21.out:rm: cannot remove ‘calcLnL_SISRS_contig-61352000002.fasta.trees’: No such file or directory
+slurm-250483_21.out:rm: cannot remove ‘calcLnL_SISRS_contig-61352000009.fasta.trees’: No such file or directory
+slurm-250483_21.out:rm: cannot remove ‘calcLnL_SISRS_contig-61352000009.fasta.uniqueseq.phy’: No such file or directory
+slurm-250483_21.out:rm: cannot remove ‘calcLnL_SISRS_contig-61353000020.fasta.trees’: No such file or directory
+
+Example flies in output folder:
+scf (directory)
+aligned_loci_list_aa                              calcLnL_SISRS_contig-198396000025.fasta.parstree  calcLnL_SISRS_contig-45114000030.fasta.parstree
+aligned_loci_list_ag                              calcLnL_SISRS_contig-198370000005.fasta.parstree  calcLnL_SISRS_contig-24670000028.fasta.parstree
+aligned_loci_list_ak                              calcLnL_SISRS_contig-54402000003.fasta.parstree   calcLnL_SISRS_contig-217963000022.fasta.parstree
+aligned_loci_list_at                              calcLnL_SISRS_contig-145041000011.fasta.parstree  calcLnL_SISRS_contig-138976000021.fasta.parstree
+aligned_loci_list_au                              calcLnL_SISRS_contig-135964000034.fasta.parstree  calcLnL_SISRS_contig-50645000025.fasta.parstree
+aligned_loci_list_ay                              calcLnL_SISRS_contig-163419000003.fasta.parstree  calcLnL_SISRS_contig-34612000021.fasta.parstree
+LnLs_20.csv                                       calcLnL_SISRS_contig-54401000024.fasta.parstree   calcLnL_SISRS_contig-201145000016.fasta.parstree
+LnLs_4.csv                                        calcLnL_SISRS_contig-189777000012.fasta.parstree  calcLnL_SISRS_contig-116348000009.fasta.parstree
+LnLs_26.csv                                       calcLnL_SISRS_contig-206754000021.fasta.parstree  calcLnL_SISRS_contig-217973000003.fasta.parstree
+LnLs_6.csv                                        calcLnL_SISRS_contig-65317000018.fasta.parstree   calcLnL_SISRS_contig-7832000032.fasta.parstree
+LnLs_1.csv                                        calcLnL_SISRS_contig-87740000032.fasta.parstree   calcLnL_SISRS_contig-78339000003.fasta.parstree
+LnLs_28.csv                                       calcLnL_SISRS_contig-83000016.fasta.parstree      calcLnL_SISRS_contig-116366000014.fasta.parstree
+LnLs_16.csv                                       calcLnL_SISRS_contig-23164000010.fasta.parstree   calcLnL_SISRS_contig-67068000018.fasta.parstree
+LnLs_13.csv                                       calcLnL_SISRS_contig-154130000002.fasta.parstree  calcLnL_SISRS_contig-45116000012.fasta.parstree
+
+I think iqtree_array.sh should be removing calcLnL_${line}.parstree in addition to other output files, but I want to test this by moving these files before running collect scripts.
+
+```
+cd /data/schwartzlab/Biancani/PlacentalPolytomy/output/iqtree_assessment/
+mkdir delete_maybe
+mv calcLnL_SISRS_contig-4*.parstree delete_maybe
+ls -U | grep 'calcLnL_SISRS_contig' | grep 'parstree'
+
+for i in $(ls -U | grep 'calcLnL_SISRS_contig' | grep 'parstree')
+do
+   mv $i delete_maybe
+done
+
+```
+
+### Running iqtree_array_concat.sh
+2023.04.17
+```
+cd /data/schwartzlab/Biancani/PlacentalPolytomy/
+svn checkout https://github.com/LMBiancani/PlacentalPolytomy/trunk/iqtree
+# Checked out revision 91.
+
+cd iqtree
+sbatch -q schwartzlab iqtree_array_concat.sh
+```
+Submitted batch job 254075 - errors:
+cp: cannot create regular file ‘./array_list.txt’: File exists
+cp: cannot create regular file ‘./aligned_loci_list_ad’: File exists
+cp: cannot create regular file ‘./aligned_loci_list_ag’: File exists
+cp: cannot create regular file ‘./aligned_loci_list_ah’: File exists
+cp: cannot create regular file ‘./aligned_loci_list_ai’: File exists
+cp: cannot create regular file ‘./aligned_loci_list_aj’: File exists
+cp: cannot create regular file ‘./aligned_loci_list_ak’: File exists
+cp: cannot create regular file ‘./aligned_loci_list_al’: File exists
+cp: cannot create regular file ‘./aligned_loci_list_an’: File exists
+cp: cannot create regular file ‘./aligned_loci_list_ao’: File exists
+cp: cannot create regular file ‘./aligned_loci_list_ap’: File exists
+cp: cannot create regular file ‘./aligned_loci_list_at’: File exists
+cp: cannot create regular file ‘./aligned_loci_list_au’: File exists
+cp: cannot create regular file ‘./aligned_loci_list_av’: File exists
+cp: cannot create regular file ‘./aligned_loci_list_aw’: File exists
+Mon Apr 17 14:16:27 EDT 2023
+sed: can't read array_list.txt: No such file or directory
+
+Move file copying to iqtree prep script.
+
+```
+cd /data/schwartzlab/Biancani/PlacentalPolytomy/
+svn checkout https://github.com/LMBiancani/PlacentalPolytomy/trunk/iqtree
+# Checked out revision 92.
+
+cd iqtree
+sbatch -q schwartzlab iqtree_array_concat.sh
+```
+Submitted batch job 254132
+Job ID: 254132
+Array Job ID: 254132_28
+Cluster: andromeda
+User/Group: biancani/schwartzlab
+State: COMPLETED (exit code 0)
+Nodes: 1
+Cores per node: 10
+CPU Utilized: 05:54:21
+CPU Efficiency: 91.33% of 06:28:00 core-walltime
+Job Wall-clock time: 00:38:48
+Memory Utilized: 2.35 GB
+Memory Efficiency: 3.92% of 60.00 GB
+
+
 2022.12.13
 - Filter by Taxa:
 What it does:
