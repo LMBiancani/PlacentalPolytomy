@@ -358,7 +358,7 @@ display: none;
 <p>Scripts and analyses associated with the Placental Mammal Polytomy
 Project.<br />
 GitHub Repository: <a href="https://github.com/LMBiancani/PlacentalPolytomy">PlacentalPolytomy</a></p>
-<p>Scripts adapted from <a href="https://github.com/AlexKnyshov/TreeshrewProject">AlexKnyshov/TreeshrewProject</a>.</p>
+<p>Some scripts adapted from <a href="https://github.com/AlexKnyshov/TreeshrewProject">AlexKnyshov/TreeshrewProject</a>.</p>
 <style type="text/css">
 
 .bg_slurm {
@@ -582,8 +582,8 @@ Xenarthra,Tolypeutes_matacus</code></pre>
 </div>
 </div>
 </div>
-<div id="asses-phylogenetic-signal-iq-tree" class="section level1">
-<h1>02. Asses Phylogenetic Signal: IQ-TREE</h1>
+<div id="assess-phylogenetic-signal-iq-tree" class="section level1">
+<h1>02. Assess Phylogenetic Signal: IQ-TREE</h1>
 <p>Scripts are located in the <a href="https://github.com/LMBiancani/PlacentalPolytomy/tree/main/02_IQtree">02_IQtree</a>
 folder.</p>
 <div id="slurm-submission-script-02.00_iqtree_prep.sh" class="section level2">
@@ -1043,28 +1043,18 @@ from IQ-TREE output, run by the previous shell script.</li>
 </div>
 </div>
 <div id="annotate-loci" class="section level1">
-<h1>3. Annotate Loci</h1>
+<h1>03. Annotate Loci</h1>
 <p>Scripts are located in the <a href="https://github.com/LMBiancani/PlacentalPolytomy/tree/main/annotation">annotation</a>
 folder.</p>
 <ul>
 <li>Aligns SISRS loci of a particular taxon to a reference genome
 (ideally, of the same taxon).</li>
-<li>A custom script is used to retreive a reference taxon for the
-loci.</li>
-<li>BLAST is run.</li>
-<li>A custom python script is used to filter the output and convert it
-to BED. Overlapping hits of similar scores as well as very disjunct
-alignments are discarded. The BED file is then sorted and intersected
-with the GFF file for the reference sequence.</li>
-<li>A custom python script then processess the intersected BED file to
-produce the final output, either counts of different annotation types,
-or length proportion of each annotations type. The following types of
-annotations are recorded: pseudogene, CDS, UTR, intron, lnc_RNA, other
-(any other type), unannotated (or intergenic).</li>
 </ul>
-<div id="slurm-submission-script-download_reference.sh" class="section level4">
-<h4>Slurm submission script: <code>download_reference.sh</code></h4>
+<div id="slurm-submission-script-03.00_downloadreference.sh" class="section level2">
+<h2>01.00 slurm submission script:
+<code>03.00_DownloadReference.sh</code></h2>
 <ul>
+<li>script to retreive a reference taxon for the loci</li>
 <li>downloads reference genome (FASTA) and annotation (GFF) for Pan
 troglodytes (chimpanzee) <a href="https://www.ncbi.nlm.nih.gov/data-hub/genome/GCF_002880755.1/">GCF_002880755.1</a></li>
 </ul>
@@ -1076,9 +1066,13 @@ troglodytes (chimpanzee) <a href="https://www.ncbi.nlm.nih.gov/data-hub/genome/G
 #SBATCH --mail-user=&quot;biancani@uri.edu&quot; #CHANGE to your email
 #SBATCH --mail-type=ALL
 
-## UPDATE PATH:
+## UPDATE PATHS:
+# path to project directory:
+PROJECT=/data/schwartzlab/Biancani/PlacentalPolytomy
+# path to output folder for annotation (will be created by script if necessary):
+OUTPUT=$PROJECT/output/03_Annotation
 # path to folder for reference genome (will be created by script if necessary):
-RefDir=/data/schwartzlab/Biancani/PlacentalPolytomy/output/reference_genome
+RefDir=$OUTPUT/ReferenceGenome
 
 ## UPDATE URLs:
 #URL for GFF format reference annotation file: 
@@ -1098,10 +1092,18 @@ do
   #decompress file:
   gunzip $name
 done</code></pre>
-</div>
-<div id="slurm-submission-script-annotation_job.sh" class="section level4">
-<h4>Slurm submission script: <code>annotation_job.sh</code></h4>
+<div id="slurm-submission-script-03.01_annotation.sh" class="section level4">
+<h4>Slurm submission script: <code>03.01_Annotation.sh</code></h4>
 <ul>
+<li>A python script is used to filter the output and convert it to BED.
+Overlapping hits of similar scores as well as very disjunct alignments
+are discarded. The BED file is then sorted and intersected with the GFF
+file for the reference sequence.</li>
+<li>Another python script is then used to processess the intersected BED
+file to produce the final output, either counts of different annotation
+types, or length proportion of each annotations type. The following
+types of annotations are recorded: pseudogene, CDS, UTR, intron,
+lnc_RNA, other (any other type), unannotated (or intergenic).</li>
 <li>runs the following python scripts:
 <code>annotation_getTaxContigs.py</code>,
 <code>annotation_blast_parser.py</code>,
@@ -1118,19 +1120,22 @@ done</code></pre>
 ## UPDATE:
 # number of tasks/processor cores per node:
 TASKS=36
+# path to project directory:
+PROJECT=/data/schwartzlab/Biancani/PlacentalPolytomy
 # location of annotation scripts:
-SCRIPTS=/data/schwartzlab/Biancani/PlacentalPolytomy/annotation
+SCRIPTS=$PROJECT/03_Annotation
 # path to FILTERED SISRS loci (aligned contigs) folder:
-LOCI=/data/schwartzlab/Biancani/PlacentalPolytomy/output/SISRS_out_filtered
+# path to FILTERED SISRS loci (aligned contigs):
+LOCI=$PROJECT/output/01_SISRS_loci_filtered
 # path to output folder for annotation (will be created by script if necessary):
-OUTPUT=/data/schwartzlab/Biancani/PlacentalPolytomy/output/annotation
+OUTPUT=$PROJECT/output/03_Annotation
 
 # name of study taxon closest to reference:
 taxonName=&quot;Pan_troglodytes&quot;
 # path to FASTA format reference genome:
-GENOME=&quot;/data/schwartzlab/Biancani/PlacentalPolytomy/output/reference_genome/GCF_002880755.1_Clint_PTRv2_genomic.fna&quot;
+GENOME=&quot;$OUTPUT/ReferenceGenome/GCF_002880755.1_Clint_PTRv2_genomic.fna&quot;
 # path to GFF format reference annotation file:
-ANNOTATION=&quot;/data/schwartzlab/Biancani/PlacentalPolytomy/output/reference_genome/GCF_002880755.1_Clint_PTRv2_genomic.gff&quot;
+ANNOTATION=&quot;$OUTPUT/ReferenceGenome/GCF_002880755.1_Clint_PTRv2_genomic.gff&quot;
 # select output mode (either counts of different annotation types, or length proportion of each annotations type)
 ## (`c`) count the number of each feature per locus, for ex. 1 CDS, 2 introns, etc.
 ## (`l`) compute proportion of length of each feature type per locus, for ex. 0.2 CDS, 0.8 introns
@@ -1172,7 +1177,7 @@ date</code></pre>
 <div id="python-script-annotation_gettaxcontigs.py" class="section level4">
 <h4>Python script: <code>annotation_getTaxContigs.py</code></h4>
 <ul>
-<li>run by previous shell script: <code>annotation_job.sh</code></li>
+<li>run by previous shell script: <code>03.01_Annotation.sh</code></li>
 <li>extracts SISRS loci of a particular taxon into a single file for use
 with BLAST</li>
 </ul>
@@ -1199,7 +1204,7 @@ taxonFile.close()</code></pre>
 <h4>Python script: <code>annotation_blast_parser.py</code></h4>
 <ul>
 <li>BLAST to BED python script run by the previous shell script:
-<code>annotation_job.sh</code></li>
+<code>03.01_Annotation.sh</code></li>
 <li>adjust parameters on lines 10-12 as needed</li>
 </ul>
 <pre class="bg_python"><code>&#39;&#39;&#39;
@@ -1407,9 +1412,9 @@ with open(infile) as inhandle:
 <h4>Python script: <code>annotation_bed2table.py</code></h4>
 <ul>
 <li>BED to table python script run by the previous shell script:
-<code>annotation_job.sh</code></li>
+<code>03.01_Annotation.sh</code></li>
 <li>two options are provided (to be specified in shell script:
-<code>annotation_job.sh</code>)</li>
+<code>03.01_Annotation.sh</code>)</li>
 </ul>
 <ol style="list-style-type: decimal">
 <li>count the number of each feature per locus (<code>c</code>), for ex.
@@ -1567,10 +1572,11 @@ for locus in d:
         elif option == &quot;l&quot;:
             print (locus+&quot;,&quot;+&quot;,&quot;.join([str(round(x/total_annotation_bases,3)) for x in output_feature_dict.values()]))</code></pre>
 </div>
+</div>
 <div id="assess-locus-properties" class="section level2">
-<h2>3. Assess Locus Properties</h2>
+<h2>4. Assess Locus Properties</h2>
 <div id="amas" class="section level3">
-<h3>3.1. AMAS</h3>
+<h3>4.1. AMAS</h3>
 <p>Scripts are located in the <a href="https://github.com/LMBiancani/PlacentalPolytomy/tree/main/amas">amas</a>
 folder.</p>
 <ul>

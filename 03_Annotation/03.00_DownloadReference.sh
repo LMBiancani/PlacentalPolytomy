@@ -6,9 +6,13 @@
 #SBATCH --mail-user="biancani@uri.edu" #CHANGE to your email
 #SBATCH --mail-type=ALL
 
-## UPDATE PATH:
+## UPDATE PATHS:
+# path to project directory:
+PROJECT=/data/schwartzlab/Biancani/PlacentalPolytomy
+# path to output folder for annotation (will be created by script if necessary):
+OUTPUT=$PROJECT/output/03_Annotation
 # path to folder for reference genome (will be created by script if necessary):
-RefDir=/data/schwartzlab/Biancani/PlacentalPolytomy/output/reference_genome
+RefDir=$OUTPUT/ReferenceGenome
 
 ## UPDATE URLs:
 #URL for GFF format reference annotation file: 

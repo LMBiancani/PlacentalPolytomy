@@ -6,7 +6,7 @@ output: html_document
 Scripts and analyses associated with the Placental Mammal Polytomy Project. \
 GitHub Repository: [PlacentalPolytomy](https://github.com/LMBiancani/PlacentalPolytomy)
 
-Scripts adapted from [AlexKnyshov/TreeshrewProject](https://github.com/AlexKnyshov/TreeshrewProject).
+Some scripts adapted from [AlexKnyshov/TreeshrewProject](https://github.com/AlexKnyshov/TreeshrewProject).
 
 ```{css backgrounds, echo=FALSE}
 /* Define a background class for displaying content of slurm submission text files */
@@ -77,7 +77,7 @@ cat 01_FilterByTaxa/filter_SISRS_output.py
 cat 01_FilterByTaxa/groups.csv
 ```
 
-# 02. Asses Phylogenetic Signal: IQ-TREE
+# 02. Assess Phylogenetic Signal: IQ-TREE
 Scripts are located in the [02_IQtree](https://github.com/LMBiancani/PlacentalPolytomy/tree/main/02_IQtree) folder.
 
 ## 02.00 slurm submission script: `02.00_iqtree_prep.sh`
@@ -203,49 +203,48 @@ cat 02_IQtree/02.02_iqtree_array_concat.sh
 
 
 
-# 3. Annotate Loci
+# 03. Annotate Loci
 Scripts are located in the [annotation](https://github.com/LMBiancani/PlacentalPolytomy/tree/main/annotation) folder.
 
 * Aligns SISRS loci of a particular taxon to a reference genome (ideally, of the same taxon).
-* A custom script is used to retreive a reference taxon for the loci.
-* BLAST is run. 
-* A custom python script is used to filter the output and convert it to BED. Overlapping hits of similar scores as well as very disjunct alignments are discarded. The BED file is then sorted and intersected with the GFF file for the reference sequence.
-* A custom python script then processess the intersected BED file to produce the final output,
-either counts of different annotation types, or length proportion of each annotations type. The following types of annotations are recorded: pseudogene, CDS, UTR, intron, lnc_RNA, other (any other type), unannotated (or intergenic).
 
-#### Slurm submission script: `download_reference.sh`
+## 01.00 slurm submission script: `03.00_DownloadReference.sh`
+* script to retreive a reference taxon for the loci
 * downloads reference genome (FASTA) and annotation (GFF) for Pan troglodytes (chimpanzee) [GCF_002880755.1](https://www.ncbi.nlm.nih.gov/data-hub/genome/GCF_002880755.1/)
 ```{bash, comment=NA, echo=FALSE, class.output="bg_slurm"}
-cat annotation/download_reference.sh
+cat 03_Annotation/03.00_DownloadReference.sh
 ```
-#### Slurm submission script: `annotation_job.sh`
+#### Slurm submission script: `03.01_Annotation.sh`
+* A python script is used to filter the output and convert it to BED. Overlapping hits of similar scores as well as very disjunct alignments are discarded. The BED file is then sorted and intersected with the GFF file for the reference sequence.
+* Another python script is then used to processess the intersected BED file to produce the final output,
+either counts of different annotation types, or length proportion of each annotations type. The following types of annotations are recorded: pseudogene, CDS, UTR, intron, lnc_RNA, other (any other type), unannotated (or intergenic).
 * runs the following python scripts: `annotation_getTaxContigs.py`, `annotation_blast_parser.py`, `annotation_bed2table.py`
 ```{bash, comment=NA, echo=FALSE, class.output="bg_slurm"}
-cat annotation/annotation_job.sh
+cat 03_Annotation/03.01_Annotation.sh
 ```
 #### Python script: `annotation_getTaxContigs.py`
-* run by previous shell script: `annotation_job.sh`
+* run by previous shell script: `03.01_Annotation.sh`
 * extracts SISRS loci of a particular taxon into a single file for use with BLAST
 ```{bash, comment=NA, echo=FALSE, class.output="bg_python"}
-cat annotation/annotation_getTaxContigs.py
+cat 03_Annotation/annotation_getTaxContigs.py
 ```
 #### Python script: `annotation_blast_parser.py`
-* BLAST to BED python script run by the previous shell script: `annotation_job.sh`
+* BLAST to BED python script run by the previous shell script: `03.01_Annotation.sh`
 * adjust parameters on lines 10-12 as needed
 ```{bash, comment=NA, echo=FALSE, class.output="bg_python"}
-cat annotation/annotation_blast_parser.py
+cat 03_Annotation/annotation_blast_parser.py
 ```
 #### Python script: `annotation_bed2table.py`
-* BED to table python script run by the previous shell script: `annotation_job.sh`
-* two options are provided (to be specified in shell script: `annotation_job.sh`)
+* BED to table python script run by the previous shell script: `03.01_Annotation.sh`
+* two options are provided (to be specified in shell script: `03.01_Annotation.sh`)
 1. count the number of each feature per locus (`c`), for ex. 1 CDS, 2 introns, etc.
 2. compute proportion of length of each feature type per locus (`l`), for ex. 0.2 CDS, 0.8 introns
 ```{bash, comment=NA, echo=FALSE, class.output="bg_python"}
-cat annotation/annotation_bed2table.py
+cat 03_Annotation/annotation_bed2table.py
 ```
 
-## 3. Assess Locus Properties
-### 3.1. AMAS
+## 4. Assess Locus Properties
+### 4.1. AMAS
 Scripts are located in the [amas](https://github.com/LMBiancani/PlacentalPolytomy/tree/main/amas) folder.
 
 * Runs AMAS to assess locus features

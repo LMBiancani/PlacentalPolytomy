@@ -9,19 +9,22 @@
 ## UPDATE:
 # number of tasks/processor cores per node:
 TASKS=36
+# path to project directory:
+PROJECT=/data/schwartzlab/Biancani/PlacentalPolytomy
 # location of annotation scripts:
-SCRIPTS=/data/schwartzlab/Biancani/PlacentalPolytomy/annotation
+SCRIPTS=$PROJECT/03_Annotation
 # path to FILTERED SISRS loci (aligned contigs) folder:
-LOCI=/data/schwartzlab/Biancani/PlacentalPolytomy/output/SISRS_out_filtered
+# path to FILTERED SISRS loci (aligned contigs):
+LOCI=$PROJECT/output/01_SISRS_loci_filtered
 # path to output folder for annotation (will be created by script if necessary):
-OUTPUT=/data/schwartzlab/Biancani/PlacentalPolytomy/output/annotation
+OUTPUT=$PROJECT/output/03_Annotation
 
 # name of study taxon closest to reference:
 taxonName="Pan_troglodytes"
 # path to FASTA format reference genome:
-GENOME="/data/schwartzlab/Biancani/PlacentalPolytomy/output/reference_genome/GCF_002880755.1_Clint_PTRv2_genomic.fna"
+GENOME="$OUTPUT/ReferenceGenome/GCF_002880755.1_Clint_PTRv2_genomic.fna"
 # path to GFF format reference annotation file:
-ANNOTATION="/data/schwartzlab/Biancani/PlacentalPolytomy/output/reference_genome/GCF_002880755.1_Clint_PTRv2_genomic.gff"
+ANNOTATION="$OUTPUT/ReferenceGenome/GCF_002880755.1_Clint_PTRv2_genomic.gff"
 # select output mode (either counts of different annotation types, or length proportion of each annotations type)
 ## (`c`) count the number of each feature per locus, for ex. 1 CDS, 2 introns, etc.
 ## (`l`) compute proportion of length of each feature type per locus, for ex. 0.2 CDS, 0.8 introns
