@@ -4,7 +4,7 @@
 #SBATCH --nodes=1   # number of nodes
 #SBATCH --ntasks-per-node=1   # processor core(s) per node
 #SBATCH -c 1
-#SBATCH --mem-per-cpu=6G
+#SBATCH --mem-per-cpu=2G
 #SBATCH --mail-user="biancani@uri.edu"
 #SBATCH --mail-type=ALL
 

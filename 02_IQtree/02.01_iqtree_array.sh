@@ -9,40 +9,34 @@
 #SBATCH --mail-user="biancani@uri.edu" ## UPDATE
 #SBATCH --mail-type=ALL
 
+## UPDATE PATHS as necessary:
 
-## UPDATE PATHS:
 # path to project directory:
 PROJECT=/data/schwartzlab/Biancani/PlacentalPolytomy
 # path to output folder for IQ-TREE (will be created by script if necessary):
 OUTPUT=$PROJECT/output/02_iqtree_assessment
 # path to FILTERED SISRS loci (aligned contigs):
 INPUT=$PROJECT/output/01_SISRS_loci_filtered
-#path to IQ-TREE executale:
+# path to IQ-TREE executale:
 IQTREE="/data/schwartzlab/Biancani/Software/iqtree-2.1.2-Linux/bin/iqtree2"
 
-
-
-## output for concatenated trees (directory setup by 02.00_iqtree_prep.sh)
+# output for concatenated trees (directory created by 02.00_iqtree_prep.sh)
 CAT_OUT=$OUTPUT/02.02_concat_trees
-
-******* left off here updating Paths...
-
-# UPDATE:
-
 # location of iqtree scripts:
-scripts_dir=/data/schwartzlab/Biancani/PlacentalPolytomy/iqtree
+scripts_dir=$PROJECT/02_IQtree
 # path to file containing alternative hypotheses trees:
-trees_to_eval=/data/schwartzlab/Biancani/PlacentalPolytomy/iqtree/hypothesis_trees/Polytomy_Placental_Hypotheses.tree
-# Specify taxon list for each hypothesis tree:
+trees_to_eval=$scripts_dir/hypothesis_trees/Polytomy_Placental_Hypotheses.tree
+
+## Specify taxon list for each hypothesis tree:
 # For Placental root question: Determine which 2 out of 3 groups are sisters for each hypothesis and select one of the sisters.
 # List 1 (Afrotheria Out) = Xenarthra
-focal_tips1=/data/schwartzlab/Biancani/PlacentalPolytomy/iqtree/hypothesis_trees/tips_Xenarthra.txt
+focal_tips1=$scripts_dir/hypothesis_trees/tips_Xenarthra.txt
 # List 2 (Boreoeutheria Out) = Afrotheria
-focal_tips2=/data/schwartzlab/Biancani/PlacentalPolytomy/iqtree/hypothesis_trees/tips_Afrotheria.txt
+focal_tips2=$scripts_dir/hypothesis_trees/tips_Afrotheria.txt
 # List 3 (Xenarthra Out) = Boreoeutheria
-focal_tips3=/data/schwartzlab/Biancani/PlacentalPolytomy/iqtree/hypothesis_trees/tips_Boreoeutheria.txt
+focal_tips3=$scripts_dir/hypothesis_trees/tips_Boreoeutheria.txt
 # Outgroup taxa list:
-outgroup_tips=/data/schwartzlab/Biancani/PlacentalPolytomy/iqtree/hypothesis_trees/tips_Outgroup.txt
+outgroup_tips=$scripts_dir/hypothesis_trees/tips_Outgroup.txt
 
 cd ${OUTPUT}
 
