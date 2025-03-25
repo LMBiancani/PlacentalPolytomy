@@ -1,0 +1,80 @@
+---
+title: "plots"
+author: "Leann M. Biancani"
+date: "2025-03-04"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+#install.packages("tidyverse")  # Installs ggplot2 along with other packages
+library(tidyverse)  # Loads ggplot2 and other tidyverse packages
+
+# Read the data
+features <- read_tsv("all_loci_ML_data.txt",show_col_types = FALSE)
+# View the first few rows
+glimpse(features)
+```
+
+```{r plots, fig.width=3, fig.height=2}
+# column names
+feat_names = colnames(features)[-1]
+
+violin_plot <- function(features, y, fill_color = "darkgreen", logscale = FALSE) {
+  # Remove NAs
+  #df <- features %>% filter(!is.na(.data[[y]]))
+  # Remove NAs and non-positive values for log scale
+  df <- features %>% filter(!is.na(.data[[y]]) & (!logscale | .data[[y]] > 0))
+  
+  # Define scale transformation conditionally
+  scale_y <- if (logscale) {
+    scale_y_continuous(trans = "log",  
+                       breaks = scales::trans_breaks("log", function(x) exp(x)),  
+                       labels = scales::trans_format("log", scales::math_format(e^.x))) 
+  } else {
+    scale_y_continuous()  # Default linear scale
+  }
+
+  # Generate plot
+  ggplot(df, aes(x = factor(1), y = .data[[y]], fill = fill_color)) +  # Use factor(1) for a single x value
+    theme_bw() +
+    geom_violin(color = "black") +  # Violin plot with black border
+    geom_hline(yintercept = median(df[[y]], na.rm = TRUE), linetype = "dashed", linewidth = 0.5) +  # Dashed median line
+    stat_summary(fun = median, fun.min = median, fun.max = median, 
+                 geom = "crossbar", width = 0.25) +  # Crossbar at median
+    stat_summary(fun = mean, fun.min = mean, fun.max = mean, 
+                 geom = "point", shape = 5) +  # Diamond shape for mean
+    scale_y +  # Apply the chosen scale (log or linear)
+    scale_fill_manual(values = fill_color) +  # Custom fill color
+    theme(legend.position = "none") +  # Remove legend
+    labs(x = "All Loci", y = ifelse(logscale, paste0("ln(", y, ")"), y))  # Update y label to indicate log scale as ln(y)
+}
+
+log_list <- c("alignmentSPscore", "tree_rate", "tree_rate_var", 
+              "base_composition_variance", "alignment_length", "phyloinf")
+counter <- 1
+for (i in feat_names) {
+  plot <- violin_plot(features, i) #plot the feature
+  name <- paste0("p", counter)  #generate a dynamic variable name
+  assign(name, plot) #assign a plot to the dynamically named variable
+  print(plot)
+  if (i %in% log_list) {
+    plot <- violin_plot(features, i, fill_color = "green", logscale = TRUE) #plot feature with log scale
+    print(plot)
+  }
+  counter <- counter + 1  #increment counter
+}
+
+
+```
+
+
+
+
+
+
+
+
+
+
+
