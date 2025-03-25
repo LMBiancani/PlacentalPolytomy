@@ -11,6 +11,9 @@ working directory:
 slurm submission scripts:
 cd /home/biancani/BIANCANI/PLACENTAL/SISRS/scripts/slurm_submissions
 
+old slurm submission scripts:
+cd /home/biancani/BIANCANI/SISRS/scripts/slurm_submissions
+
 Zack slum submission scripts:
 cd /data/schwartzlab/zbergeron/SISRS/scripts/slurm_submissions
 
@@ -928,6 +931,9 @@ CPU Efficiency: 99.95% of 77-02:36:00 core-walltime
 Job Wall-clock time: 2-03:24:20
 Memory Utilized: 28.82 GB
 Memory Efficiency: 22.51% of 128.00 GB
+
+SCFs and SVDQ continued on 2023.01.11
+2022.12.13
 
 Completed:
 7a: sisrs_07_a_contigs_processing
