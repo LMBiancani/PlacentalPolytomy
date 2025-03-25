@@ -6,7 +6,7 @@ output: html_document
 Scripts and analyses associated with the Placental Mammal Polytomy Project. \
 GitHub Repository: [PlacentalPolytomy](https://github.com/LMBiancani/PlacentalPolytomy)
 
-Some scripts adapted from [AlexKnyshov/TreeshrewProject](https://github.com/AlexKnyshov/TreeshrewProject).
+Some scripts adapted from [AlexKnyshov/TreeshrewProject](https://github.com/AlexKnyshov/TreeshrewProject) and [AlexandraWalling/PML](https://github.com/alexandrawalling/PML).
 
 ```{css backgrounds, echo=FALSE}
 /* Define a background class for displaying content of slurm submission text files */
@@ -243,12 +243,32 @@ cat 03_Annotation/annotation_blast_parser.py
 cat 03_Annotation/annotation_bed2table.py
 ```
 
-## 4. Assess Locus Properties
-### 4.1. AMAS
-Scripts are located in the [amas](https://github.com/LMBiancani/PlacentalPolytomy/tree/main/amas) folder.
+# 4. Feature Assessment
+Scripts are located in the [04_FeatureAssessment](https://github.com/LMBiancani/PlacentalPolytomy/tree/main/amas) folder. Scripts were adapted from [AlexandraWalling/PML/3_feature_assessment](https://github.com/alexandrawalling/PML/3_feature_assessment).
+* Ensure MAFFT, AMAS, IQ-TREE2, FastSP, and HyPhy are installed, update paths/modules in the submission scripts as needed.
+* **Note:** AMAS takes file names as command line arguments with a limit on how long the line can be. In order to analyze over a hundred thousand files `04.00_subset.sh` will split loci into subsets.
 
+## 04.00 slurm submission script: `04.00_subset.sh`
+* copies alignment files from a source directory into multiple subdirectories, each containing a specified number of files.
+* This script splits the 109,799 loci into 20 subsets of 5500 loci (max).
+```{bash, comment=NA, echo=FALSE, class.output="bg_slurm"}
+cat 04_FeatureAssessment/04.00_subset.sh
+```
+
+## 04.01 slurm submission script: `04.01_prep.sh`
+* Creates loci groups for alignment
+* Creates output subdirectories 
+```{bash, comment=NA, echo=FALSE, class.output="bg_slurm"}
+cat 04_FeatureAssessment/04.01_prep.sh
+```
+
+## 04.02 slurm submission script: `04.02_`
+
+%%%%%%%%%%%%%% left off here %%%%%%%%%%%%%%%%
+
+# 5. AMAS
 * Runs AMAS to assess locus features
-* **Note:** AMAS takes file names as command line arguments with a limit on how long the line can be. In order to analyze several hundred thousand files, AMAS is run in batches by the driver script (`run_amas.py`).
+* , AMAS is run in batches by the driver script (`run_amas.py`).
 
 #### Download AMAS
 * note path to `AMAS.py` and add path to slurm script `run_amas.sh`

@@ -1,0 +1,1387 @@
+Feature Assessment Notes
+
+out=/data/schwartzlab/Biancani/Phylo_ML/output
+wd=/data/schwartzlab/Biancani/Phylo_ML/01_feature_assessment
+home=/data/schwartzlab/Biancani
+
+2025.01.15
+
+Create Github Repo:
+
+Alexandra's PML repo:
+https://github.com/alexandrawalling/PML
+Forked repo:
+https://github.com/LMBiancani/Phylo_ML
+Convert a forked repo to a stand-alone repository without loosing any of the tracked history or contributions:
+Locally:
+- Pull all changes in Forked repo to local machine
+git clone https://github.com/LMBiancani/Phylo_ML
+On Github:
+- Change the name of the Forked Repository (changed to PML)
+- Create a new, empty repo and give it the original name of the Forked Repository
+https://github.com/LMBiancani/Phylo_ML
+Locally:
+- Push all changes to Github (you should not have to do anything special because the new repo now has the same name as the repo this was originally synced with).
+On Github:
+- Confirm the new repository contains everything it should
+- Delete the forked repository
+
+Move all of Alexandra's files into a new directory name PML.
+Create README.md and Save this notes file.
+
+2025.01.21
+
+aligned_loci_path=/data/schwartzlab/Biancani/PlacentalPolytomy/output/01_SISRS_loci_filtered
+directory contains 109,799 alignments.
+
+wd=/data/schwartzlab/Biancani/Phylo_ML/01_feature_assessment
+mkdir -p $wd
+cd $wd
+
+01.00_subset.sh will copy alignment files from a source directory into multiple subdirectories, each containing a specified number of files
+
+nano 01.00_subset.sh
+#####################
+#!/bin/bash
+#SBATCH --job-name="subset"
+#SBATCH --time=100:00:00  # walltime limit (HH:MM:SS)
+#SBATCH --nodes=1   # number of nodes
+#SBATCH --ntasks-per-node=1   # processor core(s) per node
+#SBATCH -c 1
+#SBATCH --mem-per-cpu=6G
+#SBATCH --mail-user="biancani@uri.edu" #CHANGE TO user email address
+#SBATCH --mail-type=ALL
+
+# Update Paths:
+out=/data/schwartzlab/Biancani/Phylo_ML/output
+aligned_loci_path=/data/schwartzlab/Biancani/PlacentalPolytomy/output/01_SISRS_loci_filtered
+subset_size=5500  # Number of alignment per subset
+
+# Create output directory:
+mkdir -p $out
+cd $out
+date
+pwd
+
+# Create destination alignment sub-directories and subset files
+counter=0 #initiate counter to track processed files
+for file in $aligned_loci_path/*; do ##iterate over each file in aligned_loci_path
+  dir_num=$(printf "%02d" $((counter / $subset_size + 1))) #calculate the subdirectory number starting with "01"
+  dest_dir=subset_$dir_num/alignments
+  mkdir -p $dest_dir
+  cp $file $dest_dir/
+  ((counter++)) #increment counter by 1 after each file is processed
+done
+
+echo "Number of alignment subdirectories created:"
+echo $dir_num
+#####################
+sbatch -q schwartzlab 01.00_subset.sh
+Submitted batch job 356033
+Job ID: 356033
+Cluster: andromeda
+User/Group: biancani/schwartzlab
+State: COMPLETED (exit code 0)
+Cores: 1
+CPU Utilized: 00:12:45
+CPU Efficiency: 2.94% of 07:14:02 core-walltime
+Job Wall-clock time: 07:14:02
+Memory Utilized: 34.05 MB
+Memory Efficiency: 0.55% of 6.00 GB
+
+*** 109,799 alignments separated into 20 bins of <= 5,500 alignments
+
+2025.01.22
+
+wd=/data/schwartzlab/Biancani/Phylo_ML/01_feature_assessment
+cd $wd
+
+nano 01.01_prep.sh
+#####################
+#!/bin/bash
+#SBATCH --job-name="prep"
+#SBATCH --time=1:00:00  # walltime limit (HH:MM:SS)
+#SBATCH --nodes=1   # number of nodes
+#SBATCH --ntasks-per-node=1   # processor core(s) per node
+#SBATCH -c 1
+#SBATCH --mem-per-cpu=6G
+#SBATCH --mail-user="biancani@uri.edu" #CHANGE TO user email address
+#SBATCH --mail-type=ALL
+
+out=/data/schwartzlab/Biancani/Phylo_ML/output
+
+date
+for subset in $out/subset_*;
+do
+  cd $subset
+  pwd
+  loci=$subset/alignments
+
+  mkdir alignmentGroups
+  cd alignmentGroups
+  ls ${loci} | rev | cut -f1 -d/ | rev | split -l 250 - aligned_loci_list_
+  ls aligned_loci_list_* > array_list.txt
+  cd ..
+  mkdir re_alignments
+  mkdir iqtree_genetrees
+  mkdir phylomad_assessment
+  mkdir rate_assessment
+  mkdir iqtree_concattree
+  mkdir astral_tree
+done
+date
+#####################
+sbatch -q schwartzlab 01.01_prep.sh
+Submitted batch job 356181
+Job ID: 356181
+Cluster: andromeda
+User/Group: biancani/schwartzlab
+State: COMPLETED (exit code 0)
+Cores: 1
+CPU Utilized: 00:00:02
+CPU Efficiency: 1.16% of 00:02:53 core-walltime
+Job Wall-clock time: 00:02:53
+Memory Utilized: 1.48 MB
+Memory Efficiency: 0.02% of 6.00 GB
+
+
+01.02_mafft.sh will use MAFFT to re-align loci (alignments are compared later)
+
+wd=/data/schwartzlab/Biancani/Phylo_ML/01_feature_assessment
+cd $wd
+
+nano 01.02_mafft.sh
+#####################
+#!/bin/sh
+#SBATCH --job-name="realign"
+#SBATCH --time=196:00:00  # walltime limit (HH:MM:SS)
+#SBATCH --nodes=1   # number of nodes
+#SBATCH --ntasks-per-node=4   # processor core(s) per node
+#SBATCH --mem=120G
+#SBATCH --mail-user="biancani@uri.edu" #CHANGE TO user email address
+#SBATCH --mail-type=ALL
+
+out=/data/schwartzlab/Biancani/Phylo_ML/output
+
+date
+module purge
+module load MAFFT/7.475-gompi-2020b-with-extensions
+
+for subset in $out/subset_*; do
+  cd $subset
+  pwd
+  for alignment in alignments/*; do
+    name=$(basename $alignment)
+    mafft --auto --thread 4 $alignment > $subset/re_alignments/$name
+  done
+done
+#####################
+sbatch -q schwartzlab 01.02_mafft.sh
+Submitted batch job 356384
+Stopped after subset_07:
+Job ID: 356384
+Cluster: andromeda
+User/Group: biancani/schwartzlab
+State: CANCELLED (exit code 0)
+Nodes: 1
+Cores per node: 4
+CPU Utilized: 05:40:33
+CPU Efficiency: 31.34% of 18:06:36 core-walltime
+Job Wall-clock time: 04:31:39
+Memory Utilized: 1.14 GB
+Memory Efficiency: 0.95% of 120.00 GB
+
+Created array job to finish re_alignments:
+
+wd=/data/schwartzlab/Biancani/Phylo_ML/01_feature_assessment
+cd $wd
+
+nano 01.02_mafft_array.sh
+#####################
+#!/bin/sh
+#SBATCH --job-name="realign"
+#SBATCH --time=96:00:00  # walltime limit (HH:MM:SS)
+#SBATCH --nodes=1   # number of nodes
+#SBATCH --ntasks-per-node=4   # processor core(s) per node
+#SBATCH --mem=120G
+#SBATCH --mail-user="biancani@uri.edu" #CHANGE TO user email address
+#SBATCH --mail-type=ALL
+#SBATCH --array=[0-19]%20
+
+out=/data/schwartzlab/Biancani/Phylo_ML/output
+
+date
+module purge
+module load MAFFT/7.475-gompi-2020b-with-extensions
+
+subset=$(printf "%02d\n" $((SLURM_ARRAY_TASK_ID + 1)))
+path=$out/subset_$subset
+cd $path
+pwd
+for alignment in alignments/*; do
+  name=$(basename $alignment)
+  mafft --auto --thread 4 $alignment > $path/re_alignments/$name
+done
+#####################
+sbatch -q schwartzlab 01.02_mafft_array.sh
+Submitted batch job 356403
+Job ID: 356403
+Array Job ID: 356403_13
+Cluster: andromeda
+User/Group: biancani/schwartzlab
+State: FAILED (exit code 1) (array job should have stopped at 12)
+Nodes: 1
+Cores per node: 4
+CPU Utilized: 00:00:00
+CPU Efficiency: 0.00% of 00:00:04 core-walltime
+Job Wall-clock time: 00:00:01
+Memory Utilized: 0.00 MB (estimated maximum)
+Memory Efficiency: 0.00% of 120.00 GB (120.00 GB/node)
+
+wd=/data/schwartzlab/Biancani/Phylo_ML/01_feature_assessment
+cd $wd
+
+nano 01.03_amas.sh
+#####################
+#!/bin/bash
+#SBATCH --job-name="amas"
+#SBATCH --time=48:00:00  # walltime limit (HH:MM:SS)
+#SBATCH --nodes=1   # number of nodes
+#SBATCH --ntasks-per-node=12   # processor core(s) per node
+#SBATCH --mail-user="biancani@uri.edu" #CHANGE TO user email address
+#SBATCH --mail-type=ALL
+
+out=/data/schwartzlab/Biancani/Phylo_ML/output
+amas=/data/schwartzlab/Biancani/Software/AMAS/amas/AMAS.py
+cores=12
+
+date
+module purge
+module load Python/3.7.4-GCCcore-8.3.0
+
+for subset in $out/subset_*; do
+cd $subset
+python $amas summary -c $cores -o amas_output.txt -f fasta -d dna -i alignments/*
+done
+date
+#####################
+sbatch -q schwartzlab 01.03_amas.sh
+Submitted batch job 356389
+Job ID: 356389
+Cluster: andromeda
+User/Group: biancani/schwartzlab
+State: COMPLETED (exit code 0)
+Nodes: 1
+Cores per node: 12
+CPU Utilized: 00:13:52
+CPU Efficiency: 13.03% of 01:46:24 core-walltime
+Job Wall-clock time: 00:08:52
+Memory Utilized: 1012.69 MB
+Memory Efficiency: 4.12% of 24.00 GB
+
+wd=/data/schwartzlab/Biancani/Phylo_ML/01_feature_assessment
+cd $wd
+
+nano 01.04_FastSP.sh
+#####################
+#!/bin/bash
+#SBATCH --job-name="FastSP"
+#SBATCH --time=124:00:00  # walltime limit (HH:MM:SS)
+#SBATCH --nodes=1   # number of nodes
+#SBATCH --ntasks-per-node=2   # processor core(s) per node
+#SBATCH --mail-user="biancani@uri.edu" #CHANGE TO user email address
+#SBATCH --mail-type=ALL
+
+# Update Path:
+out=/data/schwartzlab/Biancani/Phylo_ML/output
+fastsp="/data/schwartzlab/Biancani/Software/FastSP/FastSP.jar"
+
+date
+module purge
+module load all/Java/17.0.2
+
+for subset in $out/subset_*; do
+  cd $subset
+  pwd
+  > fastsp_output.csv
+  for alignment in alignments/*; do
+    file=$(basename $alignment)
+    echo $file","$(java -jar ${fastsp} -r alignments/$file -e re_alignments/$file | grep "SP-Score" | sed 's/SP-Score //g')  >> fastsp_output.csv
+  done
+done
+date
+#####################
+sbatch -q schwartzlab 01.04_FastSP.sh
+Submitted batch job 356417
+Job ID: 356417
+Cluster: andromeda
+User/Group: biancani/schwartzlab
+State: COMPLETED (exit code 0)
+Nodes: 1
+Cores per node: 2
+CPU Utilized: 02:38:31
+CPU Efficiency: 49.67% of 05:19:08 core-walltime
+Job Wall-clock time: 02:39:34
+Memory Utilized: 12.84 MB
+Memory Efficiency: 0.31% of 4.00 GB
+
+
+wd=/data/schwartzlab/Biancani/Phylo_ML/01_feature_assessment
+cd $wd
+
+nano 01.05_iqtree_concat_array.sh
+#####################
+#!/bin/bash
+#SBATCH --job-name="IQconcat"
+#SBATCH --time=172:00:00  # walltime limit (HH:MM:SS)
+#SBATCH --nodes=1   # number of nodes
+#SBATCH --ntasks-per-node=20   # processor core(s) per node
+#SBATCH --mem=200G
+#SBATCH --mail-user="biancani@uri.edu" #CHANGE TO user email address
+#SBATCH --mail-type=ALL
+#SBATCH --array=[0-19]%20
+
+# Update Path:
+out=/data/schwartzlab/Biancani/Phylo_ML/output
+iqtree_exe=/data/schwartzlab/Biancani/Software/iqtree-2.1.2-Linux/bin/iqtree2
+amas=/data/schwartzlab/Biancani/Software/AMAS/amas/AMAS.py
+
+date
+module purge
+module load Python/3.7.4-GCCcore-8.3.0
+subset=$(printf "%02d\n" $((SLURM_ARRAY_TASK_ID + 1)))
+path=$out/subset_$subset
+cd $path
+pwd
+
+cd iqtree_concattree
+files=$(cat $(sed -n p ../alignmentGroups/array_list.txt | awk '{print "../alignmentGroups/"$0}') | awk '{print "../alignments/"$0}' | paste -sd" ")
+echo "Running AMAS"
+python3 ${amas} concat -f fasta -d dna --out-format fasta --part-format raxml -i ${files} -t concatenated.fasta -p partitions.txt
+	${iqtree_exe} -nt 20 -s concatenated.fasta -spp partitions.txt -pre inference -m MFP -bb 1000 -alrt 1000
+date
+#####################
+sbatch -q schwartzlab 01.05_iqtree_concat_array.sh
+Submitted batch job 356422
+Job ID: 356422
+Array Job ID: 356422_19
+Cluster: andromeda
+User/Group: biancani/schwartzlab
+State: COMPLETED (exit code 0)
+Nodes: 1
+Cores per node: 20
+CPU Utilized: 1-19:04:04
+CPU Efficiency: 87.77% of 2-01:04:00 core-walltime
+Job Wall-clock time: 02:27:12
+Memory Utilized: 6.49 GB
+Memory Efficiency: 3.25% of 200.00 GB
+
+This array will construct a concatenated tree for each subset of 5500 loci.
+This should also be done for all loci concatenated together
+but AMAS will not take that many files as input...
+
+wd=/data/schwartzlab/Biancani/Phylo_ML/01_feature_assessment
+cd $wd
+
+01.05_iqtree_concat_array.sh produced concatenated alignemnts (concatenated.fasta) and partition files (partitions.txt) in $out/subset_xx/iqtree_concatttree
+
+To Do:
+1. copy these files to new folder & rename to include subset #
+2. use AMAS to concatenate Alignments
+3. write script to create new partitions files
+
+wd=/data/schwartzlab/Biancani/Phylo_ML/01_feature_assessment
+cd $wd
+
+nano 01.05b_iqtree_concat_allLoci.sh
+#####################
+#!/bin/bash
+#SBATCH --job-name="IQconcat"
+#SBATCH --time=172:00:00  # walltime limit (HH:MM:SS)
+#SBATCH --nodes=1   # number of nodes
+#SBATCH --ntasks-per-node=20   # processor core(s) per node
+#SBATCH --mem=200G
+#SBATCH --mail-user="biancani@uri.edu" #CHANGE TO user email address
+#SBATCH --mail-type=ALL
+
+out=/data/schwartzlab/Biancani/Phylo_ML/output
+amas=/data/schwartzlab/Biancani/Software/AMAS/amas/AMAS.py
+iqtree_exe=/data/schwartzlab/Biancani/Software/iqtree-2.1.2-Linux/bin/iqtree2
+
+date
+module purge
+module load Python/3.7.4-GCCcore-8.3.0
+cat_subsets=$out/all_loci/concatenated_subsets
+mkdir -p $cat_subsets
+cd $cat_subsets
+pwd
+
+##for each subset, copy concatenated alignments and partition files to all_loci:
+for subset in $out/subset_*; do
+  name=$(basename $subset)
+  cp $subset/iqtree_concattree/concatenated.fasta $cat_subsets/${name}_concat.fasta
+  cp $subset/iqtree_concattree/partitions.txt $cat_subsets/${name}_partition.txt
+done
+
+files=$(ls *concat.fasta)
+echo "Running AMAS to concatenate subsets"
+python3 ${amas} concat -f fasta -d dna --out-format fasta --part-format raxml -i ${files} -t all_loci_concatenated.fasta -p partitioned_subsets.txt
+
+echo "creating partitions file for all concatenated loci..."
+> all_loci_partitions.txt
+part=0
+while read -r line; do
+  subset=$(echo "$line" | grep -oP '(?<=subset_)\d{2}')
+  start=$(echo "$line" | grep -oP '\d+(?=-)')
+  end=$(echo "$line" | grep -oP '(?<=-)\d+')
+  #echo "$subset $start $end"
+  file=subset_${subset}_partition.txt
+  #ls $file
+    while read -r l; do
+      p=$(echo "$l" | grep -oP '(?<=, p)\d+(?=_SISRS)')
+      contig=$(echo "$l" | grep -oP '(?<=contig-)\d+(?= =)')
+      s=$(echo "$l" | grep -oP '\d+(?=-)')
+      e=$(echo "$l" | grep -oP '(?<=-)\d+$')
+      #echo $l
+      #echo "DNA, p${p}_SISRS_contig-${contig} = ${s}-${e}"
+      ((part++))
+      if [[ $s -lt $start ]]; then
+        s=$((s + start - 1))
+        e=$((e + start - 1))
+      fi
+      echo "DNA, p${part}_SISRS_contig-${contig} = ${s}-${e}" >> all_loci_partitions.txt
+    done < $file
+  if [[ $e -ne $end ]]; then
+    echo "ERROR: Loci positions do not match. Subset $subset should end at $end but actually ended at $e"
+    break
+  fi
+done < partitioned_subsets.txt
+
+echo "Running IQTree"
+${iqtree_exe} -nt 20 -s all_loci_concatenated.fasta -spp all_loci_partitions.txt -pre inference_all_loci -m MFP -bb 1000 -alrt 1000
+date
+#####################
+sbatch -q schwartzlab 01.05b_iqtree_concat_allLoci.sh
+Submitted batch job 356455
+Job ID: 356455
+Cluster: andromeda
+User/Group: biancani/schwartzlab
+State: COMPLETED (exit code 0)
+Nodes: 1
+Cores per node: 20
+CPU Utilized: 30-19:05:02
+CPU Efficiency: 65.87% of 46-18:02:20 core-walltime
+Job Wall-clock time: 2-08:06:07
+Memory Utilized: 141.16 GB
+Memory Efficiency: 70.58% of 200.00 GB
+
+2025.02.06
+
+step 01.06
+
+this is an array job that will operate inside each subset.
+Using subset 1 as a starting point, write the job script.
+Then write a parent job that creates the job script, edits it (for each subset)...
+... then submits it before editing it for the next subset
+
+for parent script:
+
+export MYVAR="some_value"
+sbatch myscript.sh
+
+wd=/data/schwartzlab/Biancani/Phylo_ML/01_feature_assessment
+cd $wd
+
+nano 01.06_run_iqtree_array.sh
+#####################
+#!/bin/bash
+#SBATCH --job-name="submit_jobs"
+#SBATCH --time=1:00:00  # walltime limit (HH:MM:SS)
+#SBATCH --nodes=1   # number of nodes
+#SBATCH --ntasks-per-node=1   # processor core(s) per node
+#SBATCH -c 1
+#SBATCH --mem-per-cpu=6G
+#SBATCH --mail-user="biancani@uri.edu" #CHANGE TO user email address
+#SBATCH --mail-type=ALL
+
+# UPDATE:
+out=/data/schwartzlab/Biancani/Phylo_ML/output
+
+### begin creating job script (Single quotes ('EOF') prevent variable expansion inside the here-document)
+cat << 'EOF' > genetrees.sh
+#!/bin/bash
+#SBATCH --job-name="IQloop"
+#SBATCH --time=24:00:00  # walltime limit (HH:MM:SS)
+#SBATCH --nodes=1   # number of nodes
+#SBATCH --cpus-per-task=2
+#SBATCH --mem-per-cpu=10G
+#SBATCH --mail-user="biancani@uri.edu" #CHANGE TO user email address
+#SBATCH --mail-type=ALL
+#SBATCH --array=1-22 #based on the number of alignmentGroups in each subset
+
+# UPDATE:
+out=/data/schwartzlab/Biancani/Phylo_ML/output
+iqtree_exe=/data/schwartzlab/Biancani/Software/iqtree-2.1.2-Linux/bin/iqtree2
+
+## path to subset directory is passed to job scrip using export $subset
+date
+echo $subset
+aligned_loci_path=$subset/alignments
+
+#create a series of arrays corresponding to each line in the array_list.txt file
+fileline=$(sed -n "${SLURM_ARRAY_TASK_ID}"p $subset/alignmentGroups/array_list.txt)
+echo "File line:${fileline} "
+while read line; do
+	#iqtree job: Flags instruct iqtree to keep sequence identifiers as they are in the input file; to set 2 threads for parallel processing; specifies a DNA aligment file; specifies a prefix for the output files; specifies the substitution model to be used, MFP, a mixture model of amino acid frequencies; sets 1000 ultrafast bootstraps; and ets the number of replicates for the non-parametric approximate likelihood ratio test (aLRT) to 1000
+	cd $subset/iqtree_genetrees
+	pwd
+	$iqtree_exe --keep-ident -nt 2 -s ${aligned_loci_path}/${line} -pre inference_${line} -m MFP -bb 1000 -alrt 1000
+  #mkdir -p log_files
+  #for file in *.log; do
+  #  mv $file log_files/
+  #done
+  #mkdir -p other_outfiles
+  #for file in *fasta.[^t]*; do
+  #  mv $file other_outfiles/
+  #done
+done < $subset/alignmentGroups/${fileline}
+date
+EOF
+### end creating job script
+echo "genetrees.sh created"
+
+# Iterate through subset paths and submit above job for each:
+for subset in $out/subset_*; do
+	echo $subset
+	export subset=$subset # pass subset path to slurm submit
+	sbatch genetrees.sh # submit job
+done
+
+rm genetrees.sh
+date
+#####################
+sbatch -q schwartzlab 01.06_run_iqtree_array.sh
+Submitted batch job 360357
+
+
+less slurm-360357.out:
+genetrees.sh created
+/data/schwartzlab/Biancani/Phylo_ML/output/subset_01
+Submitted batch job 360358
+Job ID: 360358
+Array Job ID: 360358_22
+Cluster: andromeda
+User/Group: biancani/schwartzlab
+State: COMPLETED (exit code 0)
+Nodes: 1
+Cores per node: 2
+CPU Utilized: 01:37:55
+CPU Efficiency: 95.25% of 01:42:48 core-walltime
+Job Wall-clock time: 00:51:24
+Memory Utilized: 28.34 MB
+Memory Efficiency: 0.14% of 20.00 GB
+/data/schwartzlab/Biancani/Phylo_ML/output/subset_02
+Submitted batch job 360359
+Job ID: 360359
+Array Job ID: 360359_22
+Cluster: andromeda
+User/Group: biancani/schwartzlab
+State: COMPLETED (exit code 0)
+Nodes: 1
+Cores per node: 2
+CPU Utilized: 01:47:37
+CPU Efficiency: 95.92% of 01:52:12 core-walltime
+Job Wall-clock time: 00:56:06
+Memory Utilized: 34.13 MB
+Memory Efficiency: 0.17% of 20.00 GB
+/data/schwartzlab/Biancani/Phylo_ML/output/subset_03
+Submitted batch job 360360
+Job ID: 360360
+Array Job ID: 360360_22
+Cluster: andromeda
+User/Group: biancani/schwartzlab
+State: COMPLETED (exit code 0)
+Nodes: 1
+Cores per node: 2
+CPU Utilized: 02:05:35
+CPU Efficiency: 96.43% of 02:10:14 core-walltime
+Job Wall-clock time: 01:05:07
+Memory Utilized: 32.89 MB
+Memory Efficiency: 0.16% of 20.00 GB
+/data/schwartzlab/Biancani/Phylo_ML/output/subset_04
+Submitted batch job 360361
+Job ID: 360361
+Array Job ID: 360361_22
+Cluster: andromeda
+User/Group: biancani/schwartzlab
+State: COMPLETED (exit code 0)
+Nodes: 1
+Cores per node: 2
+CPU Utilized: 02:21:54
+CPU Efficiency: 96.49% of 02:27:04 core-walltime
+Job Wall-clock time: 01:13:32
+Memory Utilized: 31.70 MB
+Memory Efficiency: 0.15% of 20.00 GB
+/data/schwartzlab/Biancani/Phylo_ML/output/subset_05
+Submitted batch job 360362
+Job ID: 360362
+Array Job ID: 360362_22
+Cluster: andromeda
+User/Group: biancani/schwartzlab
+State: COMPLETED (exit code 0)
+Nodes: 1
+Cores per node: 2
+CPU Utilized: 02:02:02
+CPU Efficiency: 96.88% of 02:05:58 core-walltime
+Job Wall-clock time: 01:02:59
+Memory Utilized: 33.08 MB
+Memory Efficiency: 0.16% of 20.00 GB
+/data/schwartzlab/Biancani/Phylo_ML/output/subset_06
+Submitted batch job 360448
+Job ID: 360448
+Array Job ID: 360448_22
+Cluster: andromeda
+User/Group: biancani/schwartzlab
+State: COMPLETED (exit code 0)
+Nodes: 1
+Cores per node: 2
+CPU Utilized: 02:17:08
+CPU Efficiency: 97.47% of 02:20:42 core-walltime
+Job Wall-clock time: 01:10:21
+Memory Utilized: 32.61 MB
+Memory Efficiency: 0.16% of 20.00 GB
+/data/schwartzlab/Biancani/Phylo_ML/output/subset_07
+Submitted batch job 360449
+Job ID: 360449
+Array Job ID: 360449_22
+Cluster: andromeda
+User/Group: biancani/schwartzlab
+State: COMPLETED (exit code 0)
+Nodes: 1
+Cores per node: 2
+CPU Utilized: 02:07:18
+CPU Efficiency: 97.18% of 02:11:00 core-walltime
+Job Wall-clock time: 01:05:30
+Memory Utilized: 30.14 MB
+Memory Efficiency: 0.15% of 20.00 GB
+/data/schwartzlab/Biancani/Phylo_ML/output/subset_08
+Submitted batch job 360450
+ob ID: 360450
+Array Job ID: 360450_22
+Cluster: andromeda
+User/Group: biancani/schwartzlab
+State: COMPLETED (exit code 0)
+Nodes: 1
+Cores per node: 2
+CPU Utilized: 03:04:07
+CPU Efficiency: 97.74% of 03:08:22 core-walltime
+Job Wall-clock time: 01:34:11
+Memory Utilized: 31.67 MB
+Memory Efficiency: 0.15% of 20.00 GB
+/data/schwartzlab/Biancani/Phylo_ML/output/subset_09
+Submitted batch job 360451
+Job ID: 360451
+Array Job ID: 360451_22
+Cluster: andromeda
+User/Group: biancani/schwartzlab
+State: COMPLETED (exit code 0)
+Nodes: 1
+Cores per node: 2
+CPU Utilized: 01:56:43
+CPU Efficiency: 97.05% of 02:00:16 core-walltime
+Job Wall-clock time: 01:00:08
+Memory Utilized: 30.71 MB
+Memory Efficiency: 0.15% of 20.00 GB
+/data/schwartzlab/Biancani/Phylo_ML/output/subset_10
+Submitted batch job 360452
+Job ID: 360452
+Array Job ID: 360452_22
+Cluster: andromeda
+User/Group: biancani/schwartzlab
+State: COMPLETED (exit code 0)
+Nodes: 1
+Cores per node: 2
+CPU Utilized: 02:01:16
+CPU Efficiency: 97.32% of 02:04:36 core-walltime
+Job Wall-clock time: 01:02:18
+Memory Utilized: 37.98 MB
+Memory Efficiency: 0.19% of 20.00 GB
+/data/schwartzlab/Biancani/Phylo_ML/output/subset_11
+Submitted batch job 360453
+Job ID: 360453
+Array Job ID: 360453_22
+Cluster: andromeda
+User/Group: biancani/schwartzlab
+State: COMPLETED (exit code 0)
+Nodes: 1
+Cores per node: 2
+CPU Utilized: 01:57:59
+CPU Efficiency: 97.51% of 02:01:00 core-walltime
+Job Wall-clock time: 01:00:30
+Memory Utilized: 49.27 MB
+Memory Efficiency: 0.24% of 20.00 GB
+/data/schwartzlab/Biancani/Phylo_ML/output/subset_12
+Submitted batch job 360454
+Job ID: 360454
+Array Job ID: 360454_22
+Cluster: andromeda
+User/Group: biancani/schwartzlab
+State: COMPLETED (exit code 0)
+Nodes: 1
+Cores per node: 2
+CPU Utilized: 02:31:49
+CPU Efficiency: 97.80% of 02:35:14 core-walltime
+Job Wall-clock time: 01:17:37
+Memory Utilized: 32.36 MB
+Memory Efficiency: 0.16% of 20.00 GB
+/data/schwartzlab/Biancani/Phylo_ML/output/subset_13
+Submitted batch job 360455
+Job ID: 360455
+Array Job ID: 360455_22
+Cluster: andromeda
+User/Group: biancani/schwartzlab
+State: COMPLETED (exit code 0)
+Nodes: 1
+Cores per node: 2
+CPU Utilized: 02:29:40
+CPU Efficiency: 97.52% of 02:33:28 core-walltime
+Job Wall-clock time: 01:16:44
+Memory Utilized: 32.04 MB
+Memory Efficiency: 0.16% of 20.00 GB
+/data/schwartzlab/Biancani/Phylo_ML/output/subset_14
+Submitted batch job 360456
+Job ID: 360456
+Array Job ID: 360456_22
+Cluster: andromeda
+User/Group: biancani/schwartzlab
+State: COMPLETED (exit code 0)
+Nodes: 1
+Cores per node: 2
+CPU Utilized: 02:00:48
+CPU Efficiency: 97.55% of 02:03:50 core-walltime
+Job Wall-clock time: 01:01:55
+Memory Utilized: 32.62 MB
+Memory Efficiency: 0.16% of 20.00 GB
+/data/schwartzlab/Biancani/Phylo_ML/output/subset_15
+Submitted batch job 360457
+Job ID: 360457
+Array Job ID: 360457_22
+Cluster: andromeda
+User/Group: biancani/schwartzlab
+State: COMPLETED (exit code 0)
+Nodes: 1
+Cores per node: 2
+CPU Utilized: 01:51:42
+CPU Efficiency: 97.30% of 01:54:48 core-walltime
+Job Wall-clock time: 00:57:24
+Memory Utilized: 34.00 MB
+Memory Efficiency: 0.17% of 20.00 GB
+/data/schwartzlab/Biancani/Phylo_ML/output/subset_16
+Submitted batch job 360458
+Job ID: 360458
+Array Job ID: 360458_22
+Cluster: andromeda
+User/Group: biancani/schwartzlab
+State: COMPLETED (exit code 0)
+Nodes: 1
+Cores per node: 2
+CPU Utilized: 01:55:50
+CPU Efficiency: 97.69% of 01:58:34 core-walltime
+Job Wall-clock time: 00:59:17
+Memory Utilized: 30.95 MB
+Memory Efficiency: 0.15% of 20.00 GB
+/data/schwartzlab/Biancani/Phylo_ML/output/subset_17
+Submitted batch job 360459
+Job ID: 360459
+Array Job ID: 360459_22
+Cluster: andromeda
+User/Group: biancani/schwartzlab
+State: COMPLETED (exit code 0)
+Nodes: 1
+Cores per node: 2
+CPU Utilized: 02:03:25
+CPU Efficiency: 97.95% of 02:06:00 core-walltime
+Job Wall-clock time: 01:03:00
+Memory Utilized: 33.48 MB
+Memory Efficiency: 0.16% of 20.00 GB
+/data/schwartzlab/Biancani/Phylo_ML/output/subset_18
+Submitted batch job 360460
+Job ID: 360460
+Array Job ID: 360460_22
+Cluster: andromeda
+User/Group: biancani/schwartzlab
+State: COMPLETED (exit code 0)
+Nodes: 1
+Cores per node: 2
+CPU Utilized: 02:11:27
+CPU Efficiency: 97.98% of 02:14:10 core-walltime
+Job Wall-clock time: 01:07:05
+Memory Utilized: 31.36 MB
+Memory Efficiency: 0.15% of 20.00 GB
+/data/schwartzlab/Biancani/Phylo_ML/output/subset_19
+Submitted batch job 360461
+Job ID: 360461
+Array Job ID: 360461_22
+Cluster: andromeda
+User/Group: biancani/schwartzlab
+State: COMPLETED (exit code 0)
+Nodes: 1
+Cores per node: 2
+CPU Utilized: 01:58:33
+CPU Efficiency: 97.73% of 02:01:18 core-walltime
+Job Wall-clock time: 01:00:39
+Memory Utilized: 34.18 MB
+Memory Efficiency: 0.17% of 20.00 GB
+/data/schwartzlab/Biancani/Phylo_ML/output/subset_20
+Submitted batch job 360462
+Job ID: 360462
+Array Job ID: 360462_22
+Cluster: andromeda
+User/Group: biancani/schwartzlab
+State: COMPLETED (exit code 0)
+Nodes: 1
+Cores per node: 2
+CPU Utilized: 00:21:44
+CPU Efficiency: 97.60% of 00:22:16 core-walltime
+Job Wall-clock time: 00:11:08
+Memory Utilized: 28.82 MB
+Memory Efficiency: 0.14% of 20.00 GB
+Sat Feb  8 11:52:05 EST 2025
+
+
+2025.02.07
+
+Step 01.07 requires an R script copied from Alexandra's Github:
+
+mkdir -p /data/schwartzlab/Biancani/Phylo_ML/01_feature_assessment/scripts/
+cd /data/schwartzlab/Biancani/Phylo_ML/01_feature_assessment/scripts/
+cp /data/schwartzlab/Biancani/Phylo_ML/PML/6_empirical_features/prune_tree.R .
+
+New location of prune_tree.R:
+/data/schwartzlab/Biancani/Phylo_ML/01_feature_assessment/scripts/prune_tree.R
+
+wd=/data/schwartzlab/Biancani/Phylo_ML/01_feature_assessment
+cd $wd
+
+nano 01.07_prune_rescale_species_tree.sh
+#####################
+#!/bin/bash
+#SBATCH --job-name="sptree"
+#SBATCH --time=10:00:00  # walltime limit (HH:MM:SS)
+#SBATCH --nodes=1   # number of nodes
+#SBATCH --ntasks-per-node=5   # processor core(s) per node
+#SBATCH -c 1
+#SBATCH --mem-per-cpu=48G
+#SBATCH --mail-user="biancani@uri.edu" #CHANGE TO user email address
+#SBATCH --mail-type=ALL
+#SBATCH --array=[0-19]%20
+
+# Update Paths:
+out=/data/schwartzlab/Biancani/Phylo_ML/output
+wd=/data/schwartzlab/Biancani/Phylo_ML/01_feature_assessment
+prune_script_path=$wd/scripts/prune_tree.R
+# Path to concatenated species tree for all loci:
+species_tree_file="/data/schwartzlab/Biancani/Phylo_ML/output/all_loci/concatenated_subsets/inference_all_loci.treefile"
+#species_tree_file="./iqtree_concattree/inference.treefile" #species tree for each subset
+
+date
+module purge
+module load R/4.0.3-foss-2020b
+
+#Set Up Subset Paths Based on the Job Array Task ID
+subset=$(printf "%02d\n" $((SLURM_ARRAY_TASK_ID + 1)))
+path=$out/subset_$subset
+cd $path
+pwd
+
+gene_tree_file="inferred_gene_trees"
+pruned_output_file="./pruned_species_trees.tre"
+
+cat $(sed -n p $path/alignmentGroups/array_list.txt | awk '{print "./alignmentGroups/"$0}') > ${gene_tree_file}".txt"
+echo "alignment files concatenated: gene_tree_file.txt"
+cat $(cat $(sed -n p $path/alignmentGroups/array_list.txt | awk '{print "./alignmentGroups/"$0}') | awk '{print "./iqtree_genetrees/inference_"$0".treefile"}') > ${gene_tree_file}".tre"
+echo "gene tree file created: gene_tree_file.tre"
+
+Rscript ${prune_script_path} ${species_tree_file} ${gene_tree_file}".tre" ${pruned_output_file}
+date
+#####################
+sbatch -q schwartzlab 01.07_prune_rescale_species_tree.sh
+Submitted batch job 360818
+Job ID: 360818
+Array Job ID: 360818_19
+Cluster: andromeda
+User/Group: biancani/schwartzlab
+State: COMPLETED (exit code 0)
+Nodes: 1
+Cores per node: 5
+CPU Utilized: 00:00:10
+CPU Efficiency: 4.08% of 00:04:05 core-walltime
+Job Wall-clock time: 00:00:49
+Memory Utilized: 2.24 MB
+Memory Efficiency: 0.00% of 240.00 GB
+
+2025.02.08
+
+Step 8 requires a HyPhy batch script (LEISR.bf): A likelihood estimation script for evolutionary rates.
+Alex & Alexandra used this path to the file:
+/opt/software/HyPhy/2.5.33-gompi-2020b/share/hyphy/TemplateBatchFiles/LEISR.bf
+However, with the impending move to Unity Cluster, I want to copy this file to the scripts directory:
+
+path=/data/schwartzlab/Biancani/Phylo_ML/01_feature_assessment/scripts/HyPhy/2.5.33-gompi-2020b/share/hyphy/TemplateBatchFiles
+mkdir -p $path
+cp /opt/software/HyPhy/2.5.33-gompi-2020b/share/hyphy/TemplateBatchFiles/LEISR.bf $path/
+
+new location of HyPhy batch script:
+/data/schwartzlab/Biancani/Phylo_ML/01_feature_assessment/scripts/HyPhy/2.5.33-gompi-2020b/share/hyphy/TemplateBatchFiles/LEISR.bf
+
+wd=/data/schwartzlab/Biancani/Phylo_ML/01_feature_assessment
+cd $wd
+
+nano 01.08_rate_assessment_array.sh
+#####################
+#!/bin/bash
+#SBATCH --job-name="submit_jobs"
+#SBATCH --time=1:00:00  # walltime limit (HH:MM:SS)
+#SBATCH --nodes=1   # number of nodes
+#SBATCH --ntasks-per-node=1   # processor core(s) per node
+#SBATCH -c 1
+#SBATCH --mem-per-cpu=6G
+#SBATCH --mail-user="biancani@uri.edu" #CHANGE TO user email address
+#SBATCH --mail-type=ALL
+
+# UPDATE:
+out=/data/schwartzlab/Biancani/Phylo_ML/output
+
+### begin creating job script (Single quotes ('EOF') prevent variable expansion inside the here-document)
+cat << 'EOF' > HParr.sh
+#!/bin/bash
+#SBATCH --job-name="HParr"
+#SBATCH --time=72:00:00  # walltime limit (HH:MM:SS)
+#SBATCH --nodes=1   # number of nodes
+#SBATCH --ntasks-per-node=1   # processor core(s) per node
+#SBATCH -c 1
+#SBATCH --mem-per-cpu=6G
+#SBATCH --mail-user="biancani@uri.edu" #CHANGE TO user email address
+#SBATCH --mail-type=ALL
+#SBATCH --array=1-22 #based on the number of alignmentGroups in each subset
+
+# UPDATE:
+out=/data/schwartzlab/Biancani/Phylo_ML/output
+wd=/data/schwartzlab/Biancani/Phylo_ML/01_feature_assessment
+
+## location of HyPhy batch script:
+batch_script=$wd/scripts/HyPhy/2.5.33-gompi-2020b/share/hyphy/TemplateBatchFiles/LEISR.bf
+#batch_script="/opt/software/HyPhy/2.5.33-gompi-2020b/share/hyphy/TemplateBatchFiles/LEISR.bf"
+## path to subset directory is passed to job scrip using export $subset
+aligned_loci_path=$subset/alignments
+iqtree_log_path=$subset/iqtree_genetrees
+pruned_trees_path=$subset/pruned_species_trees.tre
+gene_tree_names=$subset/inferred_gene_trees.txt
+
+date
+cd $subset/rate_assessment
+pwd
+
+module purge
+module load R/4.0.3-foss-2020b
+module load HyPhy/2.5.33-gompi-2020b
+
+#create a series of arrays corresponding to each line in the array_list.txt file
+fileline=$(sed -n "${SLURM_ARRAY_TASK_ID}"p $subset/alignmentGroups/array_list.txt)
+echo "File line:${fileline} "
+cat $subset/alignmentGroups/${fileline} | while read line; do
+	echo $line #locus file
+  if [[ ! -f "${iqtree_log_path}/inference_${line}.log" ]]; then
+    echo "Error: Log file not found: ${iqtree_log_path}/inference_${line}.log" >&2
+    exit 1
+  fi
+	best_model_param=$(grep "Bayesian Information Criterion:" ${iqtree_log_path}/inference_${line}.log | awk '{print $4}')
+  best_model=$(echo ${best_model_param} | cut -f1 -d+)
+  echo "Best Model: $best_model"
+	if [ "$best_model" = "HKY" ] || [ "$best_model" = "F81" ]; then useModel="HKY85"; else useModel="GTR"; fi
+  echo "Model Used: $useModel"
+	if [[ "$best_model_param" == *"+"* ]]; then best_param=$(echo ${best_model_param} | cut -f2- -d+); else best_param=""; fi
+  echo "Best Model Parameter: $best_param"
+	if [[ "$best_param" == *"G"* ]] || [[ "$best_param" == *"R"* ]]; then useRVAS="Gamma"; else useRVAS="No"; fi
+  echo "Rate Variation Across Sites: $useRVAS"
+	treefile="temp_tree_${SLURM_ARRAY_TASK_ID}.tre"
+	loc_name=$(echo ${line} )
+  if ! grep -q "${loc_name}" "${gene_tree_names}"; then
+    echo "Error: ${loc_name} not found in ${gene_tree_names}" >&2
+    exit 1
+  fi
+  echo ${loc_name} ${gene_tree_names}
+  grep -wn "${loc_name}" ${gene_tree_names}
+	sed -n $(grep -wn ${loc_name} ${gene_tree_names} | cut -f1 -d:)p ${pruned_trees_path} > ${treefile}
+  echo "Running HyPhy."
+	hyphy ${batch_script} ${aligned_loci_path}/${line} ${treefile} Nucleotide ${useModel} ${useRVAS}
+	mv ${aligned_loci_path}/${line}.LEISR.json .
+	rm ${treefile}
+done
+date
+EOF
+### end creating job script
+echo "HParr.sh created"
+
+# Iterate through subset paths and submit above job for each:
+for subset in $out/subset_*; do
+	echo $subset
+	export subset=$subset # pass subset path to slurm submit
+	sbatch HParr.sh # submit job
+done
+
+rm HParr.sh
+date
+#####################
+sbatch -q schwartzlab 01.08_rate_assessment_array.sh
+Submitted batch job 360922
+Job ID: 360922
+Cluster: andromeda
+User/Group: biancani/schwartzlab
+State: COMPLETED (exit code 0)
+Cores: 1
+CPU Utilized: 00:00:00
+CPU Efficiency: 0.00% of 00:00:12 core-walltime
+Job Wall-clock time: 00:00:12
+Memory Utilized: 0.00 MB (estimated maximum)
+Memory Efficiency: 0.00% of 6.00 GB (6.00 GB/core)
+
+less slurm-360922.out:
+---------------------
+HParr.sh created
+/data/schwartzlab/Biancani/Phylo_ML/output/subset_01
+Submitted batch job 360923
+/data/schwartzlab/Biancani/Phylo_ML/output/subset_02
+Submitted batch job 360924
+/data/schwartzlab/Biancani/Phylo_ML/output/subset_03
+Submitted batch job 360925
+Job ID: 360925
+Array Job ID: 360925_22
+Cluster: andromeda
+User/Group: biancani/schwartzlab
+State: COMPLETED (exit code 0)
+Cores: 1
+CPU Utilized: 00:05:29
+CPU Efficiency: 73.11% of 00:07:30 core-walltime
+Job Wall-clock time: 00:07:30
+Memory Utilized: 14.88 MB
+Memory Efficiency: 0.24% of 6.00 GB
+/data/schwartzlab/Biancani/Phylo_ML/output/subset_04
+Submitted batch job 360926
+/data/schwartzlab/Biancani/Phylo_ML/output/subset_05
+Submitted batch job 361011
+/data/schwartzlab/Biancani/Phylo_ML/output/subset_06
+Submitted batch job 361012
+/data/schwartzlab/Biancani/Phylo_ML/output/subset_07
+Submitted batch job 361013
+/data/schwartzlab/Biancani/Phylo_ML/output/subset_08
+Submitted batch job 361014
+/data/schwartzlab/Biancani/Phylo_ML/output/subset_09
+Submitted batch job 361015
+/data/schwartzlab/Biancani/Phylo_ML/output/subset_10
+Submitted batch job 361016
+/data/schwartzlab/Biancani/Phylo_ML/output/subset_11
+Submitted batch job 361017
+/data/schwartzlab/Biancani/Phylo_ML/output/subset_12
+Submitted batch job 361104
+/data/schwartzlab/Biancani/Phylo_ML/output/subset_13
+Submitted batch job 361105
+/data/schwartzlab/Biancani/Phylo_ML/output/subset_14
+Submitted batch job 361106
+/data/schwartzlab/Biancani/Phylo_ML/output/subset_15
+Submitted batch job 361107
+/data/schwartzlab/Biancani/Phylo_ML/output/subset_16
+Submitted batch job 361108
+/data/schwartzlab/Biancani/Phylo_ML/output/subset_17
+Submitted batch job 361109
+/data/schwartzlab/Biancani/Phylo_ML/output/subset_18
+Submitted batch job 361110
+/data/schwartzlab/Biancani/Phylo_ML/output/subset_19
+Submitted batch job 361111
+/data/schwartzlab/Biancani/Phylo_ML/output/subset_20
+Submitted batch job 361112
+Mon Feb 10 20:11:06 EST 2025
+
+Step 01.09 requires an R script copied from Alexandra's Github:
+
+cd /data/schwartzlab/Biancani/Phylo_ML/01_feature_assessment/scripts/
+cp /data/schwartzlab/Biancani/Phylo_ML/PML/6_empirical_features/collapse_by.R .
+
+wd=/data/schwartzlab/Biancani/Phylo_ML/01_feature_assessment
+collapser_path=$wd/scripts/collapse_by.R
+
+wd=/data/schwartzlab/Biancani/Phylo_ML/01_feature_assessment
+cd $wd
+
+nano 01.09_run_astral.sh
+#####################
+#!/bin/bash
+#SBATCH --job-name="Astr"
+#SBATCH --time=2:00:00  # walltime limit (HH:MM:SS)
+#SBATCH --nodes=1   # number of nodes
+#SBATCH --ntasks-per-node=1   # processor core(s) per node
+#SBATCH -c 1
+#SBATCH --mem-per-cpu=6G
+#SBATCH --mail-user="biancani@uri.edu" #CHANGE TO user email address
+#SBATCH --mail-type=ALL
+#SBATCH --array=[0-19]%20
+
+# Update Paths:
+out=/data/schwartzlab/Biancani/Phylo_ML/output
+astral_path="/data/schwartzlab/Biancani/Software/ASTRAL/Astral/astral.5.7.8.jar"
+wd=/data/schwartzlab/Biancani/Phylo_ML/01_feature_assessment
+collapser_path=$wd/scripts/collapse_by.R
+
+#Set Up Subset Paths Based on the Job Array Task ID
+subset=$(printf "%02d\n" $((SLURM_ARRAY_TASK_ID + 1)))
+path=$out/subset_$subset
+
+# Paths to input files:
+gene_tree_path="$path/inferred_gene_trees.tre"
+
+module load R/4.0.3-foss-2020b
+date
+
+cd $path
+pwd
+mkdir -p astral_tree
+cd astral_tree
+pwd
+grep "/" ${gene_tree_path} > filtered.tre
+Rscript ${collapser_path} filtered.tre sh-alrt 0 collapsed_trees.tre
+rm filtered.tre
+java -Xmx5000M -jar ${astral_path} -i collapsed_trees.tre -o astral.tre -t 4 2>astral.log
+rm collapsed_trees.tre
+date
+#####################
+sbatch -q schwartzlab 01.09_run_astral.sh
+Submitted batch job 361410
+Job ID: 361410
+Array Job ID: 361410_19
+Cluster: andromeda
+User/Group: biancani/schwartzlab
+State: COMPLETED (exit code 0)
+Cores: 1
+CPU Utilized: 01:36:25
+CPU Efficiency: 99.64% of 01:36:46 core-walltime
+Job Wall-clock time: 01:36:46
+Memory Utilized: 655.50 MB
+Memory Efficiency: 10.67% of 6.00 GB
+
+This array will construct an astral tree for each subset of 5500 loci/gene trees.
+This should also be done for gene trees of all loci together:
+
+nano 01.09b_run_astral_allLoci.sh
+#####################
+#!/bin/bash
+#SBATCH --job-name="Astr"
+#SBATCH --time=48:00:00  # walltime limit (HH:MM:SS)
+#SBATCH --nodes=1   # number of nodes
+#SBATCH --ntasks-per-node=1   # processor core(s) per node
+#SBATCH -c 1
+#SBATCH --mem-per-cpu=6G
+#SBATCH --mail-user="biancani@uri.edu" #CHANGE TO user email address
+#SBATCH --mail-type=ALL
+
+# Update Paths:
+out=/data/schwartzlab/Biancani/Phylo_ML/output
+astral_path="/data/schwartzlab/Biancani/Software/ASTRAL/Astral/astral.5.7.8.jar"
+wd=/data/schwartzlab/Biancani/Phylo_ML/01_feature_assessment
+collapser_path=$wd/scripts/collapse_by.R
+# Paths to all input genetree files (includes inferred_gene_trees.tre for every subset_*):
+gene_tree_path="$out/subset_*/inferred_gene_trees.tre"
+
+module load R/4.0.3-foss-2020b
+date
+
+mkdir -p $out/all_loci/astral_tree
+cd $out/all_loci/astral_tree
+pwd
+
+grep "/" ${gene_tree_path} > filtered.tre
+Rscript ${collapser_path} filtered.tre sh-alrt 0 collapsed_trees.tre
+rm filtered.tre
+java -Xmx5000M -jar ${astral_path} -i collapsed_trees.tre -o astral.tre -t 4 2>astral.log
+rm collapsed_trees.tre
+date
+#####################
+sbatch -q schwartzlab 01.09b_run_astral_allLoci.sh
+Submitted batch job 361828
+
+
+Step 01.10 requires an R script copied from Alexandra's Github:
+
+cd /data/schwartzlab/Biancani/Phylo_ML/01_feature_assessment/scripts/
+cp /data/schwartzlab/Biancani/Phylo_ML/PML/6_empirical_features/assess_gene_properties.R .
+
+wd=/data/schwartzlab/Biancani/Phylo_ML/01_feature_assessment
+assesser_path=$wd/scripts/assess_gene_properties.R
+
+wd=/data/schwartzlab/Biancani/Phylo_ML/01_feature_assessment
+cd $wd
+
+nano 01.10_assess_properties.sh
+#####################
+#!/bin/bash
+#SBATCH --job-name="assess"
+#SBATCH --time=12:00:00  # walltime limit (HH:MM:SS)
+#SBATCH --nodes=1   # number of nodes
+#SBATCH --ntasks-per-node=2   # processor core(s) per node
+#SBATCH -c 1
+#SBATCH --mem-per-cpu=50G
+#SBATCH --mail-user="biancani@uri.edu" #CHANGE TO user email address
+#SBATCH --mail-type=ALL
+
+# Update Paths:
+out=/data/schwartzlab/Biancani/Phylo_ML/output
+wd=/data/schwartzlab/Biancani/Phylo_ML/01_feature_assessment
+assesser_path=$wd/scripts/assess_gene_properties.R
+outfile=ML_data.txt
+all_loci_path=$out/all_loci
+
+module load R-bundle-Bioconductor/3.16-foss-2022b-R-4.2.2
+date
+
+for subset in $out/subset_*; do
+  # Update Paths to input files:
+	aligned_loci_path=$subset/alignments
+  inferred_gene_trees=$subset/inferred_gene_trees.tre
+  gene_tree_names=$subset/inferred_gene_trees.txt
+  pruned_trees_path=$subset/pruned_species_trees.tre
+  amas_output=$subset/amas_output.txt
+  rate_assessment_path=$subset/rate_assessment
+  fastsp_output=$subset/fastsp_output.csv
+
+  cd $subset
+  pwd
+  Rscript ${assesser_path} ${aligned_loci_path}/ ${inferred_gene_trees} ${gene_tree_names} ${pruned_trees_path} ${amas_output} ${rate_assessment_path}/ ${outfile} ${fastsp_output}
+done
+
+#combine assessment files for all loci:
+
+all_out=$all_loci_path/all_loci_$outfile
+
+# Get header from the first file
+head -n 1 $out/subset_01/$outfile > "$all_out"
+
+# Append data from all files, skipping headers
+tail -n +2 -q $out/subset_*/$outfile >> "$all_out"
+
+echo "Combined file created at: $all_out"
+
+date
+#####################
+sbatch -q schwartzlab 01.10_assess_properties.sh
+Submitted batch job 361889
+Job ID: 361889
+Cluster: andromeda
+User/Group: biancani/schwartzlab
+State: COMPLETED (exit code 0)
+Nodes: 1
+Cores per node: 2
+CPU Utilized: 02:15:49
+CPU Efficiency: 47.34% of 04:46:54 core-walltime
+Job Wall-clock time: 02:23:27
+Memory Utilized: 599.86 MB
+Memory Efficiency: 0.59% of 100.00 GB
+
+For subsets 08 & 09, the following error was produced:
+
+Error in if (max1 != length(fit1$y1)) { : the condition has length > 1
+Execution halted
+
+Looking at the R script (assess_gene_properties.R):
+max1 stores the index where fit1$y1 (a vector of phylogenetic informativeness values) reaches it's peak.
+This part to the script is checking whether the peak (max1) is NOT the last value in fit1$y1 (if the peak is at the last position, there are no values after it, so this step is skipped) and the informativeness values after the peak are scaled down by multiplying the by fraction of y1[j] relative to the peak value: inform_pen[j] = fit1$y1[j] * (fit1$y1[j] / fit1$y1[max1]).
+This penalizes values after the peak by adjusting them downward in proportion to their relative size compared to the peak.
+
+If max1 is a vector (meaning multiple indices have the maximum value), causes an error in this line:
+(max1 != length(fit1$y1))
+If max1 contains multiple values, max1 != length(fit1$y1) returns a vector instead of a single TRUE/FALSE value.
+
+I updated the R script to ensure max1 is a single index by taking the first occurrence:
+max1 = which(fit1$y1 == max(fit1$y1))
+#changed to:
+max1 = which(fit1$y1 == max(fit1$y1))[1]  # Take only the first max index because an error is caused if max1 is a vector (because multiple indices have the maximum value)
+
+cd $wd/scripts
+
+grep "max1 = which" assess_gene_properties.R
+##			max1 = which(fit1$y1 == max(fit1$y1))
+
+sed -i 's/max1 = which(fit1\$y1 == max(fit1\$y1))/max1 = which(fit1\$y1 == max(fit1\$y1))[1]/' assess_gene_properties.R
+
+grep "max1 = which" assess_gene_properties.R
+##			max1 = which(fit1$y1 == max(fit1$y1))[1]
+
+Then re-ran assess_properties for subsets 8 and 9:
+
+nano 01.10_assess_properties89.sh
+#####################
+#!/bin/bash
+#SBATCH --job-name="assess"
+#SBATCH --time=12:00:00  # walltime limit (HH:MM:SS)
+#SBATCH --nodes=1   # number of nodes
+#SBATCH --ntasks-per-node=2   # processor core(s) per node
+#SBATCH -c 1
+#SBATCH --mem-per-cpu=50G
+#SBATCH --mail-user="biancani@uri.edu" #CHANGE TO user email address
+#SBATCH --mail-type=ALL
+
+# Update Paths:
+out=/data/schwartzlab/Biancani/Phylo_ML/output
+wd=/data/schwartzlab/Biancani/Phylo_ML/01_feature_assessment
+assesser_path=$wd/scripts/assess_gene_properties.R
+outfile=ML_data.txt
+all_loci_path=$out/all_loci
+
+module load R-bundle-Bioconductor/3.16-foss-2022b-R-4.2.2
+date
+
+for subset in $out/subset_0[89]; do
+  # Update Paths to input files:
+	aligned_loci_path=$subset/alignments
+  inferred_gene_trees=$subset/inferred_gene_trees.tre
+  gene_tree_names=$subset/inferred_gene_trees.txt
+  pruned_trees_path=$subset/pruned_species_trees.tre
+  amas_output=$subset/amas_output.txt
+  rate_assessment_path=$subset/rate_assessment
+  fastsp_output=$subset/fastsp_output.csv
+
+  cd $subset
+  pwd
+  Rscript ${assesser_path} ${aligned_loci_path}/ ${inferred_gene_trees} ${gene_tree_names} ${pruned_trees_path} ${amas_output} ${rate_assessment_path}/ ${outfile} ${fastsp_output}
+done
+
+#combine assessment files for all loci:
+
+all_out=$all_loci_path/all_loci_$outfile
+
+# Get header from the first file
+head -n 1 $out/subset_01/$outfile > "$all_out"
+
+# Append data from all files, skipping headers
+tail -n +2 -q $out/subset_*/$outfile >> "$all_out"
+
+echo "Combined file created at: $all_out"
+
+date
+#####################
+sbatch -q schwartzlab 01.10_assess_properties89.sh
+Submitted batch job 361891
+Job ID: 361891
+Cluster: andromeda
+User/Group: biancani/schwartzlab
+State: COMPLETED (exit code 0)
+Nodes: 1
+Cores per node: 2
+CPU Utilized: 00:13:31
+CPU Efficiency: 45.06% of 00:30:00 core-walltime
+Job Wall-clock time: 00:15:00
+Memory Utilized: 540.08 MB
+Memory Efficiency: 0.53% of 100.00 GB
+
+
+2025.03.10
+
+Separate loci by support for each hypothesis.

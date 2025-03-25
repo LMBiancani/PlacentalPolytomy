@@ -263,6 +263,7 @@ sbatch -q schwartzlab 02.01_iqtree_array.sh
 Submitted batch job 363264
 
 
+
 2025.03.25
 
 cd /data/schwartzlab/Biancani/PlacentalPolytomy/03_Annotation
@@ -317,8 +318,6 @@ Job Wall-clock time: 00:04:54
 Memory Utilized: 1.86 MB
 Memory Efficiency: 0.09% of 2.00 GB
 
-
-
 cd /data/schwartzlab/Biancani/PlacentalPolytomy/03_Annotation
 
 03.01_Annotation.sh
@@ -355,7 +354,7 @@ ANNOTATION="$OUTPUT/ReferenceGenome/GCF_002880755.1_Clint_PTRv2_genomic.gff"
 ## (`l`) compute proportion of length of each feature type per locus, for ex. 0.2 CDS, 0.8 introns
 outputMode="l"
 
-mkdir $OUTPUT
+mkdir -p $OUTPUT
 cd $OUTPUT
 
 #Andromeda (URI's cluster) specific
@@ -389,7 +388,18 @@ python3 ${SCRIPTS}/annotation_bed2table.py full_table_annotated.bed ${outputMode
 date
 _______________________________
 sbatch -q schwartzlab 03.01_Annotation.sh
-
+Submitted batch job 363297
+Job ID: 363297
+Cluster: andromeda
+User/Group: biancani/schwartzlab
+State: COMPLETED (exit code 0)
+Nodes: 1
+Cores per node: 36
+CPU Utilized: 00:07:37
+CPU Efficiency: 0.32% of 1-15:40:48 core-walltime
+Job Wall-clock time: 01:06:08
+Memory Utilized: 1.18 GB
+Memory Efficiency: 1.64% of 72.00 GB
 
 
 

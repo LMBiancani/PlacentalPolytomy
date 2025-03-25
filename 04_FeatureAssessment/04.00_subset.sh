@@ -1,16 +1,16 @@
 #!/bin/bash
 #SBATCH --job-name="subset"
-#SBATCH --time=100:00:00  # walltime limit (HH:MM:SS)
+#SBATCH --time=48:00:00  # walltime limit (HH:MM:SS)
 #SBATCH --nodes=1   # number of nodes
 #SBATCH --ntasks-per-node=1   # processor core(s) per node
 #SBATCH -c 1
-#SBATCH --mem-per-cpu=6G
+#SBATCH --mem-per-cpu=2G
 #SBATCH --mail-user="biancani@uri.edu" #CHANGE TO user email address
 #SBATCH --mail-type=ALL
 
 # Update Paths:
-out=/data/schwartzlab/Biancani/Phylo_ML/output
-aligned_loci_path=/data/schwartzlab/Biancani/PlacentalPolytomy/output/01_SISRS_loci_filtered
+out=/data/schwartzlab/Biancani/PlacentalPolytomy/output/04_FeatureAssessment
+aligned_loci_path=$out/01_SISRS_loci_filtered
 subset_size=5500  # Number of alignment per subset
 
 # Create output directory:
@@ -31,4 +31,3 @@ done
 
 echo "Number of alignment subdirectories created:"
 echo $dir_num
-
