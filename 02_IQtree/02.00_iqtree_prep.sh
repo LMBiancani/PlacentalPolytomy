@@ -4,7 +4,7 @@
 #SBATCH --nodes=1   # number of nodes
 #SBATCH --ntasks-per-node=1   # processor core(s) per node
 #SBATCH -c 1
-#SBATCH --mem-per-cpu=2G
+#SBATCH --mem-per-cpu=6G
 #SBATCH --mail-user="biancani@uri.edu"
 #SBATCH --mail-type=ALL
 
@@ -15,16 +15,14 @@ PROJECT=/data/schwartzlab/Biancani/PlacentalPolytomy
 INPUT=$PROJECT/output/01_SISRS_loci_filtered
 # path to output folder for IQ-TREE (will be created by script if necessary):
 OUTPUT=$PROJECT/output/02_iqtree_assessment
-## PREP for 02.02_iqtree_array_concat.sh:
-CAT_OUT=$OUTPUT/02.02_concat_trees
 
-# UPDATE PARAMETERS:
+## UPDATE PARAMETERS:
 # number of simultaneous tasks for subsequent array jobs:
 TASKS=40
 
 mkdir -p ${OUTPUT}
 cd ${OUTPUT}
-mkdir scf
+
 # extract filenames from INPUT and split into bins of 4000 loci
 ls ${INPUT} | rev | cut -f1 -d/ | rev | split -l 4000 - aligned_loci_list_
 arrayN=$(ls aligned_loci_list_* | wc -l)
@@ -34,9 +32,13 @@ if [ $arrayN -lt $TASKS ]
       TASKS=$arrayN
 fi
 
-## PREP for 02.02_iqtree_array_concat.sh:
-mkdir -p $CAT_OUT
-ln $OUTPUT/array_list.txt $CAT_OUT/
-ln $OUTPUT/aligned_loci_list_* $CAT_OUT/
+# prep output directories for iqtree array jobs:
+
+mkdir -p 02.01_compare_hypotheses/scf
+mkdir -p 02.01_compare_hypotheses/likelihood
+
+mkdir -p 02.02_concat_trees
+ln $OUTPUT/array_list.txt 02.02_concat_trees/
+ln $OUTPUT/aligned_loci_list_* 02.02_concat_trees/
 
 echo "#SBATCH --array=[1-${arrayN}]%${TASKS}"
