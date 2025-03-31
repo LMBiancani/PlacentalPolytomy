@@ -66,7 +66,7 @@ Memory Efficiency: 0.55% of 6.00 GB
 wd=/data/schwartzlab/Biancani/PlacentalPolytomy/04_FeatureAssessment
 cd $wd
 
-nano 01.01_prep.sh
+nano 04.01_prep.sh
 #####################
 #!/bin/bash
 #SBATCH --job-name="prep"
@@ -101,7 +101,7 @@ do
 done
 date
 #####################
-sbatch -q schwartzlab 01.01_prep.sh
+sbatch -q schwartzlab 04.01_prep.sh
 Submitted batch job 356181
 Job ID: 356181
 Cluster: andromeda
@@ -114,15 +114,12 @@ Job Wall-clock time: 00:02:53
 Memory Utilized: 1.48 MB
 Memory Efficiency: 0.02% of 6.00 GB
 
-%%%%%%%%%%%%%% left off here %%%%%%%%%%%%%%%%
-
-
-01.02_mafft.sh will use MAFFT to re-align loci (alignments are compared later)
+04.02_mafft.sh will use MAFFT to re-align loci (alignments are compared later)
 
 wd=/data/schwartzlab/Biancani/PlacentalPolytomy/04_FeatureAssessment
 cd $wd
 
-nano 01.02_mafft.sh
+nano 04.02_mafft.sh
 #####################
 #!/bin/sh
 #SBATCH --job-name="realign"
@@ -148,7 +145,7 @@ for subset in $out/subset_*; do
   done
 done
 #####################
-sbatch -q schwartzlab 01.02_mafft.sh
+sbatch -q schwartzlab 04.02_mafft.sh
 Submitted batch job 356384
 Stopped after subset_07:
 Job ID: 356384
@@ -168,7 +165,7 @@ Created array job to finish re_alignments:
 wd=/data/schwartzlab/Biancani/PlacentalPolytomy/04_FeatureAssessment
 cd $wd
 
-nano 01.02_mafft_array.sh
+nano 04.02_mafft_array.sh
 #####################
 #!/bin/sh
 #SBATCH --job-name="realign"
@@ -195,7 +192,7 @@ for alignment in alignments/*; do
   mafft --auto --thread 4 $alignment > $path/re_alignments/$name
 done
 #####################
-sbatch -q schwartzlab 01.02_mafft_array.sh
+sbatch -q schwartzlab 04.02_mafft_array.sh
 Submitted batch job 356403
 Job ID: 356403
 Array Job ID: 356403_13
@@ -209,6 +206,8 @@ CPU Efficiency: 0.00% of 00:00:04 core-walltime
 Job Wall-clock time: 00:00:01
 Memory Utilized: 0.00 MB (estimated maximum)
 Memory Efficiency: 0.00% of 120.00 GB (120.00 GB/node)
+
+%%%%%%%%%%%%%% left off here %%%%%%%%%%%%%%%%
 
 wd=/data/schwartzlab/Biancani/PlacentalPolytomy/04_FeatureAssessment
 cd $wd
