@@ -13,19 +13,21 @@
 
 # path to project directory:
 PROJECT=/data/schwartzlab/Biancani/PlacentalPolytomy
-# path to output folder for IQ-TREE (must be location of array_list.txt and aligned_loci_list_* created by iqtree prep script)
-OUTPUT=$PROJECT/output/02_iqtree_assessment
-# path to FILTERED SISRS loci (aligned contigs):
-INPUT=$PROJECT/output/01_SISRS_loci_filtered
-# path to IQ-TREE executale:
-IQTREE="/data/schwartzlab/Biancani/Software/iqtree-2.1.2-Linux/bin/iqtree2"
 # location of iqtree scripts:
 scripts_dir=$PROJECT/02_IQtree
+# path to FILTERED SISRS loci (aligned contigs):
+INPUT=$PROJECT/output/01_SISRS_loci_filtered
 # path to file containing alternative hypotheses trees:
 trees_to_eval=$scripts_dir/hypothesis_trees/Polytomy_Placental_Hypotheses.tree
+# path to IQ-TREE executale:
+IQTREE="/data/schwartzlab/Biancani/Software/iqtree-2.1.2-Linux/bin/iqtree2"
 # path to AMAS executable:
 AMAS="/data/schwartzlab/Biancani/Software/AMAS/amas/AMAS.py"
-# output for concatenated trees (directory and the input files it contains were created by 02.00_iqtree_prep.sh)
+
+# path to output folder for IQ-TREE
+# (must be location of array_list.txt and aligned_loci_list_* created by iqtree prep script)
+OUTPUT=$PROJECT/output/02_iqtree_assessment
+# paths to output directory created by 02.00_iqtree_prep.sh:
 CAT_OUT=$OUTPUT/02.02_concat_trees
 
 cd ${CAT_OUT}
@@ -34,7 +36,7 @@ date
 module purge
 module load Python/3.7.4-GCCcore-8.3.0
 
-fileline=$(sed -n ${SLURM_ARRAY_TASK_ID}p array_list.txt)
+fileline=$(sed -n ${SLURM_ARRAY_TASK_ID}p $OUTPUT/array_list.txt)
 
 # generates list of paths to infiles
 infiles=$(cat ${fileline} | while read line; do echo ${INPUT}/${line}; done | paste -sd" ")
@@ -45,7 +47,7 @@ python3 ${AMAS} concat -f fasta -d dna --out-format fasta --part-format raxml -i
 module purge
 module load R/4.0.3-foss-2020b
 
-Rscript ${scripts_dir}trimTrees.R concatenated_${SLURM_ARRAY_TASK_ID}.fasta ${trees_to_eval} ./trees_${SLURM_ARRAY_TASK_ID}.tre
+Rscript ${scripts_dir}/trimTrees.R concatenated_${SLURM_ARRAY_TASK_ID}.fasta ${trees_to_eval} ./trees_${SLURM_ARRAY_TASK_ID}.tre
 
 #${IQTREE} -nt 10 -s concatenated_${SLURM_ARRAY_TASK_ID}.fasta -spp partitions_${SLURM_ARRAY_TASK_ID}.txt -z ./trees_${SLURM_ARRAY_TASK_ID}.tre -pre calcLnL_${SLURM_ARRAY_TASK_ID} -n 0 -m GTR+G -wsl
 #${IQTREE} -nt 10 -s concatenated_${SLURM_ARRAY_TASK_ID}.fasta -spp partitions_${SLURM_ARRAY_TASK_ID}.txt -pre inference_${SLURM_ARRAY_TASK_ID} -m GTR+G -bb 1000 -alrt 1000 -wsr
