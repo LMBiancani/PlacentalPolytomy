@@ -39,7 +39,7 @@ module load Python/3.7.4-GCCcore-8.3.0
 fileline=$(sed -n ${SLURM_ARRAY_TASK_ID}p $OUTPUT/array_list.txt)
 
 # generates list of paths to infiles
-infiles=$(cat ${fileline} | while read line; do echo ${INPUT}/${line}; done | paste -sd" ")
+infiles=$(cat ${OUTPUT}/${fileline} | while read line; do echo ${INPUT}/${line}; done | paste -sd" ")
 
 #amas concatenated
 python3 ${AMAS} concat -f fasta -d dna --out-format fasta --part-format raxml -i $infiles -t concatenated_${SLURM_ARRAY_TASK_ID}.fasta -p partitions_${SLURM_ARRAY_TASK_ID}.txt
