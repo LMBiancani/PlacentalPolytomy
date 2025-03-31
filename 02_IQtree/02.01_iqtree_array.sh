@@ -49,9 +49,9 @@ date
 fileline=$(sed -n ${SLURM_ARRAY_TASK_ID}p ${OUTPUT}/array_list.txt)
 
 #create output csv file for each batch fasta file created by prep script (aka each slurm task):
-> $likelohood/LnLs_${SLURM_ARRAY_TASK_ID}.csv
+> $likelihood/LnLs_${SLURM_ARRAY_TASK_ID}.csv
 
-cat ${fileline} | while read line
+cat $OUTPUT/${fileline} | while read line
 do
 	echo $line
 	Rscript ${scripts_dir}/trimTrees.R ${INPUT}/${line} ${trees_to_eval} ./trees_${line}.tre
