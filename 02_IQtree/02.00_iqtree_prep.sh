@@ -32,13 +32,4 @@ if [ $arrayN -lt $TASKS ]
       TASKS=$arrayN
 fi
 
-# prep output directories for iqtree array jobs:
-
-mkdir -p 02.01_compare_hypotheses/scf
-mkdir -p 02.01_compare_hypotheses/likelihood
-
-mkdir -p 02.02_concat_trees
-ln $OUTPUT/array_list.txt 02.02_concat_trees/
-ln $OUTPUT/aligned_loci_list_* 02.02_concat_trees/
-
 echo "#SBATCH --array=[1-${arrayN}]%${TASKS}"
