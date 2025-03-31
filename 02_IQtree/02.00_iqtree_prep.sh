@@ -23,6 +23,11 @@ TASKS=40
 mkdir -p ${OUTPUT}
 cd ${OUTPUT}
 
+# create output directories for array jobs:
+mkdir -p 02.01_compare_hypotheses/scf
+mkdir -p 02.01_compare_hypotheses/likelihood
+mkdir -p 02.02_concat_trees
+
 # extract filenames from INPUT and split into bins of 4000 loci
 ls ${INPUT} | rev | cut -f1 -d/ | rev | split -l 4000 - aligned_loci_list_
 arrayN=$(ls aligned_loci_list_* | wc -l)
