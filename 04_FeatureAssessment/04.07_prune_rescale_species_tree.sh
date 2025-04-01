@@ -10,11 +10,11 @@
 #SBATCH --array=[0-19]%20
 
 # Update Paths:
-out=/data/schwartzlab/Biancani/Phylo_ML/output
-wd=/data/schwartzlab/Biancani/Phylo_ML/01_feature_assessment
+out=/data/schwartzlab/Biancani/PlacentalPolytomy/output/04_FeatureAssessment
+wd=/data/schwartzlab/Biancani/PlacentalPolytomy/04_FeatureAssessment
 prune_script_path=$wd/scripts/prune_tree.R
 # Path to concatenated species tree for all loci:
-species_tree_file="/data/schwartzlab/Biancani/Phylo_ML/output/all_loci/concatenated_subsets/inference_all_loci.treefile"
+species_tree_file="/data/schwartzlab/Biancani/PlacentalPolytomy/output/04_FeatureAssessment/all_loci/concatenated_subsets/inference_all_loci.treefile"
 #species_tree_file="./iqtree_concattree/inference.treefile" #species tree for each subset
 
 date

@@ -10,7 +10,7 @@
 
 # Update Paths:
 out=/data/schwartzlab/Biancani/PlacentalPolytomy/output/04_FeatureAssessment
-aligned_loci_path=$out/01_SISRS_loci_filtered
+aligned_loci_path=/data/schwartzlab/Biancani/PlacentalPolytomy/output/01_SISRS_loci_filtered
 subset_size=5500  # Number of alignment per subset
 
 # Create output directory:

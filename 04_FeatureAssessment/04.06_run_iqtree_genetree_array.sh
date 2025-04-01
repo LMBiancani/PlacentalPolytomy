@@ -9,7 +9,7 @@
 #SBATCH --mail-type=ALL
 
 # UPDATE:
-out=/data/schwartzlab/Biancani/Phylo_ML/output
+out=/data/schwartzlab/Biancani/PlacentalPolytomy/output/04_FeatureAssessment
 
 ### begin creating job script (Single quotes ('EOF') prevent variable expansion inside the here-document)
 cat << 'EOF' > genetrees.sh
@@ -24,7 +24,7 @@ cat << 'EOF' > genetrees.sh
 #SBATCH --array=1-22 #based on the number of alignmentGroups in each subset
 
 # UPDATE:
-out=/data/schwartzlab/Biancani/Phylo_ML/output
+out=/data/schwartzlab/Biancani/PlacentalPolytomy/output/04_FeatureAssessment
 iqtree_exe=/data/schwartzlab/Biancani/Software/iqtree-2.1.2-Linux/bin/iqtree2
 
 ## path to subset directory is passed to job scrip using export $subset
@@ -63,4 +63,3 @@ done
 
 rm genetrees.sh
 date
-

@@ -8,7 +8,7 @@
 #SBATCH --mail-type=ALL
 #SBATCH --array=[0-19]%20
 
-out=/data/schwartzlab/Biancani/Phylo_ML/output
+out=/data/schwartzlab/Biancani/PlacentalPolytomy/output/04_FeatureAssessment
 
 date
 module purge
@@ -22,4 +22,3 @@ for alignment in alignments/*; do
   name=$(basename $alignment)
   mafft --auto --thread 4 $alignment > $path/re_alignments/$name
 done
-

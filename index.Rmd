@@ -66,11 +66,13 @@ Scripts are located in the [01_FilterByTaxa](https://github.com/LMBiancani/Place
 ```{bash, comment=NA, echo=FALSE, class.output="bg_slurm"}
 cat 01_FilterByTaxa/01.00_FilterByTaxa.sh
 ```
+
 ### Python script: `filter_SISRS_output.py`
 *  run by previous shell script: `01.00_FilterByTaxa.sh`
 ```{bash, comment=NA, echo=FALSE, class.output="bg_python"}
 cat 01_FilterByTaxa/filter_SISRS_output.py
 ```
+
 ### Taxon-to-group table: `groups.csv`
 * path to this input file specified in previous shell script: `01.00_FilterByTaxa.sh`
 ```{bash, comment=NA, echo=FALSE, class.output="bg_text"}
@@ -139,31 +141,31 @@ XENARTHRA:
 cat 02_IQtree/hypothesis_trees/Polytomy_Placental_Hypotheses.tree
 ```
 
-### Specify a list of focal taxa for each hypothesis tree:
+#### Specify a list of focal taxa for each hypothesis tree:
 * For placental root topology question: determine which 2 out of 3 groups are sisters for each hypothesis and select one of these 2 sister groups.
 
-#### Focal taxa for tree 1: `tips_Xenarthra.txt`
+##### Focal taxa for tree 1: `tips_Xenarthra.txt`
 * Tree 1 = Afrotheria Out, focal taxa = Xenarthra
 * specify path to this input file in previous shell script: `02.01_iqtree_array.sh`
 ```{bash, comment=NA, echo=FALSE, class.output="bg_text"}
 cat 02_IQtree/hypothesis_trees/tips_Xenarthra.txt
 ```
 
-#### Focal taxa for tree 2: `tips_Afrotheria.txt`
+##### Focal taxa for tree 2: `tips_Afrotheria.txt`
 * Tree 2 = Boreoeutheria Out, focal taxa = Afrotheria
 * specify path to this input file in previous shell script: `02.01_iqtree_array.sh`
 ```{bash, comment=NA, echo=FALSE, class.output="bg_text"}
 cat 02_IQtree/hypothesis_trees/tips_Afrotheria.txt
 ```
 
-#### Focal taxa for tree 3: `tips_Boreoeutheria.txt`
+##### Focal taxa for tree 3: `tips_Boreoeutheria.txt`
 * Tree 3 = Xenarthra Out, focal taxa = Boreoeutheria
 * specify path to this input file in previous shell script: `02.01_iqtree_array.sh`
 ```{bash, comment=NA, echo=FALSE, class.output="bg_text"}
 cat 02_IQtree/hypothesis_trees/tips_Boreoeutheria.txt
 ```
 
-#### Outgroup taxa list: `tips_Outgroup.txt`
+##### Outgroup taxa list: `tips_Outgroup.txt`
 * specify path to this input file in previous shell script: `02.01_iqtree_array.sh`
 ```{bash, comment=NA, echo=FALSE, class.output="bg_text"}
 cat 02_IQtree/hypothesis_trees/tips_Outgroup.txt
@@ -209,17 +211,18 @@ cat 02_IQtree/02.03_iqtree_array_gtree.sh
 
 
 # 03. Annotate Loci
-Scripts are located in the [annotation](https://github.com/LMBiancani/PlacentalPolytomy/tree/main/annotation) folder.
+Scripts are located in the [03_Annotation](https://github.com/LMBiancani/PlacentalPolytomy/tree/main/03_Annotation) directory.
 
 * Aligns SISRS loci of a particular taxon to a reference genome (ideally, of the same taxon).
 
-## 01.00 slurm submission script: `03.00_DownloadReference.sh`
+## 03.00 slurm submission script: `03.00_DownloadReference.sh`
 * script to retreive a reference taxon for the loci
 * downloads reference genome (FASTA) and annotation (GFF) for Pan troglodytes (chimpanzee) [GCF_002880755.1](https://www.ncbi.nlm.nih.gov/data-hub/genome/GCF_002880755.1/)
 ```{bash, comment=NA, echo=FALSE, class.output="bg_slurm"}
 cat 03_Annotation/03.00_DownloadReference.sh
 ```
-#### Slurm submission script: `03.01_Annotation.sh`
+
+## 03.01 slurm submission script: `03.01_Annotation.sh`
 * A python script is used to filter the output and convert it to BED. Overlapping hits of similar scores as well as very disjunct alignments are discarded. The BED file is then sorted and intersected with the GFF file for the reference sequence.
 * Another python script is then used to processess the intersected BED file to produce the final output,
 either counts of different annotation types, or length proportion of each annotations type. The following types of annotations are recorded: pseudogene, CDS, UTR, intron, lnc_RNA, other (any other type), unannotated (or intergenic).
@@ -227,19 +230,22 @@ either counts of different annotation types, or length proportion of each annota
 ```{bash, comment=NA, echo=FALSE, class.output="bg_slurm"}
 cat 03_Annotation/03.01_Annotation.sh
 ```
-#### Python script: `annotation_getTaxContigs.py`
+
+### Python script: `annotation_getTaxContigs.py`
 * run by previous shell script: `03.01_Annotation.sh`
 * extracts SISRS loci of a particular taxon into a single file for use with BLAST
 ```{bash, comment=NA, echo=FALSE, class.output="bg_python"}
 cat 03_Annotation/annotation_getTaxContigs.py
 ```
-#### Python script: `annotation_blast_parser.py`
+
+### Python script: `annotation_blast_parser.py`
 * BLAST to BED python script run by the previous shell script: `03.01_Annotation.sh`
 * adjust parameters on lines 10-12 as needed
 ```{bash, comment=NA, echo=FALSE, class.output="bg_python"}
 cat 03_Annotation/annotation_blast_parser.py
 ```
-#### Python script: `annotation_bed2table.py`
+
+### Python script: `annotation_bed2table.py`
 * BED to table python script run by the previous shell script: `03.01_Annotation.sh`
 * two options are provided (to be specified in shell script: `03.01_Annotation.sh`)
 1. count the number of each feature per locus (`c`), for ex. 1 CDS, 2 introns, etc.
@@ -248,8 +254,8 @@ cat 03_Annotation/annotation_blast_parser.py
 cat 03_Annotation/annotation_bed2table.py
 ```
 
-# 4. Feature Assessment
-Scripts are located in the [04_FeatureAssessment](https://github.com/LMBiancani/PlacentalPolytomy/tree/main/amas) folder. Scripts were adapted from [AlexandraWalling/PML/3_feature_assessment](https://github.com/alexandrawalling/PML/3_feature_assessment).
+# 04. Feature Assessment
+Scripts are located in the [04_FeatureAssessment](https://github.com/LMBiancani/PlacentalPolytomy/tree/main/04_FeatureAssessment) folder. Scripts were adapted from [AlexandraWalling/PML/3_feature_assessment](https://github.com/alexandrawalling/PML/3_feature_assessment).
 * Ensure MAFFT, AMAS, IQ-TREE2, FastSP, and HyPhy are installed, update paths/modules in the submission scripts as needed.
 * **Note:** AMAS takes file names as command line arguments with a limit on how long the line can be. In order to analyze over a hundred thousand files `04.00_subset.sh` will split loci into subsets.
 
@@ -267,13 +273,97 @@ cat 04_FeatureAssessment/04.00_subset.sh
 cat 04_FeatureAssessment/04.01_prep.sh
 ```
 
-## 04.02 slurm submission script: `04.02_`
+## 04.02 slurm submission script: `04.02_mafft_array.sh`
+* Uses MAFFT to re-align loci
+* Alignments and re-alignments are later compared
+```{bash, comment=NA, echo=FALSE, class.output="bg_slurm"}
+cat 04_FeatureAssessment/04.02_mafft_array.sh
+```
+
+## 04.03 slurm submission script: `04.03_amas.sh`
+* Runs AMAS to assess loci features
+```{bash, comment=NA, echo=FALSE, class.output="bg_slurm"}
+cat 04_FeatureAssessment/04.03_amas.sh
+```
+
+## 04.04 slurm submission script: `04.04_FastSP.sh`
+* Runs FastSP to assess loci features
+```{bash, comment=NA, echo=FALSE, class.output="bg_slurm"}
+cat 04_FeatureAssessment/04.04_FastSP.sh
+```
+
+## 04.05 slurm submission script: `04.05_iqtree_concat_array.sh`
+* Runs AMAS to produce concatenated alignments (`concatenated.fasta`) and partition files (`partitions.txt`) for each subset of 5500 loci in `$out/subset_xx/iqtree_concatttree`
+* Runs IQTree to infer a concatenated tree for each loci subset
+* A concatenated alignment and tree for ALL is needed
+but AMAS will not take that many files as input so the subset alignments will be concatenated together by `04.05b_iqtree_concat_allLoci.sh`
+
+```{bash, comment=NA, echo=FALSE, class.output="bg_slurm"}
+cat 04_FeatureAssessment/04.05_iqtree_concat_array.sh
+```
+
+### 04.05b slurm submission script: `04.05b_iqtree_concat_allLoci.sh`
+* For each subset, copies (and renames to include subset #) concatenated alignments and partition files to `all_loci` directory
+* Runs AMAS to concatenate subset alignments
+* Creates partitions file for all concatenated loci
+* Runs IQTree to infer a concatenated tree for all loci
+```{bash, comment=NA, echo=FALSE, class.output="bg_slurm"}
+cat 04_FeatureAssessment/04.05b_iqtree_concat_allLoci.sh
+```
+
+## 04.06 slurm submission script: `04.06_run_iqtree_genetree_array.sh`
+* This is a parent script that will submit a separate array job for each subset
+* The array jobs will Run IQTree to infer gene trees for each locus
+```{bash, comment=NA, echo=FALSE, class.output="bg_slurm"}
+cat 04_FeatureAssessment/04.06_run_iqtree_genetree_array.sh
+```
+
+## 04.07 slurm submission script: `04.07_prune_rescale_species_tree.sh`
+* Prunes species tree to only include taxa present in gene tree and rescales
+* runs the following R script: `prune_tree.R`
+```{bash, comment=NA, echo=FALSE, class.output="bg_slurm"}
+cat 04_FeatureAssessment/04.07_prune_rescale_species_tree.sh
+```
+
+### R script: `prune_tree.R`
+* R script run by the previous shell script: `04.07_prune_rescale_species_tree.sh`
+```{bash, comment=NA, echo=FALSE, class.output="bg_python"}
+cat 04_FeatureAssessment/scripts/prune_tree.R
+```
+
+## 04.08 slurm submission script: `04.08_rate_assessment_array.sh`
+* This is a parent script that will submit a separate array job for each subset.
+* Note: requires a HyPhy batch script (LEISR.bf): A likelihood estimation script for evolutionary rates. Location of batch script: `PlacentalPolytomy/04_FeatureAssessment/scripts/HyPhy/2.5.33-gompi-2020b/share/hyphy/TemplateBatchFiles/LEISR.bf`
+```{bash, comment=NA, echo=FALSE, class.output="bg_slurm"}
+cat 04_FeatureAssessment/04.08_rate_assessment_array.sh
+```
+
+## 04.09 slurm submission script: `04.09_run_astral.sh`
+* Runs Astral to infer a coalescent tree for each subset of gene trees
+* runs the following R script: `collapse_by.R`
+* Note: A coalescent tree for ALL gene trees is needed and will be inferred by `04.09b_run_astral_allLoci.sh`
+```{bash, comment=NA, echo=FALSE, class.output="bg_slurm"}
+cat 04_FeatureAssessment/04.09_run_astral.sh
+```
+
+### 04.09b slurm submission script: `04.09b_run_astral_allLoci.sh`
+* Runs Astral to infer a coalescent tree for all gene trees
+* runs the following R script: `collapse_by.R`
+```{bash, comment=NA, echo=FALSE, class.output="bg_slurm"}
+cat 04_FeatureAssessment/04.09b_run_astral_allLoci.sh
+```
+
+### R script: `collapse_by.R`
+* R script run by the previous shell scripts: `04.09_run_astral.sh` and `04.09b_run_astral_allLoci.sh`
+```{bash, comment=NA, echo=FALSE, class.output="bg_python"}
+cat 04_FeatureAssessment/scripts/collapse_by.R
+```
 
 %%%%%%%%%%%%%% left off here %%%%%%%%%%%%%%%%
 
 # 5. AMAS
 * Runs AMAS to assess locus features
-* , AMAS is run in batches by the driver script (`run_amas.py`).
+* AMAS is run in batches by the driver script (`run_amas.py`).
 
 #### Download AMAS
 * note path to `AMAS.py` and add path to slurm script `run_amas.sh`
@@ -287,8 +377,7 @@ cat amas/run_amas.sh
 ```
 #### Python script: `run_amas.py`
 * python script run by shell script: `run_amas.sh`
-```{bash, comment=NA, echo=FALSE, class.output="bg_python"}
-cat amas/run_amas.py
+```{bash, comment=NA, echo=FALSE, class.output="bg_Rcode"}
 ```
 
 ***

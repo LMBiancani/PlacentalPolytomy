@@ -1,6 +1,6 @@
 #!/bin/bash
 #SBATCH --job-name="Astr"
-#SBATCH --time=48:00:00  # walltime limit (HH:MM:SS)
+#SBATCH --time=168:00:00  # walltime limit (HH:MM:SS)
 #SBATCH --nodes=1   # number of nodes
 #SBATCH --ntasks-per-node=1   # processor core(s) per node
 #SBATCH -c 1
@@ -9,9 +9,9 @@
 #SBATCH --mail-type=ALL
 
 # Update Paths:
-out=/data/schwartzlab/Biancani/Phylo_ML/output
+out=/data/schwartzlab/Biancani/PlacentalPolytomy/output/04_FeatureAssessment
 astral_path="/data/schwartzlab/Biancani/Software/ASTRAL/Astral/astral.5.7.8.jar"
-wd=/data/schwartzlab/Biancani/Phylo_ML/01_feature_assessment
+wd=/data/schwartzlab/Biancani/PlacentalPolytomy/04_FeatureAssessment
 collapser_path=$wd/scripts/collapse_by.R
 # Paths to all input genetree files (includes inferred_gene_trees.tre for every subset_*):
 gene_tree_path="$out/subset_*/inferred_gene_trees.tre"
@@ -29,4 +29,3 @@ rm filtered.tre
 java -Xmx5000M -jar ${astral_path} -i collapsed_trees.tre -o astral.tre -t 4 2>astral.log
 rm collapsed_trees.tre
 date
-

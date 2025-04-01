@@ -2,7 +2,7 @@ Feature Assessment Notes
 
 2025.01.15
 
-aligned_loci_path=/data/schwartzlab/Biancani/PlacentalPolytomy/output/01_SISRS_loci_filtered
+aligned_loci_path=/data/schwartzlab/Biancani/PlacentalPolytomy/output/04_FeatureAssessment/01_SISRS_loci_filtered
 directory contains 109,799 alignments.
 
 wd=/data/schwartzlab/Biancani/PlacentalPolytomy/04_FeatureAssessment
@@ -24,7 +24,7 @@ nano 04.00_subset.sh
 
 # Update Paths:
 out=/data/schwartzlab/Biancani/PlacentalPolytomy/output/04_FeatureAssessment
-aligned_loci_path=$out/01_SISRS_loci_filtered
+aligned_loci_path=/data/schwartzlab/Biancani/PlacentalPolytomy/output/01_SISRS_loci_filtered
 subset_size=5500  # Number of alignment per subset
 
 # Create output directory:
@@ -130,7 +130,7 @@ nano 04.02_mafft.sh
 #SBATCH --mail-user="biancani@uri.edu" #CHANGE TO user email address
 #SBATCH --mail-type=ALL
 
-out=/data/schwartzlab/Biancani/PlacentalPolytomy/output
+out=/data/schwartzlab/Biancani/PlacentalPolytomy/output/04_FeatureAssessment
 
 date
 module purge
@@ -177,7 +177,7 @@ nano 04.02_mafft_array.sh
 #SBATCH --mail-type=ALL
 #SBATCH --array=[0-19]%20
 
-out=/data/schwartzlab/Biancani/PlacentalPolytomy/output
+out=/data/schwartzlab/Biancani/PlacentalPolytomy/output/04_FeatureAssessment
 
 date
 module purge
@@ -207,12 +207,10 @@ Job Wall-clock time: 00:00:01
 Memory Utilized: 0.00 MB (estimated maximum)
 Memory Efficiency: 0.00% of 120.00 GB (120.00 GB/node)
 
-%%%%%%%%%%%%%% left off here %%%%%%%%%%%%%%%%
-
 wd=/data/schwartzlab/Biancani/PlacentalPolytomy/04_FeatureAssessment
 cd $wd
 
-nano 01.03_amas.sh
+nano 04.03_amas.sh
 #####################
 #!/bin/bash
 #SBATCH --job-name="amas"
@@ -222,7 +220,7 @@ nano 01.03_amas.sh
 #SBATCH --mail-user="biancani@uri.edu" #CHANGE TO user email address
 #SBATCH --mail-type=ALL
 
-out=/data/schwartzlab/Biancani/PlacentalPolytomy/output
+out=/data/schwartzlab/Biancani/PlacentalPolytomy/output/04_FeatureAssessment
 amas=/data/schwartzlab/Biancani/Software/AMAS/amas/AMAS.py
 cores=12
 
@@ -236,7 +234,7 @@ python $amas summary -c $cores -o amas_output.txt -f fasta -d dna -i alignments/
 done
 date
 #####################
-sbatch -q schwartzlab 01.03_amas.sh
+sbatch -q schwartzlab 04.03_amas.sh
 Submitted batch job 356389
 Job ID: 356389
 Cluster: andromeda
@@ -253,7 +251,7 @@ Memory Efficiency: 4.12% of 24.00 GB
 wd=/data/schwartzlab/Biancani/PlacentalPolytomy/04_FeatureAssessment
 cd $wd
 
-nano 01.04_FastSP.sh
+nano 04.04_FastSP.sh
 #####################
 #!/bin/bash
 #SBATCH --job-name="FastSP"
@@ -264,7 +262,7 @@ nano 01.04_FastSP.sh
 #SBATCH --mail-type=ALL
 
 # Update Path:
-out=/data/schwartzlab/Biancani/PlacentalPolytomy/output
+out=/data/schwartzlab/Biancani/PlacentalPolytomy/output/04_FeatureAssessment
 fastsp="/data/schwartzlab/Biancani/Software/FastSP/FastSP.jar"
 
 date
@@ -282,7 +280,7 @@ for subset in $out/subset_*; do
 done
 date
 #####################
-sbatch -q schwartzlab 01.04_FastSP.sh
+sbatch -q schwartzlab 04.04_FastSP.sh
 Submitted batch job 356417
 Job ID: 356417
 Cluster: andromeda
@@ -296,11 +294,10 @@ Job Wall-clock time: 02:39:34
 Memory Utilized: 12.84 MB
 Memory Efficiency: 0.31% of 4.00 GB
 
-
 wd=/data/schwartzlab/Biancani/PlacentalPolytomy/04_FeatureAssessment
 cd $wd
 
-nano 01.05_iqtree_concat_array.sh
+nano 04.05_iqtree_concat_array.sh
 #####################
 #!/bin/bash
 #SBATCH --job-name="IQconcat"
@@ -313,7 +310,7 @@ nano 01.05_iqtree_concat_array.sh
 #SBATCH --array=[0-19]%20
 
 # Update Path:
-out=/data/schwartzlab/Biancani/PlacentalPolytomy/output
+out=/data/schwartzlab/Biancani/PlacentalPolytomy/output/04_FeatureAssessment
 iqtree_exe=/data/schwartzlab/Biancani/Software/iqtree-2.1.2-Linux/bin/iqtree2
 amas=/data/schwartzlab/Biancani/Software/AMAS/amas/AMAS.py
 
@@ -332,7 +329,7 @@ python3 ${amas} concat -f fasta -d dna --out-format fasta --part-format raxml -i
 	${iqtree_exe} -nt 20 -s concatenated.fasta -spp partitions.txt -pre inference -m MFP -bb 1000 -alrt 1000
 date
 #####################
-sbatch -q schwartzlab 01.05_iqtree_concat_array.sh
+sbatch -q schwartzlab 04.05_iqtree_concat_array.sh
 Submitted batch job 356422
 Job ID: 356422
 Array Job ID: 356422_19
@@ -354,7 +351,7 @@ but AMAS will not take that many files as input...
 wd=/data/schwartzlab/Biancani/PlacentalPolytomy/04_FeatureAssessment
 cd $wd
 
-01.05_iqtree_concat_array.sh produced concatenated alignemnts (concatenated.fasta) and partition files (partitions.txt) in $out/subset_xx/iqtree_concatttree
+04.05_iqtree_concat_array.sh produced concatenated alignemnts (concatenated.fasta) and partition files (partitions.txt) in $out/subset_xx/iqtree_concatttree
 
 To Do:
 1. copy these files to new folder & rename to include subset #
@@ -364,7 +361,7 @@ To Do:
 wd=/data/schwartzlab/Biancani/PlacentalPolytomy/04_FeatureAssessment
 cd $wd
 
-nano 01.05b_iqtree_concat_allLoci.sh
+nano 04.05b_iqtree_concat_allLoci.sh
 #####################
 #!/bin/bash
 #SBATCH --job-name="IQconcat"
@@ -375,7 +372,7 @@ nano 01.05b_iqtree_concat_allLoci.sh
 #SBATCH --mail-user="biancani@uri.edu" #CHANGE TO user email address
 #SBATCH --mail-type=ALL
 
-out=/data/schwartzlab/Biancani/PlacentalPolytomy/output
+out=/data/schwartzlab/Biancani/PlacentalPolytomy/output/04_FeatureAssessment
 amas=/data/schwartzlab/Biancani/Software/AMAS/amas/AMAS.py
 iqtree_exe=/data/schwartzlab/Biancani/Software/iqtree-2.1.2-Linux/bin/iqtree2
 
@@ -432,7 +429,7 @@ echo "Running IQTree"
 ${iqtree_exe} -nt 20 -s all_loci_concatenated.fasta -spp all_loci_partitions.txt -pre inference_all_loci -m MFP -bb 1000 -alrt 1000
 date
 #####################
-sbatch -q schwartzlab 01.05b_iqtree_concat_allLoci.sh
+sbatch -q schwartzlab 04.05b_iqtree_concat_allLoci.sh
 Submitted batch job 356455
 Job ID: 356455
 Cluster: andromeda
@@ -448,7 +445,7 @@ Memory Efficiency: 70.58% of 200.00 GB
 
 2025.02.06
 
-step 01.06
+step 04.06
 
 this is an array job that will operate inside each subset.
 Using subset 1 as a starting point, write the job script.
@@ -463,7 +460,7 @@ sbatch myscript.sh
 wd=/data/schwartzlab/Biancani/PlacentalPolytomy/04_FeatureAssessment
 cd $wd
 
-nano 01.06_run_iqtree_array.sh
+nano 04.06_run_iqtree_genetree_array.sh
 #####################
 #!/bin/bash
 #SBATCH --job-name="submit_jobs"
@@ -476,7 +473,7 @@ nano 01.06_run_iqtree_array.sh
 #SBATCH --mail-type=ALL
 
 # UPDATE:
-out=/data/schwartzlab/Biancani/PlacentalPolytomy/output
+out=/data/schwartzlab/Biancani/PlacentalPolytomy/output/04_FeatureAssessment
 
 ### begin creating job script (Single quotes ('EOF') prevent variable expansion inside the here-document)
 cat << 'EOF' > genetrees.sh
@@ -491,7 +488,7 @@ cat << 'EOF' > genetrees.sh
 #SBATCH --array=1-22 #based on the number of alignmentGroups in each subset
 
 # UPDATE:
-out=/data/schwartzlab/Biancani/PlacentalPolytomy/output
+out=/data/schwartzlab/Biancani/PlacentalPolytomy/output/04_FeatureAssessment
 iqtree_exe=/data/schwartzlab/Biancani/Software/iqtree-2.1.2-Linux/bin/iqtree2
 
 ## path to subset directory is passed to job scrip using export $subset
@@ -531,13 +528,13 @@ done
 rm genetrees.sh
 date
 #####################
-sbatch -q schwartzlab 01.06_run_iqtree_array.sh
+sbatch -q schwartzlab 04.06_run_iqtree_genetree_array.sh
 Submitted batch job 360357
 
 
 less slurm-360357.out:
 genetrees.sh created
-/data/schwartzlab/Biancani/PlacentalPolytomy/output/subset_01
+/data/schwartzlab/Biancani/PlacentalPolytomy/output/04_FeatureAssessment/subset_01
 Submitted batch job 360358
 Job ID: 360358
 Array Job ID: 360358_22
@@ -551,7 +548,7 @@ CPU Efficiency: 95.25% of 01:42:48 core-walltime
 Job Wall-clock time: 00:51:24
 Memory Utilized: 28.34 MB
 Memory Efficiency: 0.14% of 20.00 GB
-/data/schwartzlab/Biancani/PlacentalPolytomy/output/subset_02
+/data/schwartzlab/Biancani/PlacentalPolytomy/output/04_FeatureAssessment/subset_02
 Submitted batch job 360359
 Job ID: 360359
 Array Job ID: 360359_22
@@ -565,7 +562,7 @@ CPU Efficiency: 95.92% of 01:52:12 core-walltime
 Job Wall-clock time: 00:56:06
 Memory Utilized: 34.13 MB
 Memory Efficiency: 0.17% of 20.00 GB
-/data/schwartzlab/Biancani/PlacentalPolytomy/output/subset_03
+/data/schwartzlab/Biancani/PlacentalPolytomy/output/04_FeatureAssessment/subset_03
 Submitted batch job 360360
 Job ID: 360360
 Array Job ID: 360360_22
@@ -579,7 +576,7 @@ CPU Efficiency: 96.43% of 02:10:14 core-walltime
 Job Wall-clock time: 01:05:07
 Memory Utilized: 32.89 MB
 Memory Efficiency: 0.16% of 20.00 GB
-/data/schwartzlab/Biancani/PlacentalPolytomy/output/subset_04
+/data/schwartzlab/Biancani/PlacentalPolytomy/output/04_FeatureAssessment/subset_04
 Submitted batch job 360361
 Job ID: 360361
 Array Job ID: 360361_22
@@ -593,7 +590,7 @@ CPU Efficiency: 96.49% of 02:27:04 core-walltime
 Job Wall-clock time: 01:13:32
 Memory Utilized: 31.70 MB
 Memory Efficiency: 0.15% of 20.00 GB
-/data/schwartzlab/Biancani/PlacentalPolytomy/output/subset_05
+/data/schwartzlab/Biancani/PlacentalPolytomy/output/04_FeatureAssessment/subset_05
 Submitted batch job 360362
 Job ID: 360362
 Array Job ID: 360362_22
@@ -607,7 +604,7 @@ CPU Efficiency: 96.88% of 02:05:58 core-walltime
 Job Wall-clock time: 01:02:59
 Memory Utilized: 33.08 MB
 Memory Efficiency: 0.16% of 20.00 GB
-/data/schwartzlab/Biancani/PlacentalPolytomy/output/subset_06
+/data/schwartzlab/Biancani/PlacentalPolytomy/output/04_FeatureAssessment/subset_06
 Submitted batch job 360448
 Job ID: 360448
 Array Job ID: 360448_22
@@ -621,7 +618,7 @@ CPU Efficiency: 97.47% of 02:20:42 core-walltime
 Job Wall-clock time: 01:10:21
 Memory Utilized: 32.61 MB
 Memory Efficiency: 0.16% of 20.00 GB
-/data/schwartzlab/Biancani/PlacentalPolytomy/output/subset_07
+/data/schwartzlab/Biancani/PlacentalPolytomy/output/04_FeatureAssessment/subset_07
 Submitted batch job 360449
 Job ID: 360449
 Array Job ID: 360449_22
@@ -635,7 +632,7 @@ CPU Efficiency: 97.18% of 02:11:00 core-walltime
 Job Wall-clock time: 01:05:30
 Memory Utilized: 30.14 MB
 Memory Efficiency: 0.15% of 20.00 GB
-/data/schwartzlab/Biancani/PlacentalPolytomy/output/subset_08
+/data/schwartzlab/Biancani/PlacentalPolytomy/output/04_FeatureAssessment/subset_08
 Submitted batch job 360450
 ob ID: 360450
 Array Job ID: 360450_22
@@ -649,7 +646,7 @@ CPU Efficiency: 97.74% of 03:08:22 core-walltime
 Job Wall-clock time: 01:34:11
 Memory Utilized: 31.67 MB
 Memory Efficiency: 0.15% of 20.00 GB
-/data/schwartzlab/Biancani/PlacentalPolytomy/output/subset_09
+/data/schwartzlab/Biancani/PlacentalPolytomy/output/04_FeatureAssessment/subset_09
 Submitted batch job 360451
 Job ID: 360451
 Array Job ID: 360451_22
@@ -663,7 +660,7 @@ CPU Efficiency: 97.05% of 02:00:16 core-walltime
 Job Wall-clock time: 01:00:08
 Memory Utilized: 30.71 MB
 Memory Efficiency: 0.15% of 20.00 GB
-/data/schwartzlab/Biancani/PlacentalPolytomy/output/subset_10
+/data/schwartzlab/Biancani/PlacentalPolytomy/output/04_FeatureAssessment/subset_10
 Submitted batch job 360452
 Job ID: 360452
 Array Job ID: 360452_22
@@ -677,7 +674,7 @@ CPU Efficiency: 97.32% of 02:04:36 core-walltime
 Job Wall-clock time: 01:02:18
 Memory Utilized: 37.98 MB
 Memory Efficiency: 0.19% of 20.00 GB
-/data/schwartzlab/Biancani/PlacentalPolytomy/output/subset_11
+/data/schwartzlab/Biancani/PlacentalPolytomy/output/04_FeatureAssessment/subset_11
 Submitted batch job 360453
 Job ID: 360453
 Array Job ID: 360453_22
@@ -691,7 +688,7 @@ CPU Efficiency: 97.51% of 02:01:00 core-walltime
 Job Wall-clock time: 01:00:30
 Memory Utilized: 49.27 MB
 Memory Efficiency: 0.24% of 20.00 GB
-/data/schwartzlab/Biancani/PlacentalPolytomy/output/subset_12
+/data/schwartzlab/Biancani/PlacentalPolytomy/output/04_FeatureAssessment/subset_12
 Submitted batch job 360454
 Job ID: 360454
 Array Job ID: 360454_22
@@ -705,7 +702,7 @@ CPU Efficiency: 97.80% of 02:35:14 core-walltime
 Job Wall-clock time: 01:17:37
 Memory Utilized: 32.36 MB
 Memory Efficiency: 0.16% of 20.00 GB
-/data/schwartzlab/Biancani/PlacentalPolytomy/output/subset_13
+/data/schwartzlab/Biancani/PlacentalPolytomy/output/04_FeatureAssessment/subset_13
 Submitted batch job 360455
 Job ID: 360455
 Array Job ID: 360455_22
@@ -719,7 +716,7 @@ CPU Efficiency: 97.52% of 02:33:28 core-walltime
 Job Wall-clock time: 01:16:44
 Memory Utilized: 32.04 MB
 Memory Efficiency: 0.16% of 20.00 GB
-/data/schwartzlab/Biancani/PlacentalPolytomy/output/subset_14
+/data/schwartzlab/Biancani/PlacentalPolytomy/output/04_FeatureAssessment/subset_14
 Submitted batch job 360456
 Job ID: 360456
 Array Job ID: 360456_22
@@ -733,7 +730,7 @@ CPU Efficiency: 97.55% of 02:03:50 core-walltime
 Job Wall-clock time: 01:01:55
 Memory Utilized: 32.62 MB
 Memory Efficiency: 0.16% of 20.00 GB
-/data/schwartzlab/Biancani/PlacentalPolytomy/output/subset_15
+/data/schwartzlab/Biancani/PlacentalPolytomy/output/04_FeatureAssessment/subset_15
 Submitted batch job 360457
 Job ID: 360457
 Array Job ID: 360457_22
@@ -747,7 +744,7 @@ CPU Efficiency: 97.30% of 01:54:48 core-walltime
 Job Wall-clock time: 00:57:24
 Memory Utilized: 34.00 MB
 Memory Efficiency: 0.17% of 20.00 GB
-/data/schwartzlab/Biancani/PlacentalPolytomy/output/subset_16
+/data/schwartzlab/Biancani/PlacentalPolytomy/output/04_FeatureAssessment/subset_16
 Submitted batch job 360458
 Job ID: 360458
 Array Job ID: 360458_22
@@ -761,7 +758,7 @@ CPU Efficiency: 97.69% of 01:58:34 core-walltime
 Job Wall-clock time: 00:59:17
 Memory Utilized: 30.95 MB
 Memory Efficiency: 0.15% of 20.00 GB
-/data/schwartzlab/Biancani/PlacentalPolytomy/output/subset_17
+/data/schwartzlab/Biancani/PlacentalPolytomy/output/04_FeatureAssessment/subset_17
 Submitted batch job 360459
 Job ID: 360459
 Array Job ID: 360459_22
@@ -775,7 +772,7 @@ CPU Efficiency: 97.95% of 02:06:00 core-walltime
 Job Wall-clock time: 01:03:00
 Memory Utilized: 33.48 MB
 Memory Efficiency: 0.16% of 20.00 GB
-/data/schwartzlab/Biancani/PlacentalPolytomy/output/subset_18
+/data/schwartzlab/Biancani/PlacentalPolytomy/output/04_FeatureAssessment/subset_18
 Submitted batch job 360460
 Job ID: 360460
 Array Job ID: 360460_22
@@ -789,7 +786,7 @@ CPU Efficiency: 97.98% of 02:14:10 core-walltime
 Job Wall-clock time: 01:07:05
 Memory Utilized: 31.36 MB
 Memory Efficiency: 0.15% of 20.00 GB
-/data/schwartzlab/Biancani/PlacentalPolytomy/output/subset_19
+/data/schwartzlab/Biancani/PlacentalPolytomy/output/04_FeatureAssessment/subset_19
 Submitted batch job 360461
 Job ID: 360461
 Array Job ID: 360461_22
@@ -803,7 +800,7 @@ CPU Efficiency: 97.73% of 02:01:18 core-walltime
 Job Wall-clock time: 01:00:39
 Memory Utilized: 34.18 MB
 Memory Efficiency: 0.17% of 20.00 GB
-/data/schwartzlab/Biancani/PlacentalPolytomy/output/subset_20
+/data/schwartzlab/Biancani/PlacentalPolytomy/output/04_FeatureAssessment/subset_20
 Submitted batch job 360462
 Job ID: 360462
 Array Job ID: 360462_22
@@ -822,7 +819,7 @@ Sat Feb  8 11:52:05 EST 2025
 
 2025.02.07
 
-Step 01.07 requires an R script copied from Alexandra's Github:
+Step 04.07 requires an R script copied from Alexandra's Github:
 
 mkdir -p /data/schwartzlab/Biancani/PlacentalPolytomy/04_FeatureAssessment/scripts/
 cd /data/schwartzlab/Biancani/PlacentalPolytomy/04_FeatureAssessment/scripts/
@@ -834,7 +831,7 @@ New location of prune_tree.R:
 wd=/data/schwartzlab/Biancani/PlacentalPolytomy/04_FeatureAssessment
 cd $wd
 
-nano 01.07_prune_rescale_species_tree.sh
+nano 04.07_prune_rescale_species_tree.sh
 #####################
 #!/bin/bash
 #SBATCH --job-name="sptree"
@@ -848,11 +845,11 @@ nano 01.07_prune_rescale_species_tree.sh
 #SBATCH --array=[0-19]%20
 
 # Update Paths:
-out=/data/schwartzlab/Biancani/PlacentalPolytomy/output
+out=/data/schwartzlab/Biancani/PlacentalPolytomy/output/04_FeatureAssessment
 wd=/data/schwartzlab/Biancani/PlacentalPolytomy/04_FeatureAssessment
 prune_script_path=$wd/scripts/prune_tree.R
 # Path to concatenated species tree for all loci:
-species_tree_file="/data/schwartzlab/Biancani/PlacentalPolytomy/output/all_loci/concatenated_subsets/inference_all_loci.treefile"
+species_tree_file="/data/schwartzlab/Biancani/PlacentalPolytomy/output/04_FeatureAssessment/all_loci/concatenated_subsets/inference_all_loci.treefile"
 #species_tree_file="./iqtree_concattree/inference.treefile" #species tree for each subset
 
 date
@@ -876,7 +873,7 @@ echo "gene tree file created: gene_tree_file.tre"
 Rscript ${prune_script_path} ${species_tree_file} ${gene_tree_file}".tre" ${pruned_output_file}
 date
 #####################
-sbatch -q schwartzlab 01.07_prune_rescale_species_tree.sh
+sbatch -q schwartzlab 04.07_prune_rescale_species_tree.sh
 Submitted batch job 360818
 Job ID: 360818
 Array Job ID: 360818_19
@@ -908,7 +905,7 @@ new location of HyPhy batch script:
 wd=/data/schwartzlab/Biancani/PlacentalPolytomy/04_FeatureAssessment
 cd $wd
 
-nano 01.08_rate_assessment_array.sh
+nano 04.08_rate_assessment_array.sh
 #####################
 #!/bin/bash
 #SBATCH --job-name="submit_jobs"
@@ -921,7 +918,7 @@ nano 01.08_rate_assessment_array.sh
 #SBATCH --mail-type=ALL
 
 # UPDATE:
-out=/data/schwartzlab/Biancani/PlacentalPolytomy/output
+out=/data/schwartzlab/Biancani/PlacentalPolytomy/output/04_FeatureAssessment
 
 ### begin creating job script (Single quotes ('EOF') prevent variable expansion inside the here-document)
 cat << 'EOF' > HParr.sh
@@ -937,7 +934,7 @@ cat << 'EOF' > HParr.sh
 #SBATCH --array=1-22 #based on the number of alignmentGroups in each subset
 
 # UPDATE:
-out=/data/schwartzlab/Biancani/PlacentalPolytomy/output
+out=/data/schwartzlab/Biancani/PlacentalPolytomy/output/04_FeatureAssessment
 wd=/data/schwartzlab/Biancani/PlacentalPolytomy/04_FeatureAssessment
 
 ## location of HyPhy batch script:
@@ -1004,7 +1001,7 @@ done
 rm HParr.sh
 date
 #####################
-sbatch -q schwartzlab 01.08_rate_assessment_array.sh
+sbatch -q schwartzlab 04.08_rate_assessment_array.sh
 Submitted batch job 360922
 Job ID: 360922
 Cluster: andromeda
@@ -1020,11 +1017,11 @@ Memory Efficiency: 0.00% of 6.00 GB (6.00 GB/core)
 less slurm-360922.out:
 ---------------------
 HParr.sh created
-/data/schwartzlab/Biancani/PlacentalPolytomy/output/subset_01
+/data/schwartzlab/Biancani/PlacentalPolytomy/output/04_FeatureAssessment/subset_01
 Submitted batch job 360923
-/data/schwartzlab/Biancani/PlacentalPolytomy/output/subset_02
+/data/schwartzlab/Biancani/PlacentalPolytomy/output/04_FeatureAssessment/subset_02
 Submitted batch job 360924
-/data/schwartzlab/Biancani/PlacentalPolytomy/output/subset_03
+/data/schwartzlab/Biancani/PlacentalPolytomy/output/04_FeatureAssessment/subset_03
 Submitted batch job 360925
 Job ID: 360925
 Array Job ID: 360925_22
@@ -1037,43 +1034,43 @@ CPU Efficiency: 73.11% of 00:07:30 core-walltime
 Job Wall-clock time: 00:07:30
 Memory Utilized: 14.88 MB
 Memory Efficiency: 0.24% of 6.00 GB
-/data/schwartzlab/Biancani/PlacentalPolytomy/output/subset_04
+/data/schwartzlab/Biancani/PlacentalPolytomy/output/04_FeatureAssessment/subset_04
 Submitted batch job 360926
-/data/schwartzlab/Biancani/PlacentalPolytomy/output/subset_05
+/data/schwartzlab/Biancani/PlacentalPolytomy/output/04_FeatureAssessment/subset_05
 Submitted batch job 361011
-/data/schwartzlab/Biancani/PlacentalPolytomy/output/subset_06
+/data/schwartzlab/Biancani/PlacentalPolytomy/output/04_FeatureAssessment/subset_06
 Submitted batch job 361012
-/data/schwartzlab/Biancani/PlacentalPolytomy/output/subset_07
+/data/schwartzlab/Biancani/PlacentalPolytomy/output/04_FeatureAssessment/subset_07
 Submitted batch job 361013
-/data/schwartzlab/Biancani/PlacentalPolytomy/output/subset_08
+/data/schwartzlab/Biancani/PlacentalPolytomy/output/04_FeatureAssessment/subset_08
 Submitted batch job 361014
-/data/schwartzlab/Biancani/PlacentalPolytomy/output/subset_09
+/data/schwartzlab/Biancani/PlacentalPolytomy/output/04_FeatureAssessment/subset_09
 Submitted batch job 361015
-/data/schwartzlab/Biancani/PlacentalPolytomy/output/subset_10
+/data/schwartzlab/Biancani/PlacentalPolytomy/output/04_FeatureAssessment/subset_10
 Submitted batch job 361016
-/data/schwartzlab/Biancani/PlacentalPolytomy/output/subset_11
+/data/schwartzlab/Biancani/PlacentalPolytomy/output/04_FeatureAssessment/subset_11
 Submitted batch job 361017
-/data/schwartzlab/Biancani/PlacentalPolytomy/output/subset_12
+/data/schwartzlab/Biancani/PlacentalPolytomy/output/04_FeatureAssessment/subset_12
 Submitted batch job 361104
-/data/schwartzlab/Biancani/PlacentalPolytomy/output/subset_13
+/data/schwartzlab/Biancani/PlacentalPolytomy/output/04_FeatureAssessment/subset_13
 Submitted batch job 361105
-/data/schwartzlab/Biancani/PlacentalPolytomy/output/subset_14
+/data/schwartzlab/Biancani/PlacentalPolytomy/output/04_FeatureAssessment/subset_14
 Submitted batch job 361106
-/data/schwartzlab/Biancani/PlacentalPolytomy/output/subset_15
+/data/schwartzlab/Biancani/PlacentalPolytomy/output/04_FeatureAssessment/subset_15
 Submitted batch job 361107
-/data/schwartzlab/Biancani/PlacentalPolytomy/output/subset_16
+/data/schwartzlab/Biancani/PlacentalPolytomy/output/04_FeatureAssessment/subset_16
 Submitted batch job 361108
-/data/schwartzlab/Biancani/PlacentalPolytomy/output/subset_17
+/data/schwartzlab/Biancani/PlacentalPolytomy/output/04_FeatureAssessment/subset_17
 Submitted batch job 361109
-/data/schwartzlab/Biancani/PlacentalPolytomy/output/subset_18
+/data/schwartzlab/Biancani/PlacentalPolytomy/output/04_FeatureAssessment/subset_18
 Submitted batch job 361110
-/data/schwartzlab/Biancani/PlacentalPolytomy/output/subset_19
+/data/schwartzlab/Biancani/PlacentalPolytomy/output/04_FeatureAssessment/subset_19
 Submitted batch job 361111
-/data/schwartzlab/Biancani/PlacentalPolytomy/output/subset_20
+/data/schwartzlab/Biancani/PlacentalPolytomy/output/04_FeatureAssessment/subset_20
 Submitted batch job 361112
 Mon Feb 10 20:11:06 EST 2025
 
-Step 01.09 requires an R script copied from Alexandra's Github:
+Step 04.09 requires an R script copied from Alexandra's Github:
 
 cd /data/schwartzlab/Biancani/PlacentalPolytomy/04_FeatureAssessment/scripts/
 cp /data/schwartzlab/Biancani/Phylo_ML/PML/6_empirical_features/collapse_by.R .
@@ -1084,7 +1081,7 @@ collapser_path=$wd/scripts/collapse_by.R
 wd=/data/schwartzlab/Biancani/PlacentalPolytomy/04_FeatureAssessment
 cd $wd
 
-nano 01.09_run_astral.sh
+nano 04.09_run_astral.sh
 #####################
 #!/bin/bash
 #SBATCH --job-name="Astr"
@@ -1098,7 +1095,7 @@ nano 01.09_run_astral.sh
 #SBATCH --array=[0-19]%20
 
 # Update Paths:
-out=/data/schwartzlab/Biancani/PlacentalPolytomy/output
+out=/data/schwartzlab/Biancani/PlacentalPolytomy/output/04_FeatureAssessment
 astral_path="/data/schwartzlab/Biancani/Software/ASTRAL/Astral/astral.5.7.8.jar"
 wd=/data/schwartzlab/Biancani/PlacentalPolytomy/04_FeatureAssessment
 collapser_path=$wd/scripts/collapse_by.R
@@ -1125,7 +1122,7 @@ java -Xmx5000M -jar ${astral_path} -i collapsed_trees.tre -o astral.tre -t 4 2>a
 rm collapsed_trees.tre
 date
 #####################
-sbatch -q schwartzlab 01.09_run_astral.sh
+sbatch -q schwartzlab 04.09_run_astral.sh
 Submitted batch job 361410
 Job ID: 361410
 Array Job ID: 361410_19
@@ -1142,7 +1139,7 @@ Memory Efficiency: 10.67% of 6.00 GB
 This array will construct an astral tree for each subset of 5500 loci/gene trees.
 This should also be done for gene trees of all loci together:
 
-nano 01.09b_run_astral_allLoci.sh
+nano 04.09b_run_astral_allLoci.sh
 #####################
 #!/bin/bash
 #SBATCH --job-name="Astr"
@@ -1155,7 +1152,7 @@ nano 01.09b_run_astral_allLoci.sh
 #SBATCH --mail-type=ALL
 
 # Update Paths:
-out=/data/schwartzlab/Biancani/PlacentalPolytomy/output
+out=/data/schwartzlab/Biancani/PlacentalPolytomy/output/04_FeatureAssessment
 astral_path="/data/schwartzlab/Biancani/Software/ASTRAL/Astral/astral.5.7.8.jar"
 wd=/data/schwartzlab/Biancani/PlacentalPolytomy/04_FeatureAssessment
 collapser_path=$wd/scripts/collapse_by.R
@@ -1176,8 +1173,25 @@ java -Xmx5000M -jar ${astral_path} -i collapsed_trees.tre -o astral.tre -t 4 2>a
 rm collapsed_trees.tre
 date
 #####################
-sbatch -q schwartzlab 01.09b_run_astral_allLoci.sh
+sbatch -q schwartzlab 04.09b_run_astral_allLoci.sh
 Submitted batch job 361828
+Job ID: 361828
+Cluster: andromeda
+User/Group: biancani/schwartzlab
+State: TIMEOUT (exit code 0)
+Cores: 1
+CPU Utilized: 1-23:59:43
+CPU Efficiency: 99.98% of 2-00:00:14 core-walltime
+Job Wall-clock time: 2-00:00:14
+Memory Utilized: 5.08 GB
+Memory Efficiency: 84.59% of 6.00 GB
+
+Increase time to 7 days and rerun:
+#SBATCH --time=168:00:00  # walltime limit (HH:MM:SS)
+
+
+%%%%%%%%%%%%%% left off here %%%%%%%%%%%%%%%%
+
 
 
 Step 01.10 requires an R script copied from Alexandra's Github:
@@ -1204,7 +1218,7 @@ nano 01.10_assess_properties.sh
 #SBATCH --mail-type=ALL
 
 # Update Paths:
-out=/data/schwartzlab/Biancani/PlacentalPolytomy/output
+out=/data/schwartzlab/Biancani/PlacentalPolytomy/output/04_FeatureAssessment
 wd=/data/schwartzlab/Biancani/PlacentalPolytomy/04_FeatureAssessment
 assesser_path=$wd/scripts/assess_gene_properties.R
 outfile=ML_data.txt
@@ -1300,7 +1314,7 @@ nano 01.10_assess_properties89.sh
 #SBATCH --mail-type=ALL
 
 # Update Paths:
-out=/data/schwartzlab/Biancani/PlacentalPolytomy/output
+out=/data/schwartzlab/Biancani/PlacentalPolytomy/output/04_FeatureAssessment
 wd=/data/schwartzlab/Biancani/PlacentalPolytomy/04_FeatureAssessment
 assesser_path=$wd/scripts/assess_gene_properties.R
 outfile=ML_data.txt

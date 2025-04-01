@@ -9,7 +9,7 @@
 #SBATCH --mail-type=ALL
 
 # UPDATE:
-out=/data/schwartzlab/Biancani/Phylo_ML/output
+out=/data/schwartzlab/Biancani/PlacentalPolytomy/output/04_FeatureAssessment
 
 ### begin creating job script (Single quotes ('EOF') prevent variable expansion inside the here-document)
 cat << 'EOF' > HParr.sh

@@ -5,11 +5,15 @@
 #SBATCH --ntasks-per-node=1   # processor core(s) per node
 #SBATCH -c 1
 #SBATCH --mem-per-cpu=6G
-#SBATCH --array=[1-28]%28
+#SBATCH --array=[1-28]%28 ## UPDATE based on output from 02.00_iqtree_prep.sh
 #SBATCH --mail-user="biancani@uri.edu"
 #SBATCH --mail-type=ALL
 
-## update array line above based on output of iqtree prep script
+
+
+
+*** this job dumps a ton of gene tree files in the iqtree directory: needs updating to have a subdirectory!
+
 
 cd $SLURM_SUBMIT_DIR
 

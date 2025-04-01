@@ -7,7 +7,7 @@
 #SBATCH --mail-type=ALL
 
 # Update Path:
-out=/data/schwartzlab/Biancani/Phylo_ML/output
+out=/data/schwartzlab/Biancani/PlacentalPolytomy/output/04_FeatureAssessment
 fastsp="/data/schwartzlab/Biancani/Software/FastSP/FastSP.jar"
 
 date
@@ -24,4 +24,3 @@ for subset in $out/subset_*; do
   done
 done
 date
-

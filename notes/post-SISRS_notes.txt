@@ -476,6 +476,7 @@ ${IQTREE} -nt 10 -s concatenated_${SLURM_ARRAY_TASK_ID}.fasta -spp partitions_${
 date
 _______________________________
 sbatch -q schwartzlab 02.02_iqtree_array_concat.sh
+Submitted batch job 363591
 
 
 Submitted batch job 363355

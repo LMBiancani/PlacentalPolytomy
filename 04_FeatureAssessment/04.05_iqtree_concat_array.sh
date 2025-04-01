@@ -9,7 +9,7 @@
 #SBATCH --array=[0-19]%20
 
 # Update Path:
-out=/data/schwartzlab/Biancani/Phylo_ML/output
+out=/data/schwartzlab/Biancani/PlacentalPolytomy/output/04_FeatureAssessment
 iqtree_exe=/data/schwartzlab/Biancani/Software/iqtree-2.1.2-Linux/bin/iqtree2
 amas=/data/schwartzlab/Biancani/Software/AMAS/amas/AMAS.py
 
@@ -27,4 +27,3 @@ echo "Running AMAS"
 python3 ${amas} concat -f fasta -d dna --out-format fasta --part-format raxml -i ${files} -t concatenated.fasta -p partitions.txt
 	${iqtree_exe} -nt 20 -s concatenated.fasta -spp partitions.txt -pre inference -m MFP -bb 1000 -alrt 1000
 date
-

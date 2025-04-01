@@ -7,7 +7,7 @@
 #SBATCH --mail-user="biancani@uri.edu" #CHANGE TO user email address
 #SBATCH --mail-type=ALL
 
-out=/data/schwartzlab/Biancani/Phylo_ML/output
+out=/data/schwartzlab/Biancani/PlacentalPolytomy/output/04_FeatureAssessment
 amas=/data/schwartzlab/Biancani/Software/AMAS/amas/AMAS.py
 iqtree_exe=/data/schwartzlab/Biancani/Software/iqtree-2.1.2-Linux/bin/iqtree2
 
@@ -63,4 +63,3 @@ done < partitioned_subsets.txt
 echo "Running IQTree"
 ${iqtree_exe} -nt 20 -s all_loci_concatenated.fasta -spp all_loci_partitions.txt -pre inference_all_loci -m MFP -bb 1000 -alrt 1000
 date
-

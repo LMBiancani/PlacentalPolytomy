@@ -6,7 +6,7 @@
 #SBATCH --mail-user="biancani@uri.edu" #CHANGE TO user email address
 #SBATCH --mail-type=ALL
 
-out=/data/schwartzlab/Biancani/Phylo_ML/output
+out=/data/schwartzlab/Biancani/PlacentalPolytomy/output/04_FeatureAssessment
 amas=/data/schwartzlab/Biancani/Software/AMAS/amas/AMAS.py
 cores=12
 
@@ -19,4 +19,3 @@ cd $subset
 python $amas summary -c $cores -o amas_output.txt -f fasta -d dna -i alignments/*
 done
 date
-

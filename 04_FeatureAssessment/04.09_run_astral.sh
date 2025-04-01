@@ -10,9 +10,9 @@
 #SBATCH --array=[0-19]%20
 
 # Update Paths:
-out=/data/schwartzlab/Biancani/Phylo_ML/output
+out=/data/schwartzlab/Biancani/PlacentalPolytomy/output/04_FeatureAssessment
 astral_path="/data/schwartzlab/Biancani/Software/ASTRAL/Astral/astral.5.7.8.jar"
-wd=/data/schwartzlab/Biancani/Phylo_ML/01_feature_assessment
+wd=/data/schwartzlab/Biancani/PlacentalPolytomy/04_FeatureAssessment
 collapser_path=$wd/scripts/collapse_by.R
 
 #Set Up Subset Paths Based on the Job Array Task ID
