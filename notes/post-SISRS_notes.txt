@@ -477,25 +477,25 @@ date
 _______________________________
 sbatch -q schwartzlab 02.02_iqtree_array_concat.sh
 Submitted batch job 363591
-
-
-Submitted batch job 363355
-Job ID: 363355
-Array Job ID: 363355_28
+Job ID: 363591
+Array Job ID: 363591_28
 Cluster: andromeda
 User/Group: biancani/schwartzlab
 State: COMPLETED (exit code 0)
 Nodes: 1
 Cores per node: 10
-CPU Utilized: 07:16:20
-CPU Efficiency: 87.27% of 08:20:00 core-walltime
-Job Wall-clock time: 00:50:00
-Memory Utilized: 2.36 GB
-Memory Efficiency: 3.93% of 60.00 GB
+CPU Utilized: 19:04:25
+CPU Efficiency: 95.25% of 20:01:30 core-walltime
+Job Wall-clock time: 02:00:09
+Memory Utilized: 2.35 GB
+Memory Efficiency: 3.92% of 60.00 GB
+
 
 2025.03.30
 
 cd /data/schwartzlab/Biancani/PlacentalPolytomy/02_IQtree
 
-
+To do:
+re-run 04.09b_run_astral_allLoci.sh
+(check for output files first)
 

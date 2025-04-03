@@ -1,6 +1,6 @@
 #!/bin/bash
 #SBATCH --job-name="Astr"
-#SBATCH --time=168:00:00  # walltime limit (HH:MM:SS)
+#SBATCH --time=48:00:00  # walltime limit (HH:MM:SS)
 #SBATCH --nodes=1   # number of nodes
 #SBATCH --ntasks-per-node=1   # processor core(s) per node
 #SBATCH -c 1
@@ -29,3 +29,4 @@ rm filtered.tre
 java -Xmx5000M -jar ${astral_path} -i collapsed_trees.tre -o astral.tre -t 4 2>astral.log
 rm collapsed_trees.tre
 date
+
