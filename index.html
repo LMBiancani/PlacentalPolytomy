@@ -628,6 +628,7 @@ cd ${OUTPUT}
 mkdir -p 02.01_compare_hypotheses/scf
 mkdir -p 02.01_compare_hypotheses/likelihood
 mkdir -p 02.02_concat_trees
+mkdir -p 02.03_gene_trees
 
 # extract filenames from INPUT and split into bins of 4000 loci
 ls ${INPUT} | rev | cut -f1 -d/ | rev | split -l 4000 - aligned_loci_list_
@@ -1036,25 +1037,43 @@ date</code></pre>
 #SBATCH --mail-user=&quot;biancani@uri.edu&quot;
 #SBATCH --mail-type=ALL
 
+## UPDATE PATHS as necessary:
 
+# path to project directory:
+PROJECT=/data/schwartzlab/Biancani/PlacentalPolytomy
+# location of iqtree scripts:
+scripts_dir=$PROJECT/02_IQtree
+# path to FILTERED SISRS loci (aligned contigs):
+INPUT=$PROJECT/output/01_SISRS_loci_filtered
+# path to IQ-TREE executale:
+IQTREE=&quot;/data/schwartzlab/Biancani/Software/iqtree-2.1.2-Linux/bin/iqtree2&quot;
 
+# path to output folder for IQ-TREE
+# (must be location of array_list.txt and aligned_loci_list_* created by iqtree prep script)
+OUTPUT=$PROJECT/output/02_iqtree_assessment
+# paths to output directory created by 02.00_iqtree_prep.sh:
+GT_OUT=$OUTPUT/02.03_gene_trees
 
-*** this job dumps a ton of gene tree files in the iqtree directory: needs updating to have a subdirectory!
-
-
-cd $SLURM_SUBMIT_DIR
-
+cd ${GT_OUT}
 date
 
-fileline=$(sed -n ${SLURM_ARRAY_TASK_ID}p ../iqtree_assessment/array_list.txt)
-aligned_loci_path=&quot;/home/aknyshov/alex_data/tree_shew_analysis/SISRS/post_processing_v2/aligned_loci/&quot;
-iqtree_exe=&quot;/home/aknyshov/alex_data/andromeda_tools/iqtree-2.1.2-Linux/bin/iqtree2&quot;
+#generate list of filenames for aligned loci:
+fileline=$(sed -n ${SLURM_ARRAY_TASK_ID}p $OUTPUT/array_list.txt)
 
-cat ../iqtree_assessment/${fileline} | while read line
+cat ${OUTPUT}/${fileline} | while read line
 do
     echo $line
-    ${iqtree_exe} -nt 1 -s ${aligned_loci_path}/${line} -pre inference_${line} -alrt 1000 -m GTR+G
-    rm inference_${line}.ckp.gz inference_${line}.iqtree inference_${line}.log inference_${line}.bionj inference_${line}.mldist inference_${line}.uniqueseq.phy
+    ${IQTREE} -nt 1 -s ${INPUT}/${line} -pre inference_${line} -alrt 1000 -m GTR+G
+    # rm unnessary output files
+    # (while preventing the return of an error exit status if file does not exist)
+    for file in inference_${line}.ckp.gz inference_${line}.iqtree inference_${line}.log inference_${line}.bionj inference_${line}.mldist inference_${line}.uniqueseq.phy
+    do
+      if [ -f $file ]; then # test to see if file exists
+        rm $file
+      else
+        echo &quot;rm: cannot remove $file: No such file or directory&quot;
+      fi
+    done
 done</code></pre>
 </div>
 <div id="need-updating" class="section level2">
@@ -2583,12 +2602,15 @@ if (argsLen == 8) {
         occupancy, alignment_length, percent_missing, percent_variable, phyloinf)
 }
 write.table(variables, output_name, row.names = F, sep = &#39;\t&#39;)</code></pre>
+</div>
+</div>
+</div>
+<div id="figures" class="section level1">
+<h1>05. Figures</h1>
 <p>%%%%%%%%%%%%%% left off here %%%%%%%%%%%%%%%%</p>
 </div>
-</div>
-</div>
 <div id="amas" class="section level1">
-<h1>5. AMAS</h1>
+<h1>AMAS</h1>
 <ul>
 <li>Runs AMAS to assess locus features</li>
 <li>AMAS is run in batches by the driver script

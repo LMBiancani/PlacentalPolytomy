@@ -9,23 +9,41 @@
 #SBATCH --mail-user="biancani@uri.edu"
 #SBATCH --mail-type=ALL
 
+## UPDATE PATHS as necessary:
 
+# path to project directory:
+PROJECT=/data/schwartzlab/Biancani/PlacentalPolytomy
+# location of iqtree scripts:
+scripts_dir=$PROJECT/02_IQtree
+# path to FILTERED SISRS loci (aligned contigs):
+INPUT=$PROJECT/output/01_SISRS_loci_filtered
+# path to IQ-TREE executale:
+IQTREE="/data/schwartzlab/Biancani/Software/iqtree-2.1.2-Linux/bin/iqtree2"
 
+# path to output folder for IQ-TREE
+# (must be location of array_list.txt and aligned_loci_list_* created by iqtree prep script)
+OUTPUT=$PROJECT/output/02_iqtree_assessment
+# paths to output directory created by 02.00_iqtree_prep.sh:
+GT_OUT=$OUTPUT/02.03_gene_trees
 
-*** this job dumps a ton of gene tree files in the iqtree directory: needs updating to have a subdirectory!
-
-
-cd $SLURM_SUBMIT_DIR
-
+cd ${GT_OUT}
 date
 
-fileline=$(sed -n ${SLURM_ARRAY_TASK_ID}p ../iqtree_assessment/array_list.txt)
-aligned_loci_path="/home/aknyshov/alex_data/tree_shew_analysis/SISRS/post_processing_v2/aligned_loci/"
-iqtree_exe="/home/aknyshov/alex_data/andromeda_tools/iqtree-2.1.2-Linux/bin/iqtree2"
+#generate list of filenames for aligned loci:
+fileline=$(sed -n ${SLURM_ARRAY_TASK_ID}p $OUTPUT/array_list.txt)
 
-cat ../iqtree_assessment/${fileline} | while read line
+cat ${OUTPUT}/${fileline} | while read line
 do
 	echo $line
-	${iqtree_exe} -nt 1 -s ${aligned_loci_path}/${line} -pre inference_${line} -alrt 1000 -m GTR+G
-	rm inference_${line}.ckp.gz inference_${line}.iqtree inference_${line}.log inference_${line}.bionj inference_${line}.mldist inference_${line}.uniqueseq.phy
+	${IQTREE} -nt 1 -s ${INPUT}/${line} -pre inference_${line} -alrt 1000 -m GTR+G
+	# rm unnessary output files
+	# (while preventing the return of an error exit status if file does not exist)
+	for file in inference_${line}.ckp.gz inference_${line}.iqtree inference_${line}.log inference_${line}.bionj inference_${line}.mldist inference_${line}.uniqueseq.phy
+	do
+	  if [ -f $file ]; then # test to see if file exists
+	    rm $file
+	  else
+	    echo "rm: cannot remove $file: No such file or directory"
+	  fi
+	done
 done

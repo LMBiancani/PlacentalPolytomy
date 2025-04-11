@@ -27,6 +27,7 @@ cd ${OUTPUT}
 mkdir -p 02.01_compare_hypotheses/scf
 mkdir -p 02.01_compare_hypotheses/likelihood
 mkdir -p 02.02_concat_trees
+mkdir -p 02.03_gene_trees
 
 # extract filenames from INPUT and split into bins of 4000 loci
 ls ${INPUT} | rev | cut -f1 -d/ | rev | split -l 4000 - aligned_loci_list_

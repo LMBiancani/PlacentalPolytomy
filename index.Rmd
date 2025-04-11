@@ -371,9 +371,13 @@ cat 04_FeatureAssessment/04.10_assess_properties.sh
 ```{bash, comment=NA, echo=FALSE, class.output="bg_python"}
 cat 04_FeatureAssessment/scripts/assess_gene_properties.R
 ```
+
+
+# 05. Figures
+
 %%%%%%%%%%%%%% left off here %%%%%%%%%%%%%%%%
 
-# 5. AMAS
+# AMAS
 * Runs AMAS to assess locus features
 * AMAS is run in batches by the driver script (`run_amas.py`).
 
