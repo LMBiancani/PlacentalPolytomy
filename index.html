@@ -1831,12 +1831,11 @@ echo &quot;Running AMAS&quot;
 python3 ${amas} concat -f fasta -d dna --out-format fasta --part-format raxml -i ${files} -t concatenated.fasta -p partitions.txt
     ${iqtree_exe} -nt 20 -s concatenated.fasta -spp partitions.txt -pre inference -m MFP -bb 1000 -alrt 1000
 date</code></pre>
-</div>
-<div id="b-slurm-submission-script-04.05b_iqtree_concat_allloci.sh" class="section level2">
-<h2>04.05b slurm submission script:
-<code>04.05b_iqtree_concat_allLoci.sh</code></h2>
+<div id="b-slurm-submission-script-04.05b_iqtree_concat_allloci.sh" class="section level3">
+<h3>04.05b slurm submission script:
+<code>04.05b_iqtree_concat_allLoci.sh</code></h3>
 <ul>
-<li>For each subset, renames (to include subset #) and copies
+<li>For each subset, copies (and renames to include subset #)
 concatenated alignments and partition files to <code>all_loci</code>
 directory</li>
 <li>Runs AMAS to concatenate subset alignments</li>
@@ -1908,6 +1907,7 @@ done &lt; partitioned_subsets.txt
 echo &quot;Running IQTree&quot;
 ${iqtree_exe} -nt 20 -s all_loci_concatenated.fasta -spp all_loci_partitions.txt -pre inference_all_loci -m MFP -bb 1000 -alrt 1000
 date</code></pre>
+</div>
 </div>
 <div id="slurm-submission-script-04.06_run_iqtree_genetree_array.sh" class="section level2">
 <h2>04.06 slurm submission script:
@@ -2061,6 +2061,528 @@ for (x in 1:length(genetrees)){
 class(outtrees) &lt;- &quot;multiPhylo&quot;
 
 write.tree(outtrees, outname)</code></pre>
+</div>
+</div>
+<div id="slurm-submission-script-04.08_rate_assessment_array.sh" class="section level2">
+<h2>04.08 slurm submission script:
+<code>04.08_rate_assessment_array.sh</code></h2>
+<ul>
+<li>This is a parent script that will submit a separate array job for
+each subset.</li>
+<li>Note: requires a HyPhy batch script (LEISR.bf): A likelihood
+estimation script for evolutionary rates. Location of batch script:
+<code>PlacentalPolytomy/04_FeatureAssessment/scripts/HyPhy/2.5.33-gompi-2020b/share/hyphy/TemplateBatchFiles/LEISR.bf</code></li>
+</ul>
+<pre class="bg_slurm"><code>#!/bin/bash
+#SBATCH --job-name=&quot;submit_jobs&quot;
+#SBATCH --time=1:00:00  # walltime limit (HH:MM:SS)
+#SBATCH --nodes=1   # number of nodes
+#SBATCH --ntasks-per-node=1   # processor core(s) per node
+#SBATCH -c 1
+#SBATCH --mem-per-cpu=6G
+#SBATCH --mail-user=&quot;biancani@uri.edu&quot; #CHANGE TO user email address
+#SBATCH --mail-type=ALL
+
+# UPDATE:
+out=/data/schwartzlab/Biancani/PlacentalPolytomy/output/04_FeatureAssessment
+
+### begin creating job script (Single quotes (&#39;EOF&#39;) prevent variable expansion inside the here-document)
+cat &lt;&lt; &#39;EOF&#39; &gt; HParr.sh
+#!/bin/bash
+#SBATCH --job-name=&quot;HParr&quot;
+#SBATCH --time=72:00:00  # walltime limit (HH:MM:SS)
+#SBATCH --nodes=1   # number of nodes
+#SBATCH --ntasks-per-node=1   # processor core(s) per node
+#SBATCH -c 1
+#SBATCH --mem-per-cpu=6G
+#SBATCH --mail-user=&quot;biancani@uri.edu&quot; #CHANGE TO user email address
+#SBATCH --mail-type=ALL
+#SBATCH --array=1-22 #based on the number of alignmentGroups in each subset
+
+# UPDATE:
+out=/data/schwartzlab/Biancani/Phylo_ML/output
+wd=/data/schwartzlab/Biancani/Phylo_ML/01_feature_assessment
+
+## location of HyPhy batch script:
+batch_script=$wd/scripts/HyPhy/2.5.33-gompi-2020b/share/hyphy/TemplateBatchFiles/LEISR.bf
+#batch_script=&quot;/opt/software/HyPhy/2.5.33-gompi-2020b/share/hyphy/TemplateBatchFiles/LEISR.bf&quot;
+## path to subset directory is passed to job scrip using export $subset
+aligned_loci_path=$subset/alignments
+iqtree_log_path=$subset/iqtree_genetrees
+pruned_trees_path=$subset/pruned_species_trees.tre
+gene_tree_names=$subset/inferred_gene_trees.txt
+
+date
+cd $subset/rate_assessment
+pwd
+
+module purge
+module load R/4.0.3-foss-2020b
+module load HyPhy/2.5.33-gompi-2020b
+
+#create a series of arrays corresponding to each line in the array_list.txt file
+fileline=$(sed -n &quot;${SLURM_ARRAY_TASK_ID}&quot;p $subset/alignmentGroups/array_list.txt)
+echo &quot;File line:${fileline} &quot;
+cat $subset/alignmentGroups/${fileline} | while read line; do
+    echo $line #locus file
+  if [[ ! -f &quot;${iqtree_log_path}/inference_${line}.log&quot; ]]; then
+    echo &quot;Error: Log file not found: ${iqtree_log_path}/inference_${line}.log&quot; &gt;&amp;2
+    exit 1
+  fi
+    best_model_param=$(grep &quot;Bayesian Information Criterion:&quot; ${iqtree_log_path}/inference_${line}.log | awk &#39;{print $4}&#39;)
+  best_model=$(echo ${best_model_param} | cut -f1 -d+)
+  echo &quot;Best Model: $best_model&quot;
+    if [ &quot;$best_model&quot; = &quot;HKY&quot; ] || [ &quot;$best_model&quot; = &quot;F81&quot; ]; then useModel=&quot;HKY85&quot;; else useModel=&quot;GTR&quot;; fi
+  echo &quot;Model Used: $useModel&quot;
+    if [[ &quot;$best_model_param&quot; == *&quot;+&quot;* ]]; then best_param=$(echo ${best_model_param} | cut -f2- -d+); else best_param=&quot;&quot;; fi   
+  echo &quot;Best Model Parameter: $best_param&quot;
+    if [[ &quot;$best_param&quot; == *&quot;G&quot;* ]] || [[ &quot;$best_param&quot; == *&quot;R&quot;* ]]; then useRVAS=&quot;Gamma&quot;; else useRVAS=&quot;No&quot;; fi
+  echo &quot;Rate Variation Across Sites: $useRVAS&quot;
+    treefile=&quot;temp_tree_${SLURM_ARRAY_TASK_ID}.tre&quot;
+    loc_name=$(echo ${line} )
+  if ! grep -q &quot;${loc_name}&quot; &quot;${gene_tree_names}&quot;; then
+    echo &quot;Error: ${loc_name} not found in ${gene_tree_names}&quot; &gt;&amp;2
+    exit 1
+  fi
+  echo ${loc_name} ${gene_tree_names}
+  grep -wn &quot;${loc_name}&quot; ${gene_tree_names}
+    sed -n $(grep -wn ${loc_name} ${gene_tree_names} | cut -f1 -d:)p ${pruned_trees_path} &gt; ${treefile}
+  echo &quot;Running HyPhy.&quot;
+    hyphy ${batch_script} ${aligned_loci_path}/${line} ${treefile} Nucleotide ${useModel} ${useRVAS} 
+    mv ${aligned_loci_path}/${line}.LEISR.json .
+    rm ${treefile}
+done
+date
+EOF
+### end creating job script
+echo &quot;HParr.sh created&quot;
+
+# Iterate through subset paths and submit above job for each:
+for subset in $out/subset_*; do
+    echo $subset
+    export subset=$subset # pass subset path to slurm submit
+    sbatch HParr.sh # submit job
+done
+
+rm HParr.sh
+date</code></pre>
+</div>
+<div id="slurm-submission-script-04.09_run_astral.sh" class="section level2">
+<h2>04.09 slurm submission script: <code>04.09_run_astral.sh</code></h2>
+<ul>
+<li>Runs Astral to infer a coalescent tree for each subset of gene
+trees</li>
+<li>runs the following R script: <code>collapse_by.R</code></li>
+<li>Note: A coalescent tree for ALL gene trees is needed and will be
+inferred by <code>04.09b_run_astral_allLoci.sh</code></li>
+</ul>
+<pre class="bg_slurm"><code>#!/bin/bash
+#SBATCH --job-name=&quot;Astr&quot;
+#SBATCH --time=2:00:00  # walltime limit (HH:MM:SS)
+#SBATCH --nodes=1   # number of nodes
+#SBATCH --ntasks-per-node=1   # processor core(s) per node
+#SBATCH -c 1
+#SBATCH --mem-per-cpu=6G
+#SBATCH --mail-user=&quot;biancani@uri.edu&quot; #CHANGE TO user email address
+#SBATCH --mail-type=ALL
+#SBATCH --array=[0-19]%20
+
+# Update Paths:
+out=/data/schwartzlab/Biancani/PlacentalPolytomy/output/04_FeatureAssessment
+astral_path=&quot;/data/schwartzlab/Biancani/Software/ASTRAL/Astral/astral.5.7.8.jar&quot;
+wd=/data/schwartzlab/Biancani/PlacentalPolytomy/04_FeatureAssessment
+collapser_path=$wd/scripts/collapse_by.R
+
+#Set Up Subset Paths Based on the Job Array Task ID
+subset=$(printf &quot;%02d\n&quot; $((SLURM_ARRAY_TASK_ID + 1)))
+path=$out/subset_$subset
+
+# Paths to input files:
+gene_tree_path=&quot;$path/inferred_gene_trees.tre&quot;
+
+module load R/4.0.3-foss-2020b
+date
+
+cd $path
+pwd
+mkdir -p astral_tree
+cd astral_tree
+pwd
+grep &quot;/&quot; ${gene_tree_path} &gt; filtered.tre
+Rscript ${collapser_path} filtered.tre sh-alrt 0 collapsed_trees.tre
+rm filtered.tre
+java -Xmx5000M -jar ${astral_path} -i collapsed_trees.tre -o astral.tre -t 4 2&gt;astral.log
+rm collapsed_trees.tre
+date</code></pre>
+<div id="b-slurm-submission-script-04.09b_run_astral_allloci.sh" class="section level3">
+<h3>04.09b slurm submission script:
+<code>04.09b_run_astral_allLoci.sh</code></h3>
+<ul>
+<li>Runs Astral to infer a coalescent tree for all gene trees</li>
+<li>runs the following R script: <code>collapse_by.R</code></li>
+</ul>
+<pre class="bg_slurm"><code>#!/bin/bash
+#SBATCH --job-name=&quot;Astr&quot;
+#SBATCH --time=48:00:00  # walltime limit (HH:MM:SS)
+#SBATCH --nodes=1   # number of nodes
+#SBATCH --ntasks-per-node=1   # processor core(s) per node
+#SBATCH -c 1
+#SBATCH --mem-per-cpu=6G
+#SBATCH --mail-user=&quot;biancani@uri.edu&quot; #CHANGE TO user email address
+#SBATCH --mail-type=ALL
+
+# Update Paths:
+out=/data/schwartzlab/Biancani/PlacentalPolytomy/output/04_FeatureAssessment
+astral_path=&quot;/data/schwartzlab/Biancani/Software/ASTRAL/Astral/astral.5.7.8.jar&quot;
+wd=/data/schwartzlab/Biancani/PlacentalPolytomy/04_FeatureAssessment
+collapser_path=$wd/scripts/collapse_by.R
+# Paths to all input genetree files (includes inferred_gene_trees.tre for every subset_*):
+gene_tree_path=&quot;$out/subset_*/inferred_gene_trees.tre&quot;
+
+module load R/4.0.3-foss-2020b
+date
+
+mkdir -p $out/all_loci/astral_tree
+cd $out/all_loci/astral_tree
+pwd
+
+grep &quot;/&quot; ${gene_tree_path} &gt; filtered.tre
+Rscript ${collapser_path} filtered.tre sh-alrt 0 collapsed_trees.tre
+rm filtered.tre
+java -Xmx5000M -jar ${astral_path} -i collapsed_trees.tre -o astral.tre -t 4 2&gt;astral.log
+rm collapsed_trees.tre
+date</code></pre>
+</div>
+<div id="r-script-collapse_by.r" class="section level3">
+<h3>R script: <code>collapse_by.R</code></h3>
+<ul>
+<li>R script run by the previous shell scripts:
+<code>04.09_run_astral.sh</code> and
+<code>04.09b_run_astral_allLoci.sh</code></li>
+</ul>
+<pre class="bg_python"><code># A script to collapse gene trees by support
+#
+args = commandArgs(trailingOnly=TRUE)
+if (length(args) == 0){
+  cat(&quot;Syntax: Rscript collapse_by.R [path to trees] [support type] [threshold] [output_name]\n&quot;)
+  cat(&quot;Example: Rscript collapse_by.R trees.tre ufboot 50 outtrees.tre\n&quot;)
+  quit()
+}
+
+library(ape)
+#A function to collapse a tree
+collapse_nodes &lt;- function(t1, support_type, threshold){
+    if (support_type == &quot;sh-alrt&quot;) {
+        support_vector &lt;- as.numeric(sapply(strsplit(t1$node.label, &quot;/&quot;), function(y) y[1]))
+    } else if (support_type == &quot;ufboot&quot;) {
+        support_vector &lt;- as.numeric(sapply(strsplit(t1$node.label, &quot;/&quot;), function(y) y[2]))
+    } else {
+        print(&quot;incorrect command line parameter support type&quot;)
+    }
+  for (i in 1:t1$Nnode){
+    if (!is.na(support_vector[i]) &amp; support_vector[i]&lt;=threshold){
+      t1$edge.length[t1$edge[,1] == length(t1$tip.label)+i] &lt;- t1$edge.length[t1$edge[,1] == length(t1$tip.label)+i] + t1$edge.length[which(t1$edge[,2] == length(t1$tip.label)+i)]
+      t1$edge.length[which(t1$edge[,2] == length(t1$tip.label)+i)] &lt;- 0
+    }
+  }
+  t2 &lt;- di2multi(t1)
+  return(t2)
+}
+
+#read trees and parse other arguments
+trees &lt;- read.tree(args[1])
+support_type &lt;- args[2]
+threshold &lt;- as.numeric(args[3])
+outtrees_name &lt;- args[4]
+
+#loop over trees checking if nodelabels present
+outtrees &lt;- list()
+c &lt;- 1
+for (f in 1:length(trees)){
+  if (!is.null(trees[[f]]$node.label)){
+    outtrees[[c]] &lt;- collapse_nodes(trees[[f]], support_type, threshold)
+    c &lt;- c + 1
+  }
+}
+#save the results
+class(outtrees) &lt;- &quot;multiPhylo&quot;
+write.tree(outtrees, outtrees_name)</code></pre>
+</div>
+</div>
+<div id="slurm-submission-script-04.10_assess_properties.sh" class="section level2">
+<h2>04.10 slurm submission script:
+<code>04.10_assess_properties.sh</code></h2>
+<ul>
+<li>combines assessment output files for all loci</li>
+<li>runs the following R script:
+<code>assess_gene_properties.R</code></li>
+</ul>
+<pre class="bg_slurm"><code>#!/bin/bash
+#SBATCH --job-name=&quot;assess&quot;
+#SBATCH --time=12:00:00  # walltime limit (HH:MM:SS)
+#SBATCH --nodes=1   # number of nodes
+#SBATCH --ntasks-per-node=2   # processor core(s) per node
+#SBATCH -c 1
+#SBATCH --mem-per-cpu=50G
+#SBATCH --mail-user=&quot;biancani@uri.edu&quot; #CHANGE TO user email address
+#SBATCH --mail-type=ALL
+
+# Update Paths:
+out=/data/schwartzlab/Biancani/PlacentalPolytomy/output/04_feature_assessment
+wd=/data/schwartzlab/Biancani/PlacentalPolytomy/04_feature_assessment
+assesser_path=$wd/scripts/assess_gene_properties.R
+outfile=properties.txt
+all_loci_path=$out/all_loci
+
+module load R-bundle-Bioconductor/3.16-foss-2022b-R-4.2.2
+date 
+
+for subset in $out/subset_*; do
+  # Update Paths to input files:
+    aligned_loci_path=$subset/alignments
+  inferred_gene_trees=$subset/inferred_gene_trees.tre
+  gene_tree_names=$subset/inferred_gene_trees.txt
+  pruned_trees_path=$subset/pruned_species_trees.tre
+  amas_output=$subset/amas_output.txt
+  rate_assessment_path=$subset/rate_assessment
+  fastsp_output=$subset/fastsp_output.csv
+  
+  cd $subset
+  pwd
+  Rscript ${assesser_path} ${aligned_loci_path}/ ${inferred_gene_trees} ${gene_tree_names} ${pruned_trees_path} ${amas_output} ${rate_assessment_path}/ ${outfile} ${fastsp_output}
+done
+
+#combine assessment files for all loci:
+
+all_out=$all_loci_path/all_loci_$outfile
+
+# Get header from the first file
+head -n 1 $out/subset_01/$outfile &gt; &quot;$all_out&quot;
+
+# Append data from all files, skipping headers
+tail -n +2 -q $out/subset_*/$outfile &gt;&gt; &quot;$all_out&quot;
+
+echo &quot;Combined file created at: $all_out&quot;
+
+date</code></pre>
+<div id="r-script-assess_gene_properties.r" class="section level3">
+<h3>R script: <code>assess_gene_properties.R</code></h3>
+<ul>
+<li>R script run by the previous shell scripts:
+<code>04.10_assess_properties.sh</code></li>
+</ul>
+<pre class="bg_python"><code>library(ape)
+library(phytools)
+library(phangorn)
+library(adephylo)
+library(seqinr)
+library(PhyInformR)
+library(rjson)
+library(psych)
+library(MESS)
+
+args = commandArgs(trailingOnly=TRUE)
+argsLen &lt;- length(args)
+alignment_folder_path &lt;- args[1]
+gene_tree_file_path &lt;- args[2]
+gene_name_file_path &lt;- args[3]
+pruned_species_tree_file_path &lt;- args[4]
+amas_table_path &lt;- args[5]
+rate_folder_path &lt;- args[6]
+output_name &lt;- args[7]
+if (argsLen == 8) {
+    fastsp_table_path &lt;- args[8]
+}
+
+gene_trees &lt;- read.tree(gene_tree_file_path)
+names(gene_trees) &lt;- readLines(gene_name_file_path)
+
+species_trees &lt;- read.tree(pruned_species_tree_file_path)
+
+amas_table &lt;- read.table(amas_table_path, header=T, check.names = F)
+
+taxon_list &lt;- character()
+
+nloci &lt;- length(gene_trees)
+
+average_support &lt;- vector(length = nloci)
+robinson &lt;- vector(length = nloci)
+wrobinson &lt;- vector(length = nloci)
+treeness &lt;- vector(length = nloci)
+tree_rate &lt;- vector(length = nloci)
+tree_rate_var &lt;- vector(length = nloci)
+base_composition_variance &lt;- vector(length = nloci)
+saturation_slope &lt;- vector(length = nloci)
+saturation_rsq &lt;- vector(length = nloci)
+number_of_taxa &lt;- vector(length = nloci)
+alignment_length &lt;- vector(length = nloci)
+percent_missing &lt;- vector(length = nloci)
+percent_variable &lt;- vector(length = nloci)
+phyloinf &lt;- vector(length = nloci)
+if (argsLen == 8) {
+    fastsp_table &lt;- read.csv(fastsp_table_path, header=F)
+    alignmentSPscore &lt;- vector(length = nloci)
+}
+
+for (f in 1:nloci) {
+    locname &lt;- names(gene_trees)[f]
+    print (locname)
+    geneTree &lt;- gene_trees[[f]]
+    for (tip in geneTree$tip.label) {
+        if (!(tip %in% taxon_list)) {
+            taxon_list &lt;- c(taxon_list, tip)
+        }
+    }
+    pruned_species_tree &lt;- species_trees[[f]]
+    alignment &lt;- read.dna(paste0(alignment_folder_path, &quot;/&quot;, locname), &quot;fasta&quot;)
+
+    if (&quot;node.label&quot; %in% names(geneTree)) {        
+        #average bs
+        ufboot &lt;- sapply(strsplit(geneTree$node.label, &quot;/&quot;), function(x) x[2])
+        average_support[f] &lt;- mean(as.numeric(ufboot), na.rm = T)
+
+        #RF/wRF
+        if (argsLen == 8) {
+            #Compute RF similarity
+            robinson[f] &lt;- 1 - suppressMessages(RF.dist(pruned_species_tree, geneTree, normalize = TRUE, check.labels = TRUE))
+            #Rescale tree to length of 1
+            geneTree1 &lt;- geneTree
+            geneTree1$edge.length &lt;- geneTree1$edge.length/max(nodeHeights(geneTree1)[,2])*1.0
+            #Compute wRF similarity on the rescaled tree
+            wrobinson[f] &lt;- 1 - suppressMessages(wRF.dist(pruned_species_tree, geneTree1, normalize = TRUE, check.labels = TRUE))           
+            #Compute alignment similarity
+            alignmentSPscore[f] &lt;- fastsp_table$V2[fastsp_table$V1 == locname]
+        }
+     
+        #tip branches
+        tip_branches &lt;- which(geneTree$edge[,2] %in% c(1:length(geneTree$tip.label)))
+        
+        #treeness
+        treeness[f] &lt;- 1 - (sum(geneTree$edge.length[tip_branches])/sum(geneTree$edge.length))
+
+        #tree length
+        tree_length &lt;- sum(geneTree$edge.length)
+
+        #tree based rate
+        tree_rate[f] &lt;- tree_length/length(geneTree$tip.label)
+
+        #tree based rate variation
+        tree_rate_var[f] &lt;- var(geneTree$edge.length)
+
+        #base_composition_variance
+        taxa_num &lt;- length(alignment[,1])
+        base_freq_mx &lt;- base.freq(alignment[1,])
+        for (t in 2:taxa_num){
+            base_freq_mx &lt;- rbind(base_freq_mx, base.freq(alignment[t,]))
+        }
+        base_composition_variance[f] &lt;- sum(apply(base_freq_mx,2,var))
+
+
+        #saturation
+        p_mat &lt;- dist.dna(alignment, model = &quot;raw&quot;, pairwise.deletion = T)
+        # make matrix of pairwise distances in branch lengths from the tree
+        cophentr &lt;- cophenetic(geneTree)  
+        # store as matrix object
+        mat_p_mat &lt;- as.matrix(p_mat)
+        # print(apply(mat_p_mat, 2, mean))
+        # order p-distance matrix by names
+        mat_p_mat &lt;- mat_p_mat[order(row.names(mat_p_mat)),order(row.names(mat_p_mat))]
+        mat_co &lt;- as.matrix(cophentr)
+        # order pairwise distances matrix by names
+        mat_co &lt;- mat_co[order(row.names(mat_co)),order(row.names(mat_co))]
+        # get lower triangulars of both matrices
+        branch_dist &lt;- mat_co[lower.tri(mat_co)]
+        p_dist &lt;- mat_p_mat[lower.tri(mat_p_mat)]
+        # perform simple linear regression
+        regress &lt;- lm(p_dist ~ branch_dist)
+        # get slope
+        saturation_slope[f] &lt;- coef(regress)[2]
+        # get r-squared
+        saturation_rsq[f] &lt;- summary(regress)$r.squared
+
+        #number of taxa - for occupancy computation
+        number_of_taxa[f] &lt;- length(geneTree$tip.label)
+
+        #amas subset
+        amas_entry &lt;- amas_table[amas_table$Alignment_name == locname,]
+
+        #alignment_length
+        alignment_length[f] &lt;- amas_entry$Alignment_length
+
+        #percent_missing
+        percent_missing[f] &lt;- amas_entry$Missing_percent
+
+        # percent_variable
+        percent_variable[f] &lt;- amas_entry$Proportion_variable_sites
+
+        rates_fname &lt;- paste0(rate_folder_path, &quot;/&quot;, locname, &quot;.LEISR.json&quot;)
+        if (file.exists(rates_fname)) {
+            rates &lt;- fromJSON(file = rates_fname)
+            rates_per_site &lt;- sapply(rates$MLE$content$`0`, function(x) x[1])
+            
+            #penalized PI
+            as.matrix(rates_per_site)-&gt;rr
+            fit1 &lt;- data.frame(x1=numeric(),
+                           y1=numeric())
+            for (t2a in seq(0,1,0.01)){
+              phyinf = PhyInformR:::site.summer(rr,t2a)
+              t2b &lt;- data.frame(x1=t2a,
+                                y1=phyinf)
+              fit1 &lt;- rbind(fit1, t2b)
+            }
+            #find peak in informativeness and penalize values at times older than the
+            #peak by a factor proportional to their decay
+            max1 = which(fit1$y1 == max(fit1$y1))[1]  # Take only the first max index because an error is caused if max1 is a vector (because multiple indices have the maximum value)
+            inform_pen = fit1$y1
+            if(max1 != length(fit1$y1)) {
+              for(j in (max1 + 1):length(fit1$y1)) {
+                inform_pen[j] = fit1$y1[j]*(fit1$y1[j]/fit1$y1[max1])
+              }
+            }
+            #auc
+            phyloinf[f] &lt;- auc(fit1$x1, inform_pen,type = &quot;spline&quot;)
+        } else {
+            phyloinf[f] &lt;- NA
+        }
+    } else {
+        average_support[f] &lt;- NA
+        if (argsLen == 8) {
+            robinson[f] &lt;- NA
+            wrobinson[f] &lt;- NA
+            alignmentSPscore[f] &lt;- NA
+        }
+        treeness[f] &lt;- NA
+        tree_rate[f] &lt;- NA
+        tree_rate_var[f] &lt;- NA
+        base_composition_variance[f] &lt;- NA
+        saturation_slope[f] &lt;- NA
+        saturation_rsq[f] &lt;- NA
+        number_of_taxa[f] &lt;- NA
+        alignment_length[f] &lt;- NA
+        percent_missing[f] &lt;- NA
+        percent_variable[f] &lt;- NA
+        phyloinf[f] &lt;- NA
+    }
+}
+
+#rescale taxon number by the total number of taxa
+#to obtain occupancy
+occupancy &lt;- number_of_taxa / length(taxon_list)
+
+#gather gene properties
+if (argsLen == 8) {
+    variables &lt;- data.frame(locname=names(gene_trees),
+        robinson, wrobinson, alignmentSPscore,
+        average_support, treeness, tree_rate, tree_rate_var,
+        base_composition_variance, saturation_slope, saturation_rsq,
+        occupancy, alignment_length, percent_missing, percent_variable, phyloinf)
+} else {
+    variables &lt;- data.frame(locname=names(gene_trees),
+        average_support, treeness, tree_rate, tree_rate_var,
+        base_composition_variance, saturation_slope, saturation_rsq,
+        occupancy, alignment_length, percent_missing, percent_variable, phyloinf)
+}
+write.table(variables, output_name, row.names = F, sep = &#39;\t&#39;)</code></pre>
 <p>%%%%%%%%%%%%%% left off here %%%%%%%%%%%%%%%%</p>
 </div>
 </div>

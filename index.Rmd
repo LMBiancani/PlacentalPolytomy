@@ -359,6 +359,18 @@ cat 04_FeatureAssessment/04.09b_run_astral_allLoci.sh
 cat 04_FeatureAssessment/scripts/collapse_by.R
 ```
 
+## 04.10 slurm submission script: `04.10_assess_properties.sh`
+* combines assessment output files for all loci
+* runs the following R script: `assess_gene_properties.R`
+```{bash, comment=NA, echo=FALSE, class.output="bg_slurm"}
+cat 04_FeatureAssessment/04.10_assess_properties.sh
+```
+
+### R script: `assess_gene_properties.R`
+* R script run by the previous shell scripts: `04.10_assess_properties.sh`
+```{bash, comment=NA, echo=FALSE, class.output="bg_python"}
+cat 04_FeatureAssessment/scripts/assess_gene_properties.R
+```
 %%%%%%%%%%%%%% left off here %%%%%%%%%%%%%%%%
 
 # 5. AMAS

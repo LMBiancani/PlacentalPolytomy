@@ -1139,6 +1139,9 @@ Memory Efficiency: 10.67% of 6.00 GB
 This array will construct an astral tree for each subset of 5500 loci/gene trees.
 This should also be done for gene trees of all loci together:
 
+wd=/data/schwartzlab/Biancani/PlacentalPolytomy/04_FeatureAssessment
+cd $wd
+
 nano 04.09b_run_astral_allLoci.sh
 #####################
 #!/bin/bash
@@ -1174,6 +1177,9 @@ rm collapsed_trees.tre
 date
 #####################
 sbatch -q schwartzlab 04.09b_run_astral_allLoci.sh
+Submitted batch job 363691
+
+
 Submitted batch job 361828
 Job ID: 361828
 Cluster: andromeda
@@ -1194,7 +1200,7 @@ Increase time to 7 days and rerun:
 
 
 
-Step 01.10 requires an R script copied from Alexandra's Github:
+Step 04.10 requires an R script copied from Alexandra's Github:
 
 cd /data/schwartzlab/Biancani/PlacentalPolytomy/04_FeatureAssessment/scripts/
 cp /data/schwartzlab/Biancani/Phylo_ML/PML/6_empirical_features/assess_gene_properties.R .
@@ -1205,7 +1211,7 @@ assesser_path=$wd/scripts/assess_gene_properties.R
 wd=/data/schwartzlab/Biancani/PlacentalPolytomy/04_FeatureAssessment
 cd $wd
 
-nano 01.10_assess_properties.sh
+nano 04.10_assess_properties.sh
 #####################
 #!/bin/bash
 #SBATCH --job-name="assess"
@@ -1256,7 +1262,7 @@ echo "Combined file created at: $all_out"
 
 date
 #####################
-sbatch -q schwartzlab 01.10_assess_properties.sh
+sbatch -q schwartzlab 04.10_assess_properties.sh
 Submitted batch job 361889
 Job ID: 361889
 Cluster: andromeda
@@ -1301,7 +1307,7 @@ grep "max1 = which" assess_gene_properties.R
 
 Then re-ran assess_properties for subsets 8 and 9:
 
-nano 01.10_assess_properties89.sh
+nano 04.10_assess_properties89.sh
 #####################
 #!/bin/bash
 #SBATCH --job-name="assess"
@@ -1352,7 +1358,7 @@ echo "Combined file created at: $all_out"
 
 date
 #####################
-sbatch -q schwartzlab 01.10_assess_properties89.sh
+sbatch -q schwartzlab 04.10_assess_properties89.sh
 Submitted batch job 361891
 Job ID: 361891
 Cluster: andromeda
