@@ -1177,7 +1177,7 @@ rm collapsed_trees.tre
 date
 #####################
 sbatch -q schwartzlab 04.09b_run_astral_allLoci.sh
-Submitted batch job 363691
+Submitted batch job 364090
 
 
 Submitted batch job 361828

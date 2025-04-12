@@ -253,19 +253,17 @@ done
 _______________________________
 sbatch -q schwartzlab 02.01_iqtree_array.sh
 Submitted batch job 363524
-
-
-Job ID: 363264
-Array Job ID: 363264_28
+Job ID: 363524
+Array Job ID: 363524_28
 Cluster: andromeda
 User/Group: biancani/schwartzlab
 State: COMPLETED (exit code 0)
 Cores: 1
-CPU Utilized: 04:41:15
-CPU Efficiency: 66.08% of 07:05:37 core-walltime
-Job Wall-clock time: 07:05:37
-Memory Utilized: 61.17 MB
-Memory Efficiency: 1.00% of 6.00 GB
+CPU Utilized: 06:02:41
+CPU Efficiency: 70.58% of 08:33:50 core-walltime
+Job Wall-clock time: 08:33:50
+Memory Utilized: 63.14 MB
+Memory Efficiency: 1.03% of 6.00 GB
 
 
 2025.03.25
@@ -547,9 +545,19 @@ do
 	done
 done
 _______________________________
-sbatch 02.03_iqtree_array_gtree.sh
-
-
+sbatch -q schwartzlab 02.03_iqtree_array_gtree.sh
+Submitted batch job 364062
+Job ID: 364062
+Array Job ID: 364062_28
+Cluster: andromeda
+User/Group: biancani/schwartzlab
+State: COMPLETED (exit code 0)
+Cores: 1
+CPU Utilized: 02:46:48
+CPU Efficiency: 86.30% of 03:13:17 core-walltime
+Job Wall-clock time: 03:13:17
+Memory Utilized: 9.66 MB
+Memory Efficiency: 0.16% of 6.00 GB
 
 To do:
 re-run 04.09b_run_astral_allLoci.sh

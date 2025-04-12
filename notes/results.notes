@@ -16,8 +16,8 @@ array info:
 #SBATCH --array=[1-28]%28
 
 02.01_iqtree_array.sh
-Submitted batch job 363264
-*running* estimated finish: noon on Mar 25th
+Job ID: 363524
+
 
 2025.03.25
 

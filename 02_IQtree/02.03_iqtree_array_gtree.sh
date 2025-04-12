@@ -23,8 +23,8 @@ IQTREE="/data/schwartzlab/Biancani/Software/iqtree-2.1.2-Linux/bin/iqtree2"
 # path to output folder for IQ-TREE
 # (must be location of array_list.txt and aligned_loci_list_* created by iqtree prep script)
 OUTPUT=$PROJECT/output/02_iqtree_assessment
-# paths to output directory created by 02.00_iqtree_prep.sh:
-GT_OUT=$OUTPUT/02.03_gene_trees
+# paths to individual gene tree output directory created by 02.00_iqtree_prep.sh:
+GT_OUT=$OUTPUT/02.03_gene_trees/individual_gtrees
 
 cd ${GT_OUT}
 date
