@@ -14,7 +14,6 @@
 arrayLen=28 #specify length of the array job for 02.02_iqtree_array_concat.sh
 PROJECT=/data/schwartzlab/Biancani/PlacentalPolytomy
 # path to output folder for IQ-TREE
-# (must be location of array_list.txt and aligned_loci_list_* created by iqtree prep script)
 OUTPUT=$PROJECT/output/02_iqtree_assessment
 # paths to output directory for 02.02_iqturee_array_concat.sh
 # (location of `partitions_` files)

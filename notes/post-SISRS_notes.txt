@@ -131,10 +131,13 @@ mkdir -p ${OUTPUT}
 cd ${OUTPUT}
 
 # create output directories for array jobs:
+mkdir -p 02.00_array_prep_files
 mkdir -p 02.01_compare_hypotheses/scf
 mkdir -p 02.01_compare_hypotheses/likelihood
 mkdir -p 02.02_concat_trees
+mkdir -p 02.03_gene_trees/individual_gtrees
 
+cd 02.00_array_prep_files
 # extract filenames from INPUT and split into bins of 4000 loci
 ls ${INPUT} | rev | cut -f1 -d/ | rev | split -l 4000 - aligned_loci_list_
 arrayN=$(ls aligned_loci_list_* | wc -l)
@@ -144,7 +147,7 @@ if [ $arrayN -lt $TASKS ]
       TASKS=$arrayN
 fi
 
-echo "#SBATCH --array=[1-${arrayN}]%${TASKS}"
+echo "#SBATCH --array=[1-${arrayN}]%${TASKS}" | tee array_details_slurm.txt
 _______________________________
 sbatch -q schwartzlab 02.00_iqtree_prep.sh
 Submitted batch job 363523
@@ -190,9 +193,10 @@ trees_to_eval=$scripts_dir/hypothesis_trees/Polytomy_Placental_Hypotheses.tree
 # path to IQ-TREE executale:
 IQTREE="/data/schwartzlab/Biancani/Software/iqtree-2.1.2-Linux/bin/iqtree2"
 # path to output folder for IQ-TREE
-# (must be location of array_list.txt and aligned_loci_list_* created by iqtree prep script)
 OUTPUT=$PROJECT/output/02_iqtree_assessment
-# paths to output directories created by 02.00_iqtree_prep.sh:
+# (must be location of array_list.txt and aligned_loci_list_* created by iqtree prep script)
+ARRAY=$OUTPUT/02.00_array_prep_files
+# paths to hypotheses output directory (created by 02.00_iqtree_prep.sh):
 hypotheses=$OUTPUT/02.01_compare_hypotheses
 scf=${hypotheses}/scf
 likelihood=${hypotheses}/likelihood
@@ -214,12 +218,12 @@ cd ${hypotheses}
 date
 
 #generate list of filenames for aligned loci:
-fileline=$(sed -n ${SLURM_ARRAY_TASK_ID}p ${OUTPUT}/array_list.txt)
+fileline=$(sed -n ${SLURM_ARRAY_TASK_ID}p ${ARRAY}/array_list.txt)
 
 #create output csv file for each batch fasta file created by prep script (aka each slurm task):
-> $likelohood/LnLs_${SLURM_ARRAY_TASK_ID}.csv
+> $likelihood/LnLs_${SLURM_ARRAY_TASK_ID}.csv
 
-cat ${fileline} | while read line
+cat $ARRAY/${fileline} | while read line
 do
 	echo $line
 	Rscript ${scripts_dir}/trimTrees.R ${INPUT}/${line} ${trees_to_eval} ./trees_${line}.tre
@@ -436,8 +440,9 @@ IQTREE="/data/schwartzlab/Biancani/Software/iqtree-2.1.2-Linux/bin/iqtree2"
 AMAS="/data/schwartzlab/Biancani/Software/AMAS/amas/AMAS.py"
 
 # path to output folder for IQ-TREE
-# (must be location of array_list.txt and aligned_loci_list_* created by iqtree prep script)
 OUTPUT=$PROJECT/output/02_iqtree_assessment
+# (must be location of array_list.txt and aligned_loci_list_* created by iqtree prep script)
+ARRAY=$OUTPUT/02.00_array_prep_files
 # paths to output directory created by 02.00_iqtree_prep.sh:
 CAT_OUT=$OUTPUT/02.02_concat_trees
 
@@ -447,10 +452,10 @@ date
 module purge
 module load Python/3.7.4-GCCcore-8.3.0
 
-fileline=$(sed -n ${SLURM_ARRAY_TASK_ID}p $OUTPUT/array_list.txt)
+fileline=$(sed -n ${SLURM_ARRAY_TASK_ID}p $ARRAY/array_list.txt)
 
 # generates list of paths to infiles
-infiles=$(cat ${OUTPUT}/${fileline} | while read line; do echo ${INPUT}/${line}; done | paste -sd" ")
+infiles=$(cat ${ARRAY}/${fileline} | while read line; do echo ${INPUT}/${line}; done | paste -sd" ")
 
 #amas concatenated
 python3 ${AMAS} concat -f fasta -d dna --out-format fasta --part-format raxml -i $infiles -t concatenated_${SLURM_ARRAY_TASK_ID}.fasta -p partitions_${SLURM_ARRAY_TASK_ID}.txt
@@ -518,18 +523,19 @@ INPUT=$PROJECT/output/01_SISRS_loci_filtered
 IQTREE="/data/schwartzlab/Biancani/Software/iqtree-2.1.2-Linux/bin/iqtree2"
 
 # path to output folder for IQ-TREE
-# (must be location of array_list.txt and aligned_loci_list_* created by iqtree prep script)
 OUTPUT=$PROJECT/output/02_iqtree_assessment
-# paths to output directory created by 02.00_iqtree_prep.sh:
-GT_OUT=$OUTPUT/02.03_gene_trees
+# path to array files (array_list.txt and aligned_loci_list_* created by 02.00_iqtree_prep.sh)
+ARRAY=$OUTPUT/02.00_array_prep_files
+# paths to individual gene tree output directory created by 02.00_iqtree_prep.sh:
+GT_OUT=$OUTPUT/02.03_gene_trees/individual_gtrees
 
 cd ${GT_OUT}
 date
 
 #generate list of filenames for aligned loci:
-fileline=$(sed -n ${SLURM_ARRAY_TASK_ID}p $OUTPUT/array_list.txt)
+fileline=$(sed -n ${SLURM_ARRAY_TASK_ID}p $ARRAY/array_list.txt)
 
-cat ${OUTPUT}/${fileline} | while read line
+cat ${ARRAY}/${fileline} | while read line
 do
 	echo $line
 	${IQTREE} -nt 1 -s ${INPUT}/${line} -pre inference_${line} -alrt 1000 -m GTR+G
@@ -580,15 +586,16 @@ _______________________________
 # path to project directory:
 PROJECT=/data/schwartzlab/Biancani/PlacentalPolytomy
 # path to output folder for IQ-TREE
-# (must be location of array_list.txt and aligned_loci_list_* created by iqtree prep script)
 OUTPUT=$PROJECT/output/02_iqtree_assessment
+# path to array files (array_list.txt and aligned_loci_list_* created by 02.00_iqtree_prep.sh)
+ARRAY=$OUTPUT/02.00_array_prep_files
 # paths to individual gene tree output directory created by 02.00_iqtree_prep.sh:
 GT_OUT=$OUTPUT/02.03_gene_trees/individual_gtrees
 
 cd $GT_OUT
 date
 # collect all individual loci (gene tree) names
-> ../gtrees.txt; cat $OUTPUT/array_list.txt | while read line1; do cat $OUTPUT/${line1} >> ../gtrees.txt; done
+> ../gtrees.txt; cat $ARRAY/array_list.txt | while read line1; do cat $ARRAY/${line1} >> ../gtrees.txt; done
 # combines all individual gene trees into a single file
 > ../gtrees.tre; cat ../gtrees.txt | while read line; do cat $GT_OUT/inference_${line}.treefile >> ../gtrees.tre; done
 date
@@ -626,10 +633,11 @@ _______________________________
 # path to project directory:
 PROJECT=/data/schwartzlab/Biancani/PlacentalPolytomy
 # path to output folder for IQ-TREE
-# (must be location of array_list.txt and aligned_loci_list_* created by iqtree prep script)
 OUTPUT=$PROJECT/output/02_iqtree_assessment
-# path to combined iqtree output directory (will be created by script if needed)
-CombineOUT=$OUTPUT/02.04_combined_iqtree_output
+# (must be location of array_list.txt and aligned_loci_list_* created by iqtree prep script)
+ARRAY=$OUTPUT/02.00_array_prep_files
+# paths to output directories created by 02.00_iqtree_prep.sh:
+CombineOUT=$OUTPUT/02.01_compare_hypotheses
 # path to likelihood outputs (generated by 02.01_iqtree_array.sh):
 LnL=$OUTPUT/02.01_compare_hypotheses/likelihood
 # path to sCF outputs (generated by 02.01_iqtree_array.sh):
@@ -638,7 +646,6 @@ sCF=$OUTPUT/02.01_compare_hypotheses/scf
 output_prefix="combined"
 
 date
-mkdir -p $CombineOUT
 cd $CombineOUT
 
 # concatenate likelihood output files
@@ -647,10 +654,10 @@ cat ${LnL}/LnLs_*.csv > ${output_prefix}_dLnLs.csv
 # initialize empty combined sCF file
 > ${output_prefix}_scf.csv
 # iterate trhough list of locus names:
-cat ${OUTPUT}/array_list.txt | while read array_list_line
+cat ${ARRAY}/array_list.txt | while read array_list_line
 do
   # read scf output for each locus
-  cat ${OUTPUT}/${array_list_line} | while read aligned_loci_list_line
+  cat ${ARRAY}/${array_list_line} | while read aligned_loci_list_line
   do
     # construct the full path to the corresponding sCF output file for the locus
     fscf="${sCF}/scf_${aligned_loci_list_line}"
@@ -676,7 +683,57 @@ Job Wall-clock time: 02:05:39
 Memory Utilized: 1004.00 KB
 Memory Efficiency: 0.01% of 8.00 GB
 
+2025.13.2025
 
+cd /data/schwartzlab/Biancani/PlacentalPolytomy/02_IQtree
+
+02.02b_iqtree_collect_phyloinference_LnL.sh
+_______________________________
+#!/bin/bash
+#SBATCH --job-name="iqout"
+#SBATCH --time=24:00:00  # walltime limit (HH:MM:SS)
+#SBATCH --nodes=1   # number of nodes
+#SBATCH --ntasks-per-node=1   # processor core(s) per node
+#SBATCH -c 1
+#SBATCH --mem-per-cpu=8G
+#SBATCH --mail-user="biancani@uri.edu" #CHANGE THIS to your user email address
+#SBATCH --mail-type=ALL
+
+## UPDATE PATHS as necessary:
+
+# path to project directory:
+arrayLen=28 #specify length of the array job for 02.02_iqtree_array_concat.sh
+PROJECT=/data/schwartzlab/Biancani/PlacentalPolytomy
+# path to output folder for IQ-TREE
+OUTPUT=$PROJECT/output/02_iqtree_assessment
+# paths to output directory for 02.02_iqturee_array_concat.sh
+# (location of `partitions_` files)
+CAT_OUT=$OUTPUT/02.02_concat_trees
+
+cd $CAT_OUT
+date
+
+# create directory for analysis files
+mkdir -p concat_array_files
+mv * concat_array_files/
+cd concat_array_files/
+> ../combined_iqtree_dLnLs_concat.csv
+for f in $(seq 1 ${arrayLen})
+do
+        cat ${CAT_OUT}/partitions_${f}.txt | while read l
+        do
+                locname=$(echo ${l} | cut -f2 -d" " | cut -f2- -d_)
+                range1=$(echo ${l} | cut -f4 -d" ")
+                tree1=$(sed -n 2p ${CAT_OUT}/calcLnL_${f}.sitelh | awk -v a="${range1}" 'BEGIN {split(a, A, /-/)} {x=0;for(i=A[1]+1;i<=A[2]+1;i++)x=x+$i;print x}')
+                tree2=$(sed -n 3p ${CAT_OUT}/calcLnL_${f}.sitelh | awk -v a="${range1}" 'BEGIN {split(a, A, /-/)} {x=0;for(i=A[1]+1;i<=A[2]+1;i++)x=x+$i;print x}')
+                tree3=$(sed -n 4p ${CAT_OUT}/calcLnL_${f}.sitelh | awk -v a="${range1}" 'BEGIN {split(a, A, /-/)} {x=0;for(i=A[1]+1;i<=A[2]+1;i++)x=x+$i;print x}')
+                echo ${locname},${tree1},${tree2},${tree3} >> ../combined_iqtree_dLnLs_concat.csv
+        done
+done
+date
+_______________________________
+sbatch -q schwartzlab 02.02b_iqtree_collect_phyloinference_LnL.sh
+Submitted batch job 364143
 
 
 To do:

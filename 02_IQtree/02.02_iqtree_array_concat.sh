@@ -25,8 +25,9 @@ IQTREE="/data/schwartzlab/Biancani/Software/iqtree-2.1.2-Linux/bin/iqtree2"
 AMAS="/data/schwartzlab/Biancani/Software/AMAS/amas/AMAS.py"
 
 # path to output folder for IQ-TREE
-# (must be location of array_list.txt and aligned_loci_list_* created by iqtree prep script)
 OUTPUT=$PROJECT/output/02_iqtree_assessment
+# path to array files (array_list.txt and aligned_loci_list_* created by 02.00_iqtree_prep.sh)
+ARRAY=$OUTPUT/02.00_array_prep_files
 # paths to output directory created by 02.00_iqtree_prep.sh:
 CAT_OUT=$OUTPUT/02.02_concat_trees
 
@@ -36,10 +37,10 @@ date
 module purge
 module load Python/3.7.4-GCCcore-8.3.0
 
-fileline=$(sed -n ${SLURM_ARRAY_TASK_ID}p $OUTPUT/array_list.txt)
+fileline=$(sed -n ${SLURM_ARRAY_TASK_ID}p $ARRAY/array_list.txt)
 
 # generates list of paths to infiles
-infiles=$(cat ${OUTPUT}/${fileline} | while read line; do echo ${INPUT}/${line}; done | paste -sd" ")
+infiles=$(cat ${ARRAY}/${fileline} | while read line; do echo ${INPUT}/${line}; done | paste -sd" ")
 
 #amas concatenated
 python3 ${AMAS} concat -f fasta -d dna --out-format fasta --part-format raxml -i $infiles -t concatenated_${SLURM_ARRAY_TASK_ID}.fasta -p partitions_${SLURM_ARRAY_TASK_ID}.txt

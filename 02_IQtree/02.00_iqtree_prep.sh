@@ -24,11 +24,13 @@ mkdir -p ${OUTPUT}
 cd ${OUTPUT}
 
 # create output directories for array jobs:
+mkdir -p 02.00_array_prep_files
 mkdir -p 02.01_compare_hypotheses/scf
 mkdir -p 02.01_compare_hypotheses/likelihood
 mkdir -p 02.02_concat_trees
 mkdir -p 02.03_gene_trees/individual_gtrees
 
+cd 02.00_array_prep_files
 # extract filenames from INPUT and split into bins of 4000 loci
 ls ${INPUT} | rev | cut -f1 -d/ | rev | split -l 4000 - aligned_loci_list_
 arrayN=$(ls aligned_loci_list_* | wc -l)
@@ -38,4 +40,4 @@ if [ $arrayN -lt $TASKS ]
       TASKS=$arrayN
 fi
 
-echo "#SBATCH --array=[1-${arrayN}]%${TASKS}"
+echo "#SBATCH --array=[1-${arrayN}]%${TASKS}" | tee array_details_slurm.txt

@@ -22,9 +22,10 @@ trees_to_eval=$scripts_dir/hypothesis_trees/Polytomy_Placental_Hypotheses.tree
 # path to IQ-TREE executale:
 IQTREE="/data/schwartzlab/Biancani/Software/iqtree-2.1.2-Linux/bin/iqtree2"
 # path to output folder for IQ-TREE
-# (must be location of array_list.txt and aligned_loci_list_* created by iqtree prep script)
 OUTPUT=$PROJECT/output/02_iqtree_assessment
-# paths to output directories created by 02.00_iqtree_prep.sh:
+# path to array files (array_list.txt and aligned_loci_list_* created by 02.00_iqtree_prep.sh)
+ARRAY=$OUTPUT/02.00_array_prep_files
+# paths to hypotheses output directory (created by 02.00_iqtree_prep.sh):
 hypotheses=$OUTPUT/02.01_compare_hypotheses
 scf=${hypotheses}/scf
 likelihood=${hypotheses}/likelihood
@@ -46,12 +47,12 @@ cd ${hypotheses}
 date
 
 #generate list of filenames for aligned loci:
-fileline=$(sed -n ${SLURM_ARRAY_TASK_ID}p ${OUTPUT}/array_list.txt)
+fileline=$(sed -n ${SLURM_ARRAY_TASK_ID}p ${ARRAY}/array_list.txt)
 
 #create output csv file for each batch fasta file created by prep script (aka each slurm task):
 > $likelihood/LnLs_${SLURM_ARRAY_TASK_ID}.csv
 
-cat $OUTPUT/${fileline} | while read line
+cat $ARRAY/${fileline} | while read line
 do
 	echo $line
 	Rscript ${scripts_dir}/trimTrees.R ${INPUT}/${line} ${trees_to_eval} ./trees_${line}.tre

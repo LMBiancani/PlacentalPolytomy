@@ -21,8 +21,9 @@ INPUT=$PROJECT/output/01_SISRS_loci_filtered
 IQTREE="/data/schwartzlab/Biancani/Software/iqtree-2.1.2-Linux/bin/iqtree2"
 
 # path to output folder for IQ-TREE
-# (must be location of array_list.txt and aligned_loci_list_* created by iqtree prep script)
 OUTPUT=$PROJECT/output/02_iqtree_assessment
+# path to array files (array_list.txt and aligned_loci_list_* created by 02.00_iqtree_prep.sh)
+ARRAY=$OUTPUT/02.00_array_prep_files
 # paths to individual gene tree output directory created by 02.00_iqtree_prep.sh:
 GT_OUT=$OUTPUT/02.03_gene_trees/individual_gtrees
 
@@ -30,9 +31,9 @@ cd ${GT_OUT}
 date
 
 #generate list of filenames for aligned loci:
-fileline=$(sed -n ${SLURM_ARRAY_TASK_ID}p $OUTPUT/array_list.txt)
+fileline=$(sed -n ${SLURM_ARRAY_TASK_ID}p $ARRAY/array_list.txt)
 
-cat ${OUTPUT}/${fileline} | while read line
+cat ${ARRAY}/${fileline} | while read line
 do
 	echo $line
 	${IQTREE} -nt 1 -s ${INPUT}/${line} -pre inference_${line} -alrt 1000 -m GTR+G
