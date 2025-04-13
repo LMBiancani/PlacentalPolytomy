@@ -1173,8 +1173,8 @@ do
                 locname=$(echo ${l} | cut -f2 -d&quot; &quot; | cut -f2- -d_)
                 range1=$(echo ${l} | cut -f4 -d&quot; &quot;)
                 tree1=$(sed -n 2p ${ARRAY}/calcLnL1_${f}.sitelh | awk -v a=&quot;${range1}&quot; &#39;BEGIN {split(a, A, /-/)} {x=0;for(i=A[1]+1;i&lt;=A[2]+1;i++)x=x+$i;print x}&#39;)
-                tree2=$(sed -n 3p ${ARRAY}/calcLnL2_${f}.sitelh | awk -v a=&quot;${range1}&quot; &#39;BEGIN {split(a, A, /-/)} {x=0;for(i=A[1]+1;i&lt;=A[2]+1;i++)x=x+$i;print x}&#39;)
-                tree3=$(sed -n 4p ${ARRAY}/calcLnL3_${f}.sitelh | awk -v a=&quot;${range1}&quot; &#39;BEGIN {split(a, A, /-/)} {x=0;for(i=A[1]+1;i&lt;=A[2]+1;i++)x=x+$i;print x}&#39;)
+                tree2=$(sed -n 2p ${ARRAY}/calcLnL2_${f}.sitelh | awk -v a=&quot;${range1}&quot; &#39;BEGIN {split(a, A, /-/)} {x=0;for(i=A[1]+1;i&lt;=A[2]+1;i++)x=x+$i;print x}&#39;)
+                tree3=$(sed -n 2p ${ARRAY}/calcLnL3_${f}.sitelh | awk -v a=&quot;${range1}&quot; &#39;BEGIN {split(a, A, /-/)} {x=0;for(i=A[1]+1;i&lt;=A[2]+1;i++)x=x+$i;print x}&#39;)
                 echo ${locname},${tree1},${tree2},${tree3} &gt;&gt; combined_iqtree_dLnLs_concat.csv
         done
 done
