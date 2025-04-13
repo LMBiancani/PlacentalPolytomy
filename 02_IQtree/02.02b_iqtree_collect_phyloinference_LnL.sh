@@ -22,14 +22,15 @@ CAT_OUT=$OUTPUT/02.02_concat_trees
 cd $CAT_OUT
 date
 
-# create directory for analysis files
-mkdir -p concat_array_files
-mv * concat_array_files/
-cd concat_array_files/
-> ../combined_iqtree_dLnLs_concat.csv
+# create directory for array analysis files:
+ARRAY=$CAT_OUT/array_output
+mkdir -p $ARRAY
+mv tree* inference_* partitions_* calcLnL* concatenated_* $ARRAY
+
+> combined_iqtree_dLnLs_concat.csv
 for f in $(seq 1 ${arrayLen})
 do
-        cat ${CAT_OUT}/partitions_${f}.txt | while read l
+        cat ${ARRAY}/partitions_${f}.txt | while read l
         do
                 locname=$(echo ${l} | cut -f2 -d" " | cut -f2- -d_)
                 range1=$(echo ${l} | cut -f4 -d" ")
