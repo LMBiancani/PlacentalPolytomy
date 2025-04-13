@@ -595,6 +595,16 @@ date
 _______________________________
 sbatch -q schwartzlab 02.03b_iqtree_collect_gtrees.sh
 Submitted batch job 364127
+Job ID: 364127
+Cluster: andromeda
+User/Group: biancani/schwartzlab
+State: COMPLETED (exit code 0)
+Cores: 1
+CPU Utilized: 00:03:11
+CPU Efficiency: 2.99% of 01:46:22 core-walltime
+Job Wall-clock time: 01:46:22
+Memory Utilized: 764.00 KB
+Memory Efficiency: 0.01% of 8.00 GB
 
 
 cd /data/schwartzlab/Biancani/PlacentalPolytomy/02_IQtree
@@ -653,7 +663,20 @@ done
 sed -i -e "s+${sCF}/scf_++g" ${output_prefix}_scf.csv
 date
 _______________________________
-sbatch -q schwartzlab 02.01b_iqture_collect_output.sh
+sbatch -q schwartzlab 02.01b_iqtree_collect_output.sh
+Submitted batch job 364131
+Job ID: 364131
+Cluster: andromeda
+User/Group: biancani/schwartzlab
+State: COMPLETED (exit code 0)
+Cores: 1
+CPU Utilized: 00:20:45
+CPU Efficiency: 16.51% of 02:05:39 core-walltime
+Job Wall-clock time: 02:05:39
+Memory Utilized: 1004.00 KB
+Memory Efficiency: 0.01% of 8.00 GB
+
+
 
 
 To do:
