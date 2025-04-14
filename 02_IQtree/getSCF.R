@@ -20,21 +20,26 @@ if (length(presentouttaxa) == 1){
 	outgroupMRCA <- getMRCA(reftree, presentouttaxa)
 }
 if (outgroupMRCA != reftree$edge[1,1]){
-	reftree <- root(reftree, node= outgroupMRCA, edgelabel = T, resolve.root=TRUE) # resolve root command added to ensure correct rooting with outgroup taxa
+  # resolve root command added to ensure correct rooting with outgroup taxa:
+	reftree <- root(reftree, node= outgroupMRCA, edgelabel = T, resolve.root=TRUE)
 }
+# Potential future issue: what if there are no outgroup taxa represented for contig?
+# Current data filtered (01_FilterByTaxa step) to include only contigs representing all groups.
 
 # Locate the node of interest:
-presentTestTaxa <- reftree$tip.label[reftree$tip.label %in% filtertaxa] # focal taxa represented by current contig - subsets list of focal taxa
-# Find the MRCA of the focal taxa and select ONE NODE DEEPER
+# focal taxa represented by current contig - subsets list of focal taxa:
+presentTestTaxa <- reftree$tip.label[reftree$tip.label %in% filtertaxa]
+# Find the MRCA of the focal taxa and select ONE NODE DEEPER (to look at alternative topology amongst groups)
 if (length(presentTestTaxa) == 1) {
 	nodeToRetrieve <- as.numeric (reftree$node.label[reftree$edge[reftree$edge[,2] == which (reftree$tip.label %in% presentTestTaxa),1]-length(reftree$tip.label)])
 	debug_opt <- 1
 } else {
-	taxonNode <- getMRCA(reftree, presentTestTaxa) # MRCA of focal taxa ## (Node of interest for Zack's question)
+  # MRCA of focal taxa ## (This is the node of interest for group monophyly question)
+	taxonNode <- getMRCA(reftree, presentTestTaxa)
 	OneNodeDeeper <- reftree$edge[reftree$edge[,2] == taxonNode,1]
 	#find corresponding node in stat table (because node numbers are different in R and change at rooting):
 	nodeToRetrieve <- as.numeric (reftree$node.label[OneNodeDeeper-length(reftree$tip.label)])
-	#for Zach:
+	#for monophyly question:
 	#nodeToRetrieve <- as.numeric (reftree$node.label[taxonNode-length(reftree$tip.label)])
 	debug_opt <- 2
 }
