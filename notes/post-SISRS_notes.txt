@@ -726,8 +726,17 @@ done
 date
 _______________________________
 sbatch -q schwartzlab 02.02b_iqtree_collect_phyloinference_LnL.sh
-Submitted batch job 364145
-
+Submitted batch job 364149
+Job ID: 364149
+Cluster: andromeda
+User/Group: biancani/schwartzlab
+State: COMPLETED (exit code 0)
+Cores: 1
+CPU Utilized: 06:48:25
+CPU Efficiency: 96.15% of 07:04:46 core-walltime
+Job Wall-clock time: 07:04:46
+Memory Utilized: 100.76 MB
+Memory Efficiency: 1.23% of 8.00 GB
 
 
 To do:

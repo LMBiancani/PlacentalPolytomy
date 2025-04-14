@@ -230,9 +230,10 @@ cat 02_IQtree/02.02_iqtree_array_concat.sh
 * collects concatenation fit assessment data
 * moves output files from `02.02_iqtree_array_concat.sh` to `02.02_concat_trees/concat_array_files/` sub directory
 * generates a CSV file `combined_iqtree_dLnLs_concat.csv` (in `output/02_iqtree_assessment/02.02_concat_trees/`) where each row corresponds to a partition (i.e. locus), and each column contains the cumulative site log-likelihood for that partition under the three different tree hypotheses. Format:\
-```locusA,-12345.6,-12347.2,-12340.1```\
-```locusB,-10023.4,-10025.9,-10020.8```\
-```CHECK OUTPUT FORMAT```\
+```SISRS_contig-1000000007,-2406.97,-2406.48,-2406.55```\
+```SISRS_contig-100000000,-4000.06,-4000.76,-3999.55```\
+```SISRS_contig-1000000020,-1648.55,-1648.82,-1648.81```\
+```...```\
 
 ```{bash, comment=NA, echo=FALSE, class.output="bg_slurm"}
 cat 02_IQtree/02.02b_iqtree_collect_phyloinference_LnL.sh
