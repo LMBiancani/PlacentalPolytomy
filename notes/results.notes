@@ -8,17 +8,28 @@ Total number of unfiltered SISRS loci:
 Number of filtered SISRS loci:
 109,799
 
-2025.03.24
 
-02.00_iqtree_prep.sh
-Job ID: 363263
-array info:
-#SBATCH --array=[1-28]%28
+Likelihood scores for each locus under 3 constrain trees:
+* Output: concatenates likelihood CSV files into combined file: `output/02_iqtree_assessment/02.01_compare_hypotheses/combined_dLnLs.csv` containing likelihood scores for every locus and each hypothesis. Format:\
+```SISRS_contig-1000033.fasta, -8588.512```\
+```SISRS_contig-1000033.fasta, -8589.722```\
+```SISRS_contig-1000033.fasta, -8589.617```\
+```SISRS_contig-10005000015.fasta, -839.789```\
+```SISRS_contig-10005000015.fasta, -839.917```\
+```SISRS_contig-10005000015.fasta, -839.959```\
+```...```\
+sCF values for each locus under 3 constraint trees:
+* Output: generates combined scf CSV file: `output/02_iqtree_assessment/02.01_compare_hypotheses/combined_scf.csv`. Combined CSV file contains a line for each locus with the locus name and an sCF value for each hypothesis. Format:\
+```SISRS_contig-1000000007.fasta,13.95,31.14,36.26```\
+```SISRS_contig-100000000.fasta,15.73,26.46,36.85```\
+```SISRS_contig-1000000020.fasta,0.5,2.47,1.13```\
+```...```\
 
-02.01_iqtree_array.sh
-Job ID: 363524
+per-locus likelihood scores for comparison across hypotheses for concatenated data:
+* Output: generates a CSV file `combined_iqtree_dLnLs_concat.csv` (in `output/02_iqtree_assessment/02.02_concat_trees/`) where each row corresponds to a partition (i.e. locus), and each column contains the cumulative site log-likelihood for that partition under the three different tree hypotheses. Format:\
+```SISRS_contig-1000000007,-2406.97,-2406.48,-2406.55```\
+```SISRS_contig-100000000,-4000.06,-4000.76,-3999.55```\
+```SISRS_contig-1000000020,-1648.55,-1648.82,-1648.81```\
+```...```\
 
-
-2025.03.25
-
-
+* 
