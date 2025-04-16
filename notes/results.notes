@@ -8,7 +8,6 @@ Total number of unfiltered SISRS loci:
 Number of filtered SISRS loci:
 109,799
 
-
 Likelihood scores for each locus under 3 constrain trees:
 * Output: concatenates likelihood CSV files into combined file: `output/02_iqtree_assessment/02.01_compare_hypotheses/combined_dLnLs.csv` containing likelihood scores for every locus and each hypothesis. Format:\
 ```SISRS_contig-1000033.fasta, -8588.512```\

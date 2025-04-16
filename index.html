@@ -1312,13 +1312,6 @@ date
 date</code></pre>
 </div>
 </div>
-<div id="need-updating" class="section level2">
-<h2>need updating:</h2>
-<ul>
-<li>iqtree_collect_phyloinference_LnL.sh - slurm script to submit:
-collect concatenation fit assessment data</li>
-</ul>
-</div>
 </div>
 <div id="annotate-loci" class="section level1">
 <h1>03. Annotate Loci</h1>
@@ -2834,71 +2827,7 @@ write.table(variables, output_name, row.names = F, sep = &#39;\t&#39;)</code></p
 </div>
 <div id="data-analysis" class="section level1">
 <h1>05. Data Analysis</h1>
-<p>%%%%%%%%%%%%%% left off here %%%%%%%%%%%%%%%%</p>
-</div>
-<div id="amas" class="section level1">
-<h1>AMAS</h1>
-<ul>
-<li>Runs AMAS to assess locus features</li>
-<li>AMAS is run in batches by the driver script
-(<code>run_amas.py</code>).</li>
-</ul>
-<div id="download-amas" class="section level4">
-<h4>Download AMAS</h4>
-<ul>
-<li>note path to <code>AMAS.py</code> and add path to slurm script
-<code>run_amas.sh</code></li>
-</ul>
-<pre><code>git clone https://github.com/marekborowiec/AMAS/</code></pre>
-</div>
-<div id="slurm-submission-script-run_amas.sh" class="section level4">
-<h4>Slurm submission script: <code>run_amas.sh</code></h4>
-<ul>
-<li>runs the following python script: <code>run_amas.py</code></li>
-</ul>
-<pre class="bg_slurm"><code>#!/bin/bash
-#SBATCH --job-name=&quot;amas&quot;
-#SBATCH --time=24:00:00  # walltime limit (HH:MM:SS)
-#SBATCH --nodes=1   # number of nodes
-#SBATCH --ntasks-per-node=36   # processor core(s) per node
-#SBATCH --mail-user=&quot;biancani@uri.edu&quot;
-#SBATCH --mail-type=ALL
-
-# UPDATE:
-# path to AMAS program (AMAS.py):
-AMAS=/data/schwartzlab/Biancani/AMAS/amas/AMAS.py
-# number of tasks/cores per node:
-CORES=36
-# location of amas scripts:
-SCRIPTS=/data/schwartzlab/Biancani/PlacentalPolytomy/amas
-# path to FILTERED SISRS loci (aligned contigs) folder:
-LOCI=/data/schwartzlab/Biancani/PlacentalPolytomy/output/SISRS_out_filtered
-# path to output folder for amas (will be created by script if necessary):
-OUTPUT=/data/schwartzlab/Biancani/PlacentalPolytomy/output/amas
-
-#Andromeda (URI&#39;s cluster) specific
-module purge
-module load Python/3.7.4-GCCcore-8.3.0
-#
-
-mkdir -p ${OUTPUT}/amas_assessments
-cd ${OUTPUT}
-date
-
-python ${SCRIPTS}/run_amas.py ${LOCI} ${CORES} ${AMAS}
-
-mv amas_total_results.txt amas_assessments/
-rm amas_output_temp.txt
-
-date</code></pre>
-</div>
-<div id="python-script-run_amas.py" class="section level4">
-<h4>Python script: <code>run_amas.py</code></h4>
-<ul>
-<li>python script run by shell script: <code>run_amas.sh</code></li>
-</ul>
 <hr />
-</div>
 </div>
 
 

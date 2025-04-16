@@ -262,14 +262,6 @@ cat 02_IQtree/02.03_iqtree_array_gtree.sh
 cat 02_IQtree/02.03b_iqtree_collect_gtrees.sh
 ```
 
-
-
-## need updating:
-
-* iqtree_collect_phyloinference_LnL.sh - slurm script to submit: collect concatenation fit assessment data
-
-
-
 # 03. Annotate Loci
 Scripts are located in the [03_Annotation](https://github.com/LMBiancani/PlacentalPolytomy/tree/main/03_Annotation) directory.
 
@@ -435,25 +427,6 @@ cat 04_FeatureAssessment/scripts/assess_gene_properties.R
 
 # 05. Data Analysis
 
-%%%%%%%%%%%%%% left off here %%%%%%%%%%%%%%%%
 
-# AMAS
-* Runs AMAS to assess locus features
-* AMAS is run in batches by the driver script (`run_amas.py`).
-
-#### Download AMAS
-* note path to `AMAS.py` and add path to slurm script `run_amas.sh`
-```
-git clone https://github.com/marekborowiec/AMAS/
-```
-#### Slurm submission script: `run_amas.sh`
-* runs the following python script: `run_amas.py`
-```{bash, comment=NA, echo=FALSE, class.output="bg_slurm"}
-cat amas/run_amas.sh
-```
-#### Python script: `run_amas.py`
-* python script run by shell script: `run_amas.sh`
-```{bash, comment=NA, echo=FALSE, class.output="bg_Rcode"}
-```
 
 ***
